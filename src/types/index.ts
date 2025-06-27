@@ -2,8 +2,8 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'lawyer' | 'intern' | 'admin' | 'firm-admin';
-  firmId: string;
+  role: 'lawyer' | 'intern' | 'admin' | 'firm-admin' | 'client';
+  firmId?: string;
   avatar?: string;
 }
 
@@ -57,6 +57,7 @@ export interface Task {
   status: 'pending' | 'in-progress' | 'completed' | 'overdue';
   type: 'filing' | 'research' | 'meeting' | 'court' | 'document' | 'other';
   createdAt: Date;
+  isClientVisible?: boolean; // New field to determine if client can see this task
 }
 
 export interface Milestone {
@@ -91,6 +92,7 @@ export interface Document {
   uploadedAt: Date;
   url: string;
   category: 'pleading' | 'evidence' | 'correspondence' | 'research' | 'other';
+  isClientVisible?: boolean; // New field to determine if client can see this document
 }
 
 export interface Note {
@@ -123,6 +125,32 @@ export interface BillingEntry {
   invoiceNumber?: string;
   paidDate?: Date;
   notes?: string;
+}
+
+export interface ClientInvoice {
+  id: string;
+  caseId: string;
+  date: Date;
+  description: string;
+  totalAmount: number;
+  dueDate: Date;
+  status: 'pending' | 'sent' | 'paid' | 'overdue' | 'disputed';
+  invoiceNumber: string;
+  paidDate?: Date;
+}
+
+export interface MeetingRequest {
+  id: string;
+  caseId: string;
+  clientId: string;
+  lawyerId: string;
+  requestedDate: Date;
+  preferredTime: string;
+  purpose: string;
+  status: 'pending' | 'approved' | 'declined' | 'completed';
+  actualDate?: Date;
+  notes?: string;
+  createdAt: Date;
 }
 
 export interface LawFirm {

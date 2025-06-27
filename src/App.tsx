@@ -3,6 +3,7 @@ import LoginForm from './components/LoginForm';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import FirmDashboard from './components/FirmDashboard';
+import ClientDashboard from './components/ClientDashboard';
 import CaseDetails from './components/CaseDetails';
 import { 
   mockUsers, 
@@ -15,7 +16,9 @@ import {
   mockNotes,
   mockLawyerPerformance,
   mockLawFirm,
-  mockBillingEntries
+  mockBillingEntries,
+  mockClientInvoices,
+  mockMeetingRequests
 } from './data/mockData';
 import { User } from './types';
 
@@ -76,6 +79,17 @@ function App() {
         );
         return { cases: internCases, tasks: internTasks, milestones: internMilestones };
 
+      case 'client':
+        // Clients see only their own case
+        const clientCases = mockCases.filter(c => c.client.email === currentUser.email);
+        const clientTasks = mockTasks.filter(t => 
+          t.assignedTo.id === currentUser.id && t.isClientVisible
+        );
+        const clientMilestones = mockMilestones.filter(m => 
+          clientCases.some(c => c.id === m.caseId)
+        );
+        return { cases: clientCases, tasks: clientTasks, milestones: clientMilestones };
+
       case 'admin':
       case 'firm-admin':
         // Admins and firm admins see everything
@@ -99,10 +113,35 @@ function App() {
   const caseNotes = selectedCaseId ? mockNotes.filter(n => n.caseId === selectedCaseId) : [];
   const caseBillingEntries = selectedCaseId ? mockBillingEntries.filter(b => b.caseId === selectedCaseId) : [];
 
+  // Client-specific data
+  const clientCase = currentUser.role === 'client' ? cases[0] : null;
+  const clientInvoices = currentUser.role === 'client' && clientCase ? 
+    mockClientInvoices.filter(i => i.caseId === clientCase.id) : [];
+  const clientMeetingRequests = currentUser.role === 'client' && clientCase ? 
+    mockMeetingRequests.filter(m => m.caseId === clientCase.id) : [];
+  const clientDocuments = currentUser.role === 'client' && clientCase ? 
+    mockDocuments.filter(d => d.caseId === clientCase.id && d.isClientVisible) : [];
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header currentUser={currentUser} onLogout={handleLogout} />
       
+      {/* Client Dashboard */}
+      {currentUser.role === 'client' && clientCase && (
+        <ClientDashboard
+          clientCase={clientCase}
+          clientTasks={tasks}
+          milestones={milestones}
+          timelineEvents={caseTimelineEvents}
+          preEngagementEvents={preEngagementEvents}
+          documents={clientDocuments}
+          invoices={clientInvoices}
+          meetingRequests={clientMeetingRequests}
+          currentUser={currentUser}
+        />
+      )}
+      
+      {/* Firm Admin Dashboard */}
       {currentView === 'dashboard' && currentUser.role === 'firm-admin' && (
         <FirmDashboard
           cases={mockCases}
@@ -114,7 +153,8 @@ function App() {
         />
       )}
       
-      {currentView === 'dashboard' && currentUser.role !== 'firm-admin' && (
+      {/* Regular User Dashboard */}
+      {currentView === 'dashboard' && currentUser.role !== 'firm-admin' && currentUser.role !== 'client' && (
         <Dashboard
           cases={cases}
           tasks={tasks}
@@ -124,7 +164,8 @@ function App() {
         />
       )}
       
-      {currentView === 'case-details' && selectedCase && (
+      {/* Case Details */}
+      {currentView === 'case-details' && selectedCase && currentUser.role !== 'client' && (
         <CaseDetails
           caseData={selectedCase}
           timelineEvents={caseTimelineEvents}

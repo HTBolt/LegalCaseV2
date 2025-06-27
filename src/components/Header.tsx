@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Scale, LogOut, User, Bell, Settings, Building, Menu, X } from 'lucide-react';
+import { Scale, LogOut, User, Bell, Settings, Building, Menu, X, UserCheck } from 'lucide-react';
 import { User as UserType } from '../types';
 
 interface HeaderProps {
@@ -20,6 +20,8 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout }) => {
         return 'bg-purple-100 text-purple-800';
       case 'firm-admin':
         return 'bg-orange-100 text-orange-800';
+      case 'client':
+        return 'bg-indigo-100 text-indigo-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -29,6 +31,8 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout }) => {
     switch (role) {
       case 'firm-admin':
         return <Building className="h-4 w-4" />;
+      case 'client':
+        return <UserCheck className="h-4 w-4" />;
       default:
         return <User className="h-4 w-4" />;
     }
@@ -44,6 +48,8 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout }) => {
         return 'Intern';
       case 'admin':
         return 'Admin';
+      case 'client':
+        return 'Client';
       default:
         return role;
     }
@@ -66,10 +72,12 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout }) => {
 
           {/* Desktop User Info and Actions */}
           <div className="hidden md:flex items-center space-x-3">
-            {/* Notifications */}
-            <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-              <Bell className="h-5 w-5" />
-            </button>
+            {/* Notifications - Hide for clients */}
+            {currentUser.role !== 'client' && (
+              <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
+                <Bell className="h-5 w-5" />
+              </button>
+            )}
 
             {/* Settings */}
             <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
@@ -134,11 +142,13 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout }) => {
               </div>
 
               {/* Mobile Actions */}
-              <div className="grid grid-cols-3 gap-2 px-2">
-                <button className="flex flex-col items-center p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
-                  <Bell className="h-5 w-5 mb-1" />
-                  <span className="text-xs">Notifications</span>
-                </button>
+              <div className={`grid ${currentUser.role === 'client' ? 'grid-cols-2' : 'grid-cols-3'} gap-2 px-2`}>
+                {currentUser.role !== 'client' && (
+                  <button className="flex flex-col items-center p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+                    <Bell className="h-5 w-5 mb-1" />
+                    <span className="text-xs">Notifications</span>
+                  </button>
+                )}
                 <button className="flex flex-col items-center p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
                   <Settings className="h-5 w-5 mb-1" />
                   <span className="text-xs">Settings</span>

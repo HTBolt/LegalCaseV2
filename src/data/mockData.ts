@@ -1,4 +1,4 @@
-import { User, Client, Case, Task, Milestone, TimelineEvent, Document, Note, LawFirm, LawyerPerformance, BillingEntry } from '../types';
+import { User, Client, Case, Task, Milestone, TimelineEvent, Document, Note, LawFirm, LawyerPerformance, BillingEntry, ClientInvoice, MeetingRequest } from '../types';
 
 export const mockLawFirm: LawFirm = {
   id: '1',
@@ -68,6 +68,13 @@ export const mockUsers: User[] = [
     email: 'amanda.davis@lawfirm.com',
     role: 'intern',
     firmId: '1'
+  },
+  // Client user
+  {
+    id: 'client-1',
+    name: 'John Smith',
+    email: 'john.smith@email.com',
+    role: 'client'
   }
 ];
 
@@ -439,7 +446,8 @@ export const mockTasks: Task[] = [
     priority: 'high',
     status: 'in-progress',
     type: 'filing',
-    createdAt: new Date('2025-01-05')
+    createdAt: new Date('2025-01-05'),
+    isClientVisible: false
   },
   {
     id: '2',
@@ -452,7 +460,8 @@ export const mockTasks: Task[] = [
     priority: 'medium',
     status: 'pending',
     type: 'research',
-    createdAt: new Date('2025-01-03')
+    createdAt: new Date('2025-01-03'),
+    isClientVisible: false
   },
   {
     id: '3',
@@ -465,7 +474,8 @@ export const mockTasks: Task[] = [
     priority: 'high',
     status: 'pending',
     type: 'document',
-    createdAt: new Date('2025-01-06')
+    createdAt: new Date('2025-01-06'),
+    isClientVisible: false
   },
   {
     id: '4',
@@ -478,7 +488,8 @@ export const mockTasks: Task[] = [
     priority: 'medium',
     status: 'in-progress',
     type: 'research',
-    createdAt: new Date('2025-01-07')
+    createdAt: new Date('2025-01-07'),
+    isClientVisible: false
   },
   {
     id: '5',
@@ -491,7 +502,38 @@ export const mockTasks: Task[] = [
     priority: 'high',
     status: 'pending',
     type: 'document',
-    createdAt: new Date('2025-01-08')
+    createdAt: new Date('2025-01-08'),
+    isClientVisible: false
+  },
+  
+  // Client-visible tasks for John Smith (Case 2)
+  {
+    id: 'client-1',
+    title: 'Provide Medical Records',
+    description: 'Please provide all medical records related to your injury, including recent treatment reports',
+    caseId: '2',
+    assignedTo: mockUsers[8], // Client user
+    assignedBy: mockUsers[0], // Sarah Johnson
+    dueDate: new Date('2025-07-02'),
+    priority: 'high',
+    status: 'pending',
+    type: 'document',
+    createdAt: new Date('2025-01-15'),
+    isClientVisible: true
+  },
+  {
+    id: 'client-2',
+    title: 'Review Settlement Proposal',
+    description: 'Please review the settlement proposal from the insurance company and provide your feedback',
+    caseId: '2',
+    assignedTo: mockUsers[8], // Client user
+    assignedBy: mockUsers[0], // Sarah Johnson
+    dueDate: new Date('2025-07-08'),
+    priority: 'medium',
+    status: 'pending',
+    type: 'other',
+    createdAt: new Date('2025-01-18'),
+    isClientVisible: true
   },
   
   // David Martinez's tasks
@@ -506,7 +548,8 @@ export const mockTasks: Task[] = [
     priority: 'high',
     status: 'in-progress',
     type: 'document',
-    createdAt: new Date('2025-01-10')
+    createdAt: new Date('2025-01-10'),
+    isClientVisible: false
   },
   {
     id: '7',
@@ -519,7 +562,8 @@ export const mockTasks: Task[] = [
     priority: 'high',
     status: 'pending',
     type: 'research',
-    createdAt: new Date('2025-01-09')
+    createdAt: new Date('2025-01-09'),
+    isClientVisible: false
   },
   {
     id: '8',
@@ -532,7 +576,8 @@ export const mockTasks: Task[] = [
     priority: 'medium',
     status: 'in-progress',
     type: 'document',
-    createdAt: new Date('2025-01-11')
+    createdAt: new Date('2025-01-11'),
+    isClientVisible: false
   },
   
   // Lisa Thompson's tasks
@@ -547,7 +592,8 @@ export const mockTasks: Task[] = [
     priority: 'medium',
     status: 'pending',
     type: 'research',
-    createdAt: new Date('2025-01-12')
+    createdAt: new Date('2025-01-12'),
+    isClientVisible: false
   },
   {
     id: '10',
@@ -560,7 +606,8 @@ export const mockTasks: Task[] = [
     priority: 'high',
     status: 'in-progress',
     type: 'research',
-    createdAt: new Date('2025-01-13')
+    createdAt: new Date('2025-01-13'),
+    isClientVisible: false
   },
   {
     id: '11',
@@ -573,7 +620,8 @@ export const mockTasks: Task[] = [
     priority: 'high',
     status: 'pending',
     type: 'filing',
-    createdAt: new Date('2025-01-14')
+    createdAt: new Date('2025-01-14'),
+    isClientVisible: false
   },
   {
     id: '12',
@@ -586,7 +634,8 @@ export const mockTasks: Task[] = [
     priority: 'medium',
     status: 'in-progress',
     type: 'research',
-    createdAt: new Date('2025-01-15')
+    createdAt: new Date('2025-01-15'),
+    isClientVisible: false
   }
 ];
 
@@ -917,7 +966,8 @@ export const mockDocuments: Document[] = [
     uploadedBy: mockUsers[0],
     uploadedAt: new Date('2024-08-15'),
     url: '#',
-    category: 'pleading'
+    category: 'pleading',
+    isClientVisible: false
   },
   {
     id: '2',
@@ -928,7 +978,8 @@ export const mockDocuments: Document[] = [
     uploadedBy: mockUsers[1],
     uploadedAt: new Date('2024-09-01'),
     url: '#',
-    category: 'evidence'
+    category: 'evidence',
+    isClientVisible: false
   },
   {
     id: '3',
@@ -939,7 +990,8 @@ export const mockDocuments: Document[] = [
     uploadedBy: mockUsers[0],
     uploadedAt: new Date('2024-09-05'),
     url: '#',
-    category: 'evidence'
+    category: 'evidence',
+    isClientVisible: true
   },
   {
     id: '4',
@@ -950,7 +1002,32 @@ export const mockDocuments: Document[] = [
     uploadedBy: mockUsers[2],
     uploadedAt: new Date('2024-10-05'),
     url: '#',
-    category: 'evidence'
+    category: 'evidence',
+    isClientVisible: false
+  },
+  {
+    id: '5',
+    caseId: '2',
+    name: 'Accident Report.pdf',
+    type: 'application/pdf',
+    size: 324000,
+    uploadedBy: mockUsers[0],
+    uploadedAt: new Date('2024-09-10'),
+    url: '#',
+    category: 'evidence',
+    isClientVisible: true
+  },
+  {
+    id: '6',
+    caseId: '2',
+    name: 'Insurance Correspondence.pdf',
+    type: 'application/pdf',
+    size: 128000,
+    uploadedBy: mockUsers[0],
+    uploadedAt: new Date('2024-10-15'),
+    url: '#',
+    category: 'correspondence',
+    isClientVisible: true
   }
 ];
 
@@ -990,6 +1067,93 @@ export const mockNotes: Note[] = [
     createdAt: new Date('2025-01-09'),
     updatedAt: new Date('2025-01-09'),
     isPrivate: false
+  }
+];
+
+// Client invoices (simplified view for clients)
+export const mockClientInvoices: ClientInvoice[] = [
+  {
+    id: 'inv-client-1',
+    caseId: '2',
+    date: new Date('2024-09-30'),
+    description: 'Legal services for personal injury case - September 2024',
+    totalAmount: 4900,
+    dueDate: new Date('2024-10-30'),
+    status: 'paid',
+    invoiceNumber: 'INV-2024-005',
+    paidDate: new Date('2024-10-25')
+  },
+  {
+    id: 'inv-client-2',
+    caseId: '2',
+    date: new Date('2024-10-31'),
+    description: 'Legal services for personal injury case - October 2024',
+    totalAmount: 7200,
+    dueDate: new Date('2024-11-30'),
+    status: 'paid',
+    invoiceNumber: 'INV-2024-006',
+    paidDate: new Date('2024-11-28')
+  },
+  {
+    id: 'inv-client-3',
+    caseId: '2',
+    date: new Date('2024-11-30'),
+    description: 'Legal services for personal injury case - November 2024',
+    totalAmount: 5750,
+    dueDate: new Date('2024-12-30'),
+    status: 'overdue',
+    invoiceNumber: 'INV-2024-007'
+  },
+  {
+    id: 'inv-client-4',
+    caseId: '2',
+    date: new Date('2024-12-31'),
+    description: 'Legal services for personal injury case - December 2024',
+    totalAmount: 6550,
+    dueDate: new Date('2025-01-30'),
+    status: 'sent',
+    invoiceNumber: 'INV-2025-002'
+  }
+];
+
+// Meeting requests
+export const mockMeetingRequests: MeetingRequest[] = [
+  {
+    id: 'meet-1',
+    caseId: '2',
+    clientId: '2',
+    lawyerId: '1',
+    requestedDate: new Date('2025-01-25'),
+    preferredTime: '2:00 PM',
+    purpose: 'Discuss settlement offer from insurance company and next steps',
+    status: 'approved',
+    actualDate: new Date('2025-01-25'),
+    notes: 'Meeting confirmed for 2:00 PM in our office. Please bring all recent medical reports.',
+    createdAt: new Date('2025-01-15')
+  },
+  {
+    id: 'meet-2',
+    caseId: '2',
+    clientId: '2',
+    lawyerId: '1',
+    requestedDate: new Date('2025-02-05'),
+    preferredTime: '10:00 AM',
+    purpose: 'Review medical expert report and prepare for mediation',
+    status: 'pending',
+    createdAt: new Date('2025-01-20')
+  },
+  {
+    id: 'meet-3',
+    caseId: '2',
+    clientId: '2',
+    lawyerId: '1',
+    requestedDate: new Date('2024-12-15'),
+    preferredTime: '3:00 PM',
+    purpose: 'Initial case strategy discussion and document review',
+    status: 'completed',
+    actualDate: new Date('2024-12-15'),
+    notes: 'Productive meeting. Client provided additional documentation and we outlined case strategy.',
+    createdAt: new Date('2024-12-10')
   }
 ];
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Scale, User, Lock, Eye, EyeOff, Building } from 'lucide-react';
+import { Scale, User, Lock, Eye, EyeOff, Building, UserCheck } from 'lucide-react';
 import { User as UserType } from '../types';
 
 interface LoginFormProps {
@@ -52,6 +52,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, users }) => {
         return 'bg-purple-100 text-purple-800';
       case 'firm-admin':
         return 'bg-orange-100 text-orange-800';
+      case 'client':
+        return 'bg-indigo-100 text-indigo-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -61,6 +63,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, users }) => {
     switch (role) {
       case 'firm-admin':
         return <Building className="h-4 w-4" />;
+      case 'client':
+        return <UserCheck className="h-4 w-4" />;
       default:
         return <User className="h-4 w-4" />;
     }
@@ -76,6 +80,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, users }) => {
         return 'Intern';
       case 'admin':
         return 'Admin';
+      case 'client':
+        return 'Client';
       default:
         return role;
     }
