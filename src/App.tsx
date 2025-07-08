@@ -18,9 +18,11 @@ import {
   mockLawFirm,
   mockBillingEntries,
   mockClientInvoices,
-  mockMeetingRequests
+  mockMeetingRequests,
+  mockClients
 } from './data/mockData';
-import { User, Task } from './types';
+import { User, Task, Case, TimelineEvent, Document, BillingEntry } from './types';
+import CaseFormModal from './components/CaseFormModal';
 
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -29,6 +31,13 @@ function App() {
   const [tasks, setTasks] = useState(mockTasks);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [cases, setCases] = useState(mockCases);
+  const [timelineEvents, setTimelineEvents] = useState(mockTimelineEvents);
+  const [preEngagementEvents, setPreEngagementEvents] = useState(mockPreEngagementEvents);
+  const [documents, setDocuments] = useState(mockDocuments);
+  const [billingEntries, setBillingEntries] = useState(mockBillingEntries);
+  const [showCaseModal, setShowCaseModal] = useState(false);
+  const [editingCase, setEditingCase] = useState<Case | null>(null);
 
   const handleLogin = (user: User) => {
     setCurrentUser(user);
@@ -92,6 +101,112 @@ function App() {
     console.log('=== PARENT: Set showTaskModal to false and cleared editingTask ===');
   };
 
+  const handleCaseCreate = (caseData: Partial<Case>) => {
+    const newCase: Case = {
+      id: Date.now().toString(),
+      title: caseData.title!,
+      clientId: caseData.clientId!,
+      client: caseData.client!,
+      assignedLawyer: caseData.assignedLawyer!,
+      supportingInterns: caseData.supportingInterns || [],
+      caseType: caseData.caseType!,
+      status: caseData.status || 'active',
+      priority: caseData.priority || 'medium',
+      nextHearingDate: caseData.nextHearingDate,
+      courtStage: caseData.courtStage || 'Initial Filing',
+      referredBy: caseData.referredBy!,
+      judge: caseData.judge,
+      opposingCounsel: caseData.opposingCounsel,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      opposingCounselHistory: [],
+      judgeHistory: []
+    };
+    
+    setCases(prev => [...prev, newCase]);
+  };
+
+  const handleCaseUpdate = (caseData: Partial<Case>) => {
+    setCases(prev => prev.map(case_ => 
+      case_.id === caseData.id ? { ...case_, ...caseData, updatedAt: new Date() } : case_
+    ));
+  };
+
+  const handleCaseEdit = (case_: Case) => {
+    setEditingCase(case_);
+    setShowCaseModal(true);
+  };
+
+  const handleCaseModalClose = () => {
+    setShowCaseModal(false);
+    setEditingCase(null);
+  };
+
+  const handleTimelineEventCreate = (eventData: Partial<TimelineEvent>) => {
+    const newEvent: TimelineEvent = {
+      id: Date.now().toString(),
+      caseId: eventData.caseId!,
+      title: eventData.title!,
+      description: eventData.description!,
+      date: eventData.date!,
+      type: eventData.type!,
+      category: eventData.category!,
+      url: eventData.url
+    };
+    
+    if (eventData.type === 'case-event') {
+      setTimelineEvents(prev => [...prev, newEvent]);
+    } else {
+      setPreEngagementEvents(prev => [...prev, newEvent]);
+    }
+  };
+
+  const handleTimelineEventDelete = (eventId: string, eventType: 'timeline' | 'history') => {
+    if (eventType === 'timeline') {
+      setTimelineEvents(prev => prev.filter(event => event.id !== eventId));
+    } else {
+      setPreEngagementEvents(prev => prev.filter(event => event.id !== eventId));
+    }
+  };
+
+  const handleDocumentUpload = (documentData: Partial<Document>) => {
+    const newDocument: Document = {
+      id: documentData.id!,
+      caseId: documentData.caseId!,
+      name: documentData.name!,
+      type: documentData.type!,
+      size: documentData.size!,
+      uploadedBy: documentData.uploadedBy!,
+      uploadedAt: documentData.uploadedAt!,
+      url: documentData.url!,
+      category: documentData.category!,
+      isClientVisible: documentData.isClientVisible
+    };
+    
+    setDocuments(prev => [...prev, newDocument]);
+  };
+
+  const handleBillingEntryCreate = (billingData: Partial<BillingEntry>) => {
+    const newBillingEntry: BillingEntry = {
+      id: billingData.id!,
+      caseId: billingData.caseId!,
+      date: billingData.date!,
+      description: billingData.description!,
+      lawyerHours: billingData.lawyerHours!,
+      lawyerRate: billingData.lawyerRate!,
+      internEntries: billingData.internEntries || [],
+      totalHours: billingData.totalHours!,
+      totalAmount: billingData.totalAmount!,
+      dueDate: billingData.dueDate!,
+      status: billingData.status!,
+      invoiceNumber: billingData.invoiceNumber,
+      paidDate: billingData.paidDate,
+      notes: billingData.notes
+    };
+    
+    setBillingEntries(prev => [...prev, newBillingEntry]);
+  };
+
   // Filter data based on user role and permissions
   const getFilteredData = () => {
     if (!currentUser) return { cases: [], tasks: [], milestones: [] };
@@ -99,7 +214,7 @@ function App() {
     switch (currentUser.role) {
       case 'lawyer':
         // Lawyers see all cases they're assigned to
-        const lawyerCases = mockCases.filter(c => c.assignedLawyer.id === currentUser.id);
+        const lawyerCases = cases.filter(c => c.assignedLawyer.id === currentUser.id);
         const lawyerTasks = tasks.filter(t => 
           t.assignedTo.id === currentUser.id || 
           t.assignedBy.id === currentUser.id ||
@@ -112,7 +227,7 @@ function App() {
 
       case 'intern':
         // Interns see cases they're supporting and their assigned tasks
-        const internCases = mockCases.filter(c => 
+        const internCases = cases.filter(c => 
           c.supportingInterns.some(intern => intern.id === currentUser.id)
         );
         const internTasks = tasks.filter(t => 
@@ -126,7 +241,7 @@ function App() {
 
       case 'client':
         // Clients see only their own case
-        const clientCases = mockCases.filter(c => c.client.email === currentUser.email);
+        const clientCases = cases.filter(c => c.client.email === currentUser.email);
         const clientTasks = tasks.filter(t => 
           t.assignedTo.id === currentUser.id && t.isClientVisible
         );
@@ -138,7 +253,7 @@ function App() {
       case 'admin':
       case 'firm-admin':
         // Admins and firm admins see everything
-        return { cases: mockCases, tasks: tasks, milestones: mockMilestones };
+        return { cases: cases, tasks: tasks, milestones: mockMilestones };
 
       default:
         return { cases: [], tasks: [], milestones: [] };
@@ -153,23 +268,23 @@ function App() {
 
   console.log('=== APP: Rendering with showTaskModal:', showTaskModal, 'editingTask:', editingTask?.id);
 
-  const { cases, tasks: filteredTasks, milestones } = getFilteredData();
-  const selectedCase = selectedCaseId ? cases.find(c => c.id === selectedCaseId) : null;
-  const caseTimelineEvents = selectedCaseId ? mockTimelineEvents.filter(e => e.caseId === selectedCaseId) : [];
-  const preEngagementEvents = selectedCaseId ? mockPreEngagementEvents.filter(e => e.caseId === selectedCaseId) : [];
-  const caseDocuments = selectedCaseId ? mockDocuments.filter(d => d.caseId === selectedCaseId) : [];
+  const { cases: filteredCases, tasks: filteredTasks, milestones } = getFilteredData();
+  const selectedCase = selectedCaseId ? filteredCases.find(c => c.id === selectedCaseId) : null;
+  const caseTimelineEvents = selectedCaseId ? timelineEvents.filter(e => e.caseId === selectedCaseId) : [];
+  const casePreEngagementEvents = selectedCaseId ? preEngagementEvents.filter(e => e.caseId === selectedCaseId) : [];
+  const caseDocuments = selectedCaseId ? documents.filter(d => d.caseId === selectedCaseId) : [];
   const caseNotes = selectedCaseId ? mockNotes.filter(n => n.caseId === selectedCaseId) : [];
-  const caseBillingEntries = selectedCaseId ? mockBillingEntries.filter(b => b.caseId === selectedCaseId) : [];
+  const caseBillingEntries = selectedCaseId ? billingEntries.filter(b => b.caseId === selectedCaseId) : [];
   const caseTasks = selectedCaseId ? filteredTasks.filter(t => t.caseId === selectedCaseId) : [];
 
   // Client-specific data
-  const clientCase = currentUser.role === 'client' ? cases[0] : null;
+  const clientCase = currentUser.role === 'client' ? filteredCases[0] : null;
   const clientInvoices = currentUser.role === 'client' && clientCase ? 
     mockClientInvoices.filter(i => i.caseId === clientCase.id) : [];
   const clientMeetingRequests = currentUser.role === 'client' && clientCase ? 
     mockMeetingRequests.filter(m => m.caseId === clientCase.id) : [];
   const clientDocuments = currentUser.role === 'client' && clientCase ? 
-    mockDocuments.filter(d => d.caseId === clientCase.id && d.isClientVisible) : [];
+    documents.filter(d => d.caseId === clientCase.id && d.isClientVisible) : [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -182,7 +297,7 @@ function App() {
           clientTasks={filteredTasks}
           milestones={milestones}
           timelineEvents={caseTimelineEvents}
-          preEngagementEvents={preEngagementEvents}
+          preEngagementEvents={casePreEngagementEvents}
           documents={clientDocuments}
           invoices={clientInvoices}
           meetingRequests={clientMeetingRequests}
@@ -193,19 +308,21 @@ function App() {
       {/* Firm Admin Dashboard */}
       {currentView === 'dashboard' && currentUser.role === 'firm-admin' && (
         <FirmDashboard
-          cases={mockCases}
+          cases={cases}
           tasks={tasks}
           users={mockUsers}
           lawyerPerformance={mockLawyerPerformance}
           firmInfo={mockLawFirm}
           currentUser={currentUser}
+          onCaseCreate={handleCaseCreate}
+          onCaseEdit={handleCaseEdit}
         />
       )}
       
       {/* Regular User Dashboard */}
       {currentView === 'dashboard' && currentUser.role !== 'firm-admin' && currentUser.role !== 'client' && (
         <Dashboard
-          cases={cases}
+          cases={filteredCases}
           tasks={filteredTasks}
           milestones={milestones}
           currentUser={currentUser}
@@ -225,7 +342,7 @@ function App() {
         <CaseDetails
           caseData={selectedCase}
           timelineEvents={caseTimelineEvents}
-          preEngagementEvents={preEngagementEvents}
+          preEngagementEvents={casePreEngagementEvents}
           documents={caseDocuments}
           notes={caseNotes}
           billingEntries={caseBillingEntries}
@@ -239,8 +356,23 @@ function App() {
           editingTask={editingTask}
           showTaskModal={showTaskModal}
           onTaskModalClose={handleTaskModalClose}
+          onTimelineEventCreate={handleTimelineEventCreate}
+          onTimelineEventDelete={handleTimelineEventDelete}
+          onDocumentUpload={handleDocumentUpload}
+          onBillingEntryCreate={handleBillingEntryCreate}
         />
       )}
+      
+      {/* Case Creation/Editing Modal */}
+      <CaseFormModal
+        isOpen={showCaseModal}
+        onClose={handleCaseModalClose}
+        onSubmit={editingCase ? handleCaseUpdate : handleCaseCreate}
+        currentUser={currentUser}
+        users={mockUsers}
+        clients={mockClients}
+        editingCase={editingCase}
+      />
     </div>
   );
 }

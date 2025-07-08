@@ -43,6 +43,21 @@ export interface Case {
   billableHours?: number;
   totalRevenue?: number;
   courtLevel?: 'district' | 'superior' | 'appellate' | 'supreme';
+  opposingCounselHistory?: OpposingCounselEntry[];
+  judgeHistory?: JudgeEntry[];
+}
+
+export interface OpposingCounselEntry {
+  name: string;
+  firm: string;
+  email: string;
+  phone: string;
+  date: Date;
+}
+
+export interface JudgeEntry {
+  name: string;
+  date: Date;
 }
 
 export interface Task {
@@ -83,6 +98,7 @@ export interface TimelineEvent {
   type: 'case-event' | 'client-event';
   category: string;
   documents?: string[];
+  url?: string;
 }
 
 export interface Document {

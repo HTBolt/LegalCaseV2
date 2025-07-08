@@ -1,5 +1,7 @@
 import { User, Client, Case, Task, Milestone, TimelineEvent, Document, Note, LawFirm, LawyerPerformance, BillingEntry, ClientInvoice, MeetingRequest } from '../types';
 
+export { mockClients };
+
 export const mockLawFirm: LawFirm = {
   id: '1',
   name: 'Johnson & Associates Legal Group',
@@ -159,7 +161,22 @@ export const mockCases: Case[] = [
     createdAt: new Date('2024-08-15'),
     updatedAt: new Date('2025-01-10'),
     billableHours: 145,
-    totalRevenue: 72500
+    totalRevenue: 72500,
+    opposingCounselHistory: [
+      {
+        name: 'Robert Davis',
+        firm: 'Davis & Associates',
+        email: 'rdavis@davislaw.com',
+        phone: '+1 (555) 234-5678',
+        date: new Date('2024-08-15')
+      }
+    ],
+    judgeHistory: [
+      {
+        name: 'Hon. Patricia Williams',
+        date: new Date('2024-08-15')
+      }
+    ]
   },
   {
     id: '2',
@@ -185,7 +202,22 @@ export const mockCases: Case[] = [
     createdAt: new Date('2024-09-01'),
     updatedAt: new Date('2025-01-08'),
     billableHours: 89,
-    totalRevenue: 44500
+    totalRevenue: 44500,
+    opposingCounselHistory: [
+      {
+        name: 'Lisa Martinez',
+        firm: 'Martinez Legal Group',
+        email: 'lmartinez@martinezlaw.com',
+        phone: '+1 (555) 345-6789',
+        date: new Date('2024-09-01')
+      }
+    ],
+    judgeHistory: [
+      {
+        name: 'Hon. Mark Thompson',
+        date: new Date('2024-09-01')
+      }
+    ]
   },
   {
     id: '3',
@@ -211,7 +243,22 @@ export const mockCases: Case[] = [
     createdAt: new Date('2024-10-01'),
     updatedAt: new Date('2025-01-09'),
     billableHours: 67,
-    totalRevenue: 33500
+    totalRevenue: 33500,
+    opposingCounselHistory: [
+      {
+        name: 'Thomas Wilson',
+        firm: 'Corporate Defense LLC',
+        email: 'twilson@corpdefense.com',
+        phone: '+1 (555) 567-8901',
+        date: new Date('2024-10-01')
+      }
+    ],
+    judgeHistory: [
+      {
+        name: 'Hon. Jennifer Lee',
+        date: new Date('2024-10-01')
+      }
+    ]
   },
   
   // David Martinez's cases
@@ -239,7 +286,22 @@ export const mockCases: Case[] = [
     createdAt: new Date('2024-11-01'),
     updatedAt: new Date('2025-01-12'),
     billableHours: 98,
-    totalRevenue: 98000
+    totalRevenue: 98000,
+    opposingCounselHistory: [
+      {
+        name: 'Sarah Mitchell',
+        firm: 'Mitchell & Partners',
+        email: 'smitchell@mitchelllaw.com',
+        phone: '+1 (555) 789-0123',
+        date: new Date('2024-11-01')
+      }
+    ],
+    judgeHistory: [
+      {
+        name: 'Hon. Michael Brown',
+        date: new Date('2024-11-01')
+      }
+    ]
   },
   {
     id: '5',
@@ -259,7 +321,14 @@ export const mockCases: Case[] = [
     createdAt: new Date('2024-12-01'),
     updatedAt: new Date('2025-01-11'),
     billableHours: 45,
-    totalRevenue: 22500
+    totalRevenue: 22500,
+    opposingCounselHistory: [],
+    judgeHistory: [
+      {
+        name: 'Hon. Susan Davis',
+        date: new Date('2024-12-01')
+      }
+    ]
   },
   
   // Lisa Thompson's cases
@@ -287,7 +356,22 @@ export const mockCases: Case[] = [
     createdAt: new Date('2024-10-15'),
     updatedAt: new Date('2025-01-13'),
     billableHours: 67,
-    totalRevenue: 33500
+    totalRevenue: 33500,
+    opposingCounselHistory: [
+      {
+        name: 'Kevin Johnson',
+        firm: 'Johnson Real Estate Law',
+        email: 'kjohnson@johnsonrelaw.com',
+        phone: '+1 (555) 890-1234',
+        date: new Date('2024-10-15')
+      }
+    ],
+    judgeHistory: [
+      {
+        name: 'Hon. Robert Garcia',
+        date: new Date('2024-10-15')
+      }
+    ]
   },
   {
     id: '7',
@@ -307,7 +391,14 @@ export const mockCases: Case[] = [
     createdAt: new Date('2024-09-15'),
     updatedAt: new Date('2025-01-14'),
     billableHours: 123,
-    totalRevenue: 61500
+    totalRevenue: 61500,
+    opposingCounselHistory: [],
+    judgeHistory: [
+      {
+        name: 'Hon. Amanda Wilson',
+        date: new Date('2024-09-15')
+      }
+    ]
   },
   
   // Closed cases for analytics - distributed among lawyers
@@ -330,7 +421,14 @@ export const mockCases: Case[] = [
     updatedAt: new Date('2024-11-20'),
     closedAt: new Date('2024-11-20'),
     billableHours: 78,
-    totalRevenue: 39000
+    totalRevenue: 39000,
+    opposingCounselHistory: [],
+    judgeHistory: [
+      {
+        name: 'Hon. David Brown',
+        date: new Date('2024-05-15')
+      }
+    ]
   },
   {
     id: '9',
@@ -351,7 +449,14 @@ export const mockCases: Case[] = [
     updatedAt: new Date('2024-09-15'),
     closedAt: new Date('2024-09-15'),
     billableHours: 45,
-    totalRevenue: 22500
+    totalRevenue: 22500,
+    opposingCounselHistory: [],
+    judgeHistory: [
+      {
+        name: 'Hon. Susan Miller',
+        date: new Date('2024-03-10')
+      }
+    ]
   },
   {
     id: '10',
@@ -370,7 +475,9 @@ export const mockCases: Case[] = [
     updatedAt: new Date('2024-06-30'),
     closedAt: new Date('2024-06-30'),
     billableHours: 156,
-    totalRevenue: 156000
+    totalRevenue: 156000,
+    opposingCounselHistory: [],
+    judgeHistory: []
   },
   {
     id: '11',
@@ -389,7 +496,9 @@ export const mockCases: Case[] = [
     updatedAt: new Date('2024-08-15'),
     closedAt: new Date('2024-08-15'),
     billableHours: 89,
-    totalRevenue: 89000
+    totalRevenue: 89000,
+    opposingCounselHistory: [],
+    judgeHistory: []
   },
   {
     id: '12',
@@ -410,7 +519,14 @@ export const mockCases: Case[] = [
     updatedAt: new Date('2024-10-30'),
     closedAt: new Date('2024-10-30'),
     billableHours: 112,
-    totalRevenue: 56000
+    totalRevenue: 56000,
+    opposingCounselHistory: [],
+    judgeHistory: [
+      {
+        name: 'Hon. Patricia Lee',
+        date: new Date('2024-04-01')
+      }
+    ]
   },
   {
     id: '13',
@@ -429,7 +545,9 @@ export const mockCases: Case[] = [
     updatedAt: new Date('2024-09-30'),
     closedAt: new Date('2024-09-30'),
     billableHours: 34,
-    totalRevenue: 17000
+    totalRevenue: 17000,
+    opposingCounselHistory: [],
+    judgeHistory: []
   }
 ];
 
@@ -840,7 +958,8 @@ export const mockPreEngagementEvents: TimelineEvent[] = [
     description: 'TechCorp filed original patent application for the disputed technology',
     date: new Date('2022-03-15'),
     type: 'client-event',
-    category: 'Patent Filing'
+    category: 'Patent Filing',
+    url: 'https://drive.google.com/file/d/example-patent-application'
   },
   {
     id: 'pre-2',
@@ -849,7 +968,8 @@ export const mockPreEngagementEvents: TimelineEvent[] = [
     description: 'USPTO granted patent to TechCorp after examination',
     date: new Date('2023-01-20'),
     type: 'client-event',
-    category: 'Patent Grant'
+    category: 'Patent Grant',
+    url: 'https://drive.google.com/file/d/example-patent-grant'
   },
   {
     id: 'pre-3',

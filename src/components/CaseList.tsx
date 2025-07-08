@@ -1,15 +1,24 @@
 import React from 'react';
-import { Calendar, Users, AlertTriangle, Clock, FileText, ChevronRight } from 'lucide-react';
-import { Case } from '../types';
+import { Calendar, Users, AlertTriangle, Clock, FileText, ChevronRight, Edit } from 'lucide-react';
+import { Case, User } from '../types';
 
 interface CaseListProps {
   cases: Case[];
   onCaseSelect: (caseId: string) => void;
   title?: string;
   compact?: boolean;
+  onCaseEdit?: (case_: Case) => void;
+  currentUser?: User;
 }
 
-const CaseList: React.FC<CaseListProps> = ({ cases, onCaseSelect, title = "Cases", compact = false }) => {
+const CaseList: React.FC<CaseListProps> = ({ 
+  cases, 
+  onCaseSelect, 
+  title = "Cases", 
+  compact = false,
+  onCaseEdit,
+  currentUser
+}) => {
   const sortedCases = [...cases].sort((a, b) => {
     if (!a.nextHearingDate && !b.nextHearingDate) return 0;
     if (!a.nextHearingDate) return 1;
@@ -59,6 +68,13 @@ const CaseList: React.FC<CaseListProps> = ({ cases, onCaseSelect, title = "Cases
     const diffTime = hearing.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
+  };
+
+  const canEditCase = (caseItem: Case) => {
+    return currentUser && (
+      currentUser.role === 'firm-admin' ||
+      (currentUser.role === 'lawyer' && caseItem.assignedLawyer.id === currentUser.id)
+    );
   };
 
   return (
@@ -125,13 +141,27 @@ const CaseList: React.FC<CaseListProps> = ({ cases, onCaseSelect, title = "Cases
                                   daysUntilHearing === 1 ? 'Tomorrow' : 
                                   `${daysUntilHearing} days`})
                               </span>
-                            )}
+                        <div className="flex items-center justify-between mb-2">
                           </div>
                         )}
                         
-                        <div className="flex items-center space-x-2 text-xs text-gray-600">
-                          <Clock className="h-3 w-3" />
-                          <span className="truncate">Stage: {caseItem.courtStage}</span>
+                          <div className="flex items-center space-x-2">
+                            {isUrgent && (
+                              <AlertTriangle className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+                            )}
+                            {canEditCase(caseItem) && onCaseEdit && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onCaseEdit(caseItem);
+                                }}
+                                className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                                title="Edit case"
+                              >
+                                <Edit className="h-4 w-4" />
+                              </button>
+                            )}
+                          </div>
                         </div>
                         
                         {caseItem.supportingInterns.length > 0 && (

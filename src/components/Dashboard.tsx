@@ -5,6 +5,7 @@ import CalendarView from './CalendarView';
 import TaskList from './TaskList';
 import CaseList from './CaseList';
 import TaskCreationModal from './TaskCreationModal';
+import { Plus } from 'lucide-react';
 
 interface DashboardProps {
   cases: Case[];
@@ -19,6 +20,8 @@ interface DashboardProps {
   showTaskModal?: boolean;
   onTaskModalClose?: () => void;
   users?: User[];
+  onCaseCreate?: (caseData: Partial<Case>) => void;
+  onCaseEdit?: (case_: Case) => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ 
@@ -33,7 +36,9 @@ const Dashboard: React.FC<DashboardProps> = ({
   editingTask,
   showTaskModal = false,
   onTaskModalClose,
-  users = []
+  users = [],
+  onCaseCreate,
+  onCaseEdit
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'tasks'>('overview');
   const [localShowTaskModal, setLocalShowTaskModal] = useState(false);
@@ -222,7 +227,19 @@ const Dashboard: React.FC<DashboardProps> = ({
               <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{getDashboardTitle()}</h1>
               <p className="text-gray-600 text-sm sm:text-base">Welcome back, {currentUser.name}</p>
             </div>
-            <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg overflow-x-auto">
+            <div className="flex items-center space-x-3">
+              {/* Create Case Button - Only for lawyers and firm admins */}
+              {(currentUser.role === 'lawyer' || currentUser.role === 'firm-admin') && onCaseCreate && (
+                <button
+                  onClick={() => onCaseCreate({})}
+                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span className="hidden sm:inline">New Case</span>
+                </button>
+              )}
+              
+              <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg overflow-x-auto">
               <button
                 onClick={() => setActiveTab('overview')}
                 className={`px-3 sm:px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
@@ -253,6 +270,7 @@ const Dashboard: React.FC<DashboardProps> = ({
               >
                 Tasks
               </button>
+            </div>
             </div>
           </div>
         </div>
@@ -309,6 +327,8 @@ const Dashboard: React.FC<DashboardProps> = ({
                   onCaseSelect={onCaseSelect}
                   title={currentUser.role === 'intern' ? 'Supporting Cases' : 'Active Cases'}
                   compact={true}
+                  onCaseEdit={onCaseEdit}
+                  currentUser={currentUser}
                 />
               </div>
             </div>
