@@ -234,7 +234,12 @@ const Dashboard: React.FC<DashboardProps> = ({
             <div className="space-y-6 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-8">
               {/* Calendar Preview */}
               <div className="lg:col-span-2">
-                <CalendarView milestones={milestones} tasks={tasks} compact={true} />
+                <CalendarView 
+                  milestones={milestones} 
+                  tasks={tasks} 
+                  compact={true} 
+                  onCaseSelect={onCaseSelect}
+                />
               </div>
 
               {/* Recent Cases */}
@@ -278,7 +283,12 @@ const Dashboard: React.FC<DashboardProps> = ({
         )}
 
         {activeTab === 'calendar' && (
-          <CalendarView milestones={milestones} tasks={tasks} compact={false} />
+          <CalendarView 
+            milestones={milestones} 
+            tasks={tasks} 
+            compact={false} 
+            onCaseSelect={onCaseSelect}
+          />
         )}
 
         {activeTab === 'tasks' && (

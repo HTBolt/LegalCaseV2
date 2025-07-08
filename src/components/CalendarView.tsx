@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { 
   ChevronLeft, ChevronRight, Calendar, Clock, MapPin, AlertCircle, 
-  Filter, Eye, EyeOff, Scale, CheckSquare, Users, X
+  Filter, Eye, EyeOff, Scale, CheckSquare, Users, X, ExternalLink,
+  FileText, User
 } from 'lucide-react';
 import { Milestone, Task } from '../types';
 
@@ -10,6 +11,7 @@ interface CalendarViewProps {
   tasks?: Task[];
   compact?: boolean;
   onEventClick?: (event: Milestone | Task, type: 'milestone' | 'task') => void;
+  onCaseSelect?: (caseId: string) => void;
 }
 
 type ViewMode = 'month' | 'week' | 'day';
@@ -19,11 +21,14 @@ interface CalendarEvent {
   id: string;
   title: string;
   date: Date;
+  time?: string;
   type: 'milestone' | 'task';
   category: string;
   location?: string;
   priority?: string;
   status?: string;
+  caseId?: string;
+  assignedTo?: string;
   data: Milestone | Task;
 }
 
@@ -31,12 +36,35 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   milestones, 
   tasks = [], 
   compact = false, 
-  onEventClick 
+  onEventClick,
+  onCaseSelect
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<ViewMode>('month');
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+
+  // Generate random times for events (in real app, this would come from data)
+  const generateEventTime = (eventId: string, eventType: string) => {
+    const hash = eventId.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    
+    // Court appearances typically in morning/afternoon
+    if (eventType === 'court-appearance') {
+      const hours = [9, 10, 11, 14, 15, 16];
+      const hour = hours[Math.abs(hash) % hours.length];
+      const minutes = [0, 15, 30, 45];
+      const minute = minutes[Math.abs(hash >> 4) % minutes.length];
+      return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+    }
+    
+    // Tasks can be any time during business hours
+    const hour = 8 + (Math.abs(hash) % 10); // 8 AM to 5 PM
+    const minute = Math.abs(hash >> 8) % 60;
+    return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+  };
 
   // Convert milestones and tasks to unified calendar events
   const calendarEvents: CalendarEvent[] = [
@@ -44,20 +72,25 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       id: milestone.id,
       title: milestone.title,
       date: milestone.date,
+      time: generateEventTime(milestone.id, milestone.type),
       type: 'milestone' as const,
       category: milestone.type,
       location: milestone.location,
       status: milestone.status,
+      caseId: milestone.caseId,
       data: milestone
     })),
     ...tasks.map(task => ({
       id: task.id,
       title: task.title,
       date: task.dueDate,
+      time: generateEventTime(task.id, task.type),
       type: 'task' as const,
       category: task.type,
       priority: task.priority,
       status: task.status,
+      caseId: task.caseId,
+      assignedTo: task.assignedTo.name,
       data: task
     }))
   ];
@@ -83,12 +116,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     });
   };
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
-      minute: '2-digit',
-      hour12: true 
-    });
+  const formatTime = (timeString: string) => {
+    const [hours, minutes] = timeString.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours > 12 ? hours - 12 : hours === 0 ? 12 : hours;
+    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
   };
 
   const navigateDate = (direction: 'prev' | 'next') => {
@@ -161,6 +193,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     }
   };
 
+  const handleViewCase = (caseId: string) => {
+    if (onCaseSelect) {
+      onCaseSelect(caseId);
+    }
+    setSelectedEvent(null);
+  };
+
   const getEventsForDate = (date: Date) => {
     return filteredEvents.filter(event => {
       const eventDate = new Date(event.date);
@@ -195,7 +234,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     }
   };
 
-  // Event Detail Modal
+  // Event Detail Modal with enhanced links
   const EventDetailModal = () => {
     if (!selectedEvent) return null;
 
@@ -225,10 +264,24 @@ const CalendarView: React.FC<CalendarViewProps> = ({
               <span>{formatDate(selectedEvent.date)}</span>
             </div>
             
+            {selectedEvent.time && (
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <Clock className="h-4 w-4" />
+                <span>{formatTime(selectedEvent.time)}</span>
+              </div>
+            )}
+            
             {selectedEvent.location && (
               <div className="flex items-center space-x-2 text-sm text-gray-600">
                 <MapPin className="h-4 w-4" />
                 <span>{selectedEvent.location}</span>
+              </div>
+            )}
+            
+            {selectedEvent.assignedTo && (
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <User className="h-4 w-4" />
+                <span>Assigned to: {selectedEvent.assignedTo}</span>
               </div>
             )}
             
@@ -272,6 +325,35 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                 <p className="text-gray-600 mt-1">{(selectedEvent.data as Milestone).description}</p>
               </div>
             )}
+            
+            {/* Action Buttons */}
+            <div className="pt-3 border-t border-gray-200 space-y-2">
+              {selectedEvent.caseId && onCaseSelect && (
+                <button
+                  onClick={() => handleViewCase(selectedEvent.caseId!)}
+                  className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  <FileText className="h-4 w-4" />
+                  <span>View Case Details</span>
+                  <ExternalLink className="h-4 w-4" />
+                </button>
+              )}
+              
+              {selectedEvent.type === 'task' && (
+                <button
+                  onClick={() => {
+                    // In real app, this would navigate to task details
+                    console.log('Navigate to task details:', selectedEvent.id);
+                    setSelectedEvent(null);
+                  }}
+                  className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                >
+                  <CheckSquare className="h-4 w-4" />
+                  <span>View Task Details</span>
+                  <ExternalLink className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -325,9 +407,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                           {getEventIcon(event)}
                           <div className="flex-1 min-w-0 text-left">
                             <p className="text-sm font-medium truncate">{event.title}</p>
-                            {event.location && (
-                              <p className="text-xs opacity-75 truncate">{event.location}</p>
-                            )}
+                            <div className="flex items-center space-x-2 text-xs opacity-75">
+                              {event.time && (
+                                <span>{formatTime(event.time)}</span>
+                              )}
+                              {event.location && (
+                                <span className="truncate">{event.location}</span>
+                              )}
+                            </div>
                           </div>
                         </button>
                       ))}
@@ -447,6 +534,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
               onEventClick={handleEventClick}
               getEventColor={getEventColor}
               getEventIcon={getEventIcon}
+              formatTime={formatTime}
             />
           )}
           
@@ -457,6 +545,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
               onEventClick={handleEventClick}
               getEventColor={getEventColor}
               getEventIcon={getEventIcon}
+              formatTime={formatTime}
             />
           )}
         </div>
@@ -525,7 +614,7 @@ const MonthView: React.FC<{
                     key={event.id}
                     onClick={() => onEventClick(event)}
                     className={`w-full text-xs p-1 rounded truncate transition-colors ${getEventColor(event)}`}
-                    title={`${event.title} ${event.location ? `- ${event.location}` : ''}`}
+                    title={`${event.title} ${event.time ? `at ${event.time}` : ''} ${event.location ? `- ${event.location}` : ''}`}
                   >
                     <div className="flex items-center space-x-1">
                       <span className="flex-shrink-0">{getEventIcon(event)}</span>
@@ -547,14 +636,15 @@ const MonthView: React.FC<{
   );
 };
 
-// Week View Component
+// Enhanced Week View Component with time display
 const WeekView: React.FC<{
   currentDate: Date;
   events: CalendarEvent[];
   onEventClick: (event: CalendarEvent) => void;
   getEventColor: (event: CalendarEvent) => string;
   getEventIcon: (event: CalendarEvent) => React.ReactNode;
-}> = ({ currentDate, events, onEventClick, getEventColor, getEventIcon }) => {
+  formatTime: (time: string) => string;
+}> = ({ currentDate, events, onEventClick, getEventColor, getEventIcon, formatTime }) => {
   const getWeekDates = (date: Date) => {
     const week = [];
     const startOfWeek = new Date(date);
@@ -574,7 +664,7 @@ const WeekView: React.FC<{
     return events.filter(event => {
       const eventDate = new Date(event.date);
       return eventDate.toDateString() === date.toDateString();
-    });
+    }).sort((a, b) => a.time!.localeCompare(b.time!));
   };
 
   return (
@@ -607,13 +697,21 @@ const WeekView: React.FC<{
                       onClick={() => onEventClick(event)}
                       className={`w-full text-xs p-2 rounded border transition-colors ${getEventColor(event)}`}
                     >
-                      <div className="flex items-center space-x-1">
+                      <div className="flex items-center space-x-1 mb-1">
                         {getEventIcon(event)}
-                        <span className="truncate">{event.title}</span>
+                        <span className="truncate font-medium">{event.title}</span>
                       </div>
-                      {event.location && (
-                        <div className="text-xs opacity-75 mt-1 truncate">{event.location}</div>
-                      )}
+                      <div className="text-xs opacity-75 space-y-1">
+                        {event.time && (
+                          <div className="flex items-center space-x-1">
+                            <Clock className="h-3 w-3" />
+                            <span>{formatTime(event.time)}</span>
+                          </div>
+                        )}
+                        {event.location && (
+                          <div className="truncate">{event.location}</div>
+                        )}
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -632,9 +730,20 @@ const WeekView: React.FC<{
                       onClick={() => onEventClick(event)}
                       className={`w-full text-xs p-2 rounded border transition-colors ${getEventColor(event)}`}
                     >
-                      <div className="flex items-center space-x-1">
+                      <div className="flex items-center space-x-1 mb-1">
                         {getEventIcon(event)}
-                        <span className="truncate">{event.title}</span>
+                        <span className="truncate font-medium">{event.title}</span>
+                      </div>
+                      <div className="text-xs opacity-75 space-y-1">
+                        {event.time && (
+                          <div className="flex items-center space-x-1">
+                            <Clock className="h-3 w-3" />
+                            <span>{formatTime(event.time)}</span>
+                          </div>
+                        )}
+                        {event.assignedTo && (
+                          <div className="truncate">Assigned: {event.assignedTo}</div>
+                        )}
                       </div>
                     </button>
                   ))}
@@ -657,41 +766,44 @@ const WeekView: React.FC<{
   );
 };
 
-// Day View Component
+// Enhanced Day View Component with side-by-side columns and time display
 const DayView: React.FC<{
   currentDate: Date;
   events: CalendarEvent[];
   onEventClick: (event: CalendarEvent) => void;
   getEventColor: (event: CalendarEvent) => string;
   getEventIcon: (event: CalendarEvent) => React.ReactNode;
-}> = ({ currentDate, events, onEventClick, getEventColor, getEventIcon }) => {
+  formatTime: (time: string) => string;
+}> = ({ currentDate, events, onEventClick, getEventColor, getEventIcon, formatTime }) => {
   const dayEvents = events.filter(event => {
     const eventDate = new Date(event.date);
     return eventDate.toDateString() === currentDate.toDateString();
-  });
+  }).sort((a, b) => a.time!.localeCompare(b.time!));
 
   const courtEvents = dayEvents.filter(e => e.type === 'milestone' && e.category === 'court-appearance');
   const otherMilestones = dayEvents.filter(e => e.type === 'milestone' && e.category !== 'court-appearance');
   const taskEvents = dayEvents.filter(e => e.type === 'task');
 
+  const allCourtEvents = [...courtEvents, ...otherMilestones];
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Court Appearances Column */}
+      {/* Court Appearances & Legal Events Column */}
       <div className="space-y-4">
         <div className="flex items-center space-x-2 pb-2 border-b border-gray-200">
           <Scale className="h-5 w-5 text-red-600" />
-          <h3 className="text-lg font-semibold text-gray-900">Court Appearances</h3>
-          <span className="text-sm text-gray-500">({courtEvents.length})</span>
+          <h3 className="text-lg font-semibold text-gray-900">Court & Legal Events</h3>
+          <span className="text-sm text-gray-500">({allCourtEvents.length})</span>
         </div>
         
-        {courtEvents.length === 0 ? (
+        {allCourtEvents.length === 0 ? (
           <div className="text-center py-8">
             <Scale className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-            <p className="text-gray-500">No court appearances scheduled</p>
+            <p className="text-gray-500">No court events scheduled</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {courtEvents.map((event) => (
+            {allCourtEvents.map((event) => (
               <button
                 key={event.id}
                 onClick={() => onEventClick(event)}
@@ -703,59 +815,32 @@ const DayView: React.FC<{
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium truncate">{event.title}</h4>
-                    {event.location && (
-                      <div className="flex items-center space-x-1 mt-1 text-sm opacity-75">
-                        <MapPin className="h-3 w-3" />
-                        <span className="truncate">{event.location}</span>
+                    
+                    <div className="space-y-1 mt-2 text-sm opacity-75">
+                      {event.time && (
+                        <div className="flex items-center space-x-1">
+                          <Clock className="h-3 w-3" />
+                          <span className="font-medium">{formatTime(event.time)}</span>
+                        </div>
+                      )}
+                      
+                      {event.location && (
+                        <div className="flex items-center space-x-1">
+                          <MapPin className="h-3 w-3" />
+                          <span className="truncate">{event.location}</span>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center space-x-1">
+                        <AlertCircle className="h-3 w-3" />
+                        <span>Status: {event.status}</span>
                       </div>
-                    )}
-                    <div className="text-sm opacity-75 mt-1">
-                      Status: {event.status}
                     </div>
                   </div>
                 </div>
               </button>
             ))}
           </div>
-        )}
-        
-        {/* Other Milestones */}
-        {otherMilestones.length > 0 && (
-          <>
-            <div className="flex items-center space-x-2 pt-4 pb-2 border-b border-gray-200">
-              <Calendar className="h-5 w-5 text-blue-600" />
-              <h3 className="text-lg font-semibold text-gray-900">Other Events</h3>
-              <span className="text-sm text-gray-500">({otherMilestones.length})</span>
-            </div>
-            
-            <div className="space-y-3">
-              {otherMilestones.map((event) => (
-                <button
-                  key={event.id}
-                  onClick={() => onEventClick(event)}
-                  className={`w-full p-4 rounded-lg border transition-colors text-left ${getEventColor(event)}`}
-                >
-                  <div className="flex items-start space-x-3">
-                    <div className="flex-shrink-0 mt-1">
-                      {getEventIcon(event)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium truncate">{event.title}</h4>
-                      {event.location && (
-                        <div className="flex items-center space-x-1 mt-1 text-sm opacity-75">
-                          <MapPin className="h-3 w-3" />
-                          <span className="truncate">{event.location}</span>
-                        </div>
-                      )}
-                      <div className="text-sm opacity-75 mt-1">
-                        Status: {event.status}
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </>
         )}
       </div>
 
@@ -786,7 +871,8 @@ const DayView: React.FC<{
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium truncate">{event.title}</h4>
-                    <div className="flex items-center space-x-2 mt-1">
+                    
+                    <div className="flex items-center space-x-2 mt-2">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                         event.priority === 'high' ? 'bg-red-100 text-red-800' :
                         event.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
@@ -798,6 +884,23 @@ const DayView: React.FC<{
                         {event.status}
                       </span>
                     </div>
+                    
+                    <div className="space-y-1 mt-2 text-sm opacity-75">
+                      {event.time && (
+                        <div className="flex items-center space-x-1">
+                          <Clock className="h-3 w-3" />
+                          <span className="font-medium">Due: {formatTime(event.time)}</span>
+                        </div>
+                      )}
+                      
+                      {event.assignedTo && (
+                        <div className="flex items-center space-x-1">
+                          <User className="h-3 w-3" />
+                          <span>Assigned: {event.assignedTo}</span>
+                        </div>
+                      )}
+                    </div>
+                    
                     {'description' in event.data && (
                       <p className="text-sm opacity-75 mt-2 line-clamp-2">
                         {(event.data as Task).description}
