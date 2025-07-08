@@ -61,6 +61,48 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 1. Wrap handleClose with React.useCallback
+  const handleClose = React.useCallback(() => {
+    console.log('🔍 handleClose called');
+    
+    // Reset form data to initial state
+    if (!editingTask) {
+      setFormData({
+        title: '',
+        description: '',
+        startDate: '',
+        startTime: '',
+        dueDate: '',
+        dueTime: '',
+        priority: 'medium',
+        taskType: 'generic',
+        caseId: '',
+        genericCategory: '',
+        assignedToId: currentUser.id,
+        status: 'pending'
+      });
+      setAttachments([]);
+    }
+    
+    // Clear form errors and submission state
+    setErrors({});
+    setIsSubmitting(false);
+    
+    // Add a small delay to ensure state updates are processed
+    setTimeout(() => {
+      onClose();
+    }, 0);
+  }, [isOpen, editingTask, currentUser.id, onClose]);
+
+  // 2. Wrap handleOverlayClick with React.useCallback
+  const handleOverlayClick = React.useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    console.log('🔍 Overlay clicked');
+    if (e.target === e.currentTarget) {
+      console.log('🔍 Closing modal from overlay click');
+      handleClose();
+    }
+  }, [handleClose]);
+
   // Initialize form data when editingTask changes
   React.useEffect(() => {
     if (editingTask) {
@@ -106,6 +148,29 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
       setAttachments([]);
     }
   }, [editingTask, currentUser.id]);
+
+  // 5. Update useEffect dependency array for escape key handler
+  React.useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      console.log('🔍 Key pressed:', event.key);
+      if (event.key === 'Escape' && isOpen) {
+        console.log('🔍 Escape key pressed, closing modal');
+        handleClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscapeKey);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, handleClose]);
+
   // Priority configuration
   const priorityOptions: { value: PriorityLevel; label: string; color: string }[] = [
     { value: 'on-hold', label: 'On Hold', color: '#6b7280' },
@@ -296,64 +361,6 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     }
   };
 
-  const handleClose = React.useCallback(() => {
-    console.log('handleClose called');
-    // Reset form data to initial state
-    if (!editingTask) {
-      setFormData({
-        title: '',
-        description: '',
-        startDate: '',
-        startTime: '',
-        dueDate: '',
-        dueTime: '',
-        priority: 'medium',
-        taskType: 'generic',
-        caseId: '',
-        genericCategory: '',
-        assignedToId: currentUser.id,
-        status: 'pending'
-      });
-      setAttachments([]);
-    }
-    
-    // Clear form errors and submission state
-    setErrors({});
-    setIsSubmitting(false);
-    
-    // Call the onClose prop to close the modal
-    console.log('Calling onClose prop');
-    onClose();
-  };
-
-  // Handle clicking outside the modal to close it
-  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Only close if clicking on the overlay itself, not on the modal content
-    if (e.target === e.currentTarget) {
-      handleClose();
-    }
-  };
-
-  // Handle escape key to close modal
-  React.useEffect(() => {
-    const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isOpen) {
-        handleClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscapeKey);
-      // Prevent body scroll when modal is open
-      document.body.style.overflow = 'hidden';
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscapeKey);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen]);
-
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     
@@ -406,7 +413,13 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
 
   return (
     <div className="modal-overlay" onClick={handleOverlayClick}>
-      <div className="modal-content">
+      <div 
+        className="modal-content"
+        onClick={(e) => {
+          console.log('🔍 Modal content clicked');
+          e.stopPropagation();
+        }}
+      >
         {/* Header */}
         <div className="modal-header">
           <div className="flex items-center space-x-3">
@@ -423,7 +436,12 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
             </div>
           </div>
           <button
-            onClick={handleClose}
+            onClick={(e) => {
+              console.log('🔍 X button clicked');
+              e.preventDefault();
+              e.stopPropagation();
+              handleClose();
+            }}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             type="button"
           >
@@ -790,7 +808,12 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
           <div className="modal-footer">
             <button
               type="button"
-              onClick={handleClose}
+              onClick={(e) => {
+                console.log('🔍 Cancel button clicked');
+                e.preventDefault();
+                e.stopPropagation();
+                handleClose();
+              }}
               className="btn-secondary"
             >
               Cancel
