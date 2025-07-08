@@ -305,6 +305,13 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     onClose();
   };
 
+  // Handle clicking outside the modal to close it
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Only close if clicking on the overlay itself, not on the modal content
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
+  };
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     
@@ -356,7 +363,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   }
 
   return (
-    <div className="modal-overlay">
+    <div className="modal-overlay" onClick={handleOverlayClick}>
       <div className="modal-content">
         {/* Header */}
         <div className="modal-header">
