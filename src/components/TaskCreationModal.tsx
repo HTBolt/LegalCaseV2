@@ -297,23 +297,28 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   };
 
   const handleClose = () => {
-    setFormData({
-      title: '',
-      description: '',
-      startDate: '',
-      startTime: '',
-      dueDate: '',
-      dueTime: '',
-      priority: 'medium',
-      taskType: 'generic',
-      caseId: '',
-      genericCategory: '',
-      assignedToId: currentUser.id,
-      status: 'pending'
-    });
-    setAttachments([]);
+    // Reset form state
+    if (!editingTask) {
+      setFormData({
+        title: '',
+        description: '',
+        startDate: '',
+        startTime: '',
+        dueDate: '',
+        dueTime: '',
+        priority: 'medium',
+        taskType: 'generic',
+        caseId: '',
+        genericCategory: '',
+        assignedToId: currentUser.id,
+        status: 'pending'
+      });
+      setAttachments([]);
+    }
     setErrors({});
     setIsSubmitting(false);
+    
+    // Call the onClose prop to close the modal
     onClose();
   };
 
