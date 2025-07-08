@@ -87,6 +87,9 @@ function App() {
   const handleTaskModalClose = () => {
     console.log('=== PARENT: handleTaskModalClose called ===');
     console.log('=== PARENT: Current showTaskModal state:', showTaskModal);
+    setShowTaskModal(false);
+    setEditingTask(null);
+    console.log('=== PARENT: Set showTaskModal to false and cleared editingTask ===');
   };
 
   // Filter data based on user role and permissions

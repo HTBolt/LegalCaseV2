@@ -56,12 +56,14 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
   const handleTaskModalClose = () => {
     console.log('=== CASE_DETAILS: handleTaskModalClose called ===');
     console.log('=== CASE_DETAILS: Current localShowTaskModal state:', localShowTaskModal);
+    
+    // ALWAYS update local state first
+    setLocalShowTaskModal(false);
+    console.log('=== CASE_DETAILS: Set localShowTaskModal to false ===');
+    
     if (onTaskModalClose) {
       console.log('=== CASE_DETAILS: Calling parent onTaskModalClose ===');
       onTaskModalClose();
-    } else {
-      console.log('=== CASE_DETAILS: Setting localShowTaskModal to false ===');
-      setLocalShowTaskModal(false);
     }
   };
 

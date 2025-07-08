@@ -44,12 +44,14 @@ const Dashboard: React.FC<DashboardProps> = ({
   const handleTaskModalClose = () => {
     console.log('=== DASHBOARD: handleTaskModalClose called ===');
     console.log('=== DASHBOARD: Current localShowTaskModal state:', localShowTaskModal);
+    
+    // ALWAYS update local state first
+    setLocalShowTaskModal(false);
+    console.log('=== DASHBOARD: Set localShowTaskModal to false ===');
+    
     if (onTaskModalClose) {
       console.log('=== DASHBOARD: Calling parent onTaskModalClose ===');
       onTaskModalClose();
-    } else {
-      console.log('=== DASHBOARD: Setting localShowTaskModal to false ===');
-      setLocalShowTaskModal(false);
     }
   };
 
