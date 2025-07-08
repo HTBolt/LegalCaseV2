@@ -297,6 +297,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   };
 
   const handleClose = () => {
+    console.log('handleClose called');
     // Reset form data to initial state
     if (!editingTask) {
       setFormData({
@@ -321,13 +322,14 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     setIsSubmitting(false);
     
     // Call the onClose prop to close the modal
+    console.log('Calling onClose prop');
     onClose();
   };
 
   // Handle clicking outside the modal to close it
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // Only close if clicking on the overlay itself, not on the modal content
-    if (e.target === e.currentTarget && !isSubmitting) {
+    if (e.target === e.currentTarget) {
       handleClose();
     }
   };
@@ -335,7 +337,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   // Handle escape key to close modal
   React.useEffect(() => {
     const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isOpen && !isSubmitting) {
+      if (event.key === 'Escape' && isOpen) {
         handleClose();
       }
     };
@@ -350,7 +352,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
       document.removeEventListener('keydown', handleEscapeKey);
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen, isSubmitting]);
+  }, [isOpen]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -424,7 +426,6 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
             onClick={handleClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             type="button"
-            disabled={isSubmitting}
           >
             <X className="h-6 w-6 text-gray-500" />
           </button>
@@ -791,7 +792,6 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
               type="button"
               onClick={handleClose}
               className="btn-secondary"
-              disabled={isSubmitting}
             >
               Cancel
             </button>
