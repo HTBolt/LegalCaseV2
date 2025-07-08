@@ -8,6 +8,9 @@ import {
 import { Case, TimelineEvent, Document, Note, BillingEntry, Task } from '../types';
 import TaskCreationModal from './TaskCreationModal';
 import TaskList from './TaskList';
+import TimelineEventModal from './TimelineEventModal';
+import DocumentUploadModal from './DocumentUploadModal';
+import BillingEntryModal from './BillingEntryModal';
 
 interface CaseDetailsProps {
   caseData: Case;
@@ -26,6 +29,10 @@ interface CaseDetailsProps {
   onTaskModalClose?: () => void;
   currentUser?: any;
   users?: any[];
+  onTimelineEventCreate?: (eventData: Partial<TimelineEvent>) => void;
+  onTimelineEventDelete?: (eventId: string, eventType: 'timeline' | 'history') => void;
+  onDocumentUpload?: (documentData: Partial<Document>) => void;
+  onBillingEntryCreate?: (billingData: Partial<BillingEntry>) => void;
 }
 
 const CaseDetails: React.FC<CaseDetailsProps> = ({ 
@@ -44,12 +51,21 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
   showTaskModal = false,
   onTaskModalClose,
   currentUser,
-  users = []
+  users = [],
+  onTimelineEventCreate,
+  onTimelineEventDelete,
+  onDocumentUpload,
+  onBillingEntryCreate
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'pre-engagement' | 'documents' | 'notes' | 'tasks' | 'billing'>('overview');
   const [editingNote, setEditingNote] = useState<string | null>(null);
   const [newNote, setNewNote] = useState('');
   const [localShowTaskModal, setLocalShowTaskModal] = useState(false);
+  const [showTimelineModal, setShowTimelineModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showDocumentModal, setShowDocumentModal] = useState(false);
+  const [showBillingModal, setShowBillingModal] = useState(false);
+  const [selectedEventForDetail, setSelectedEventForDetail] = useState<TimelineEvent | null>(null);
 
   // Use prop showTaskModal if provided, otherwise use local state
   const isTaskModalOpen = showTaskModal || localShowTaskModal;
@@ -212,8 +228,21 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
   const renderTimeline = (events: TimelineEvent[], title: string, emptyMessage: string) => (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
       <div className="p-4 sm:p-6 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-        <p className="text-sm text-gray-600 mt-1">{events.length} event{events.length !== 1 ? 's' : ''} recorded</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+            <p className="text-sm text-gray-600 mt-1">{events.length} event{events.length !== 1 ? 's' : ''} recorded</p>
+          </div>
+          {onTimelineEventCreate && (
+            <button
+              onClick={() => title.includes('History') ? setShowHistoryModal(true) : setShowTimelineModal(true)}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Event
+            </button>
+          )}
+        </div>
       </div>
       <div className="p-4 sm:p-6">
         {events.length === 0 ? (
@@ -236,8 +265,39 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
                       </div>
                       <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-gray-900">{event.title}</p>
-                          <p className="text-sm text-gray-600">{event.description}</p>
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm font-medium text-gray-900">{event.title}</p>
+                            {onTimelineEventDelete && (
+                              <button
+                                onClick={() => onTimelineEventDelete(event.id, title.includes('History') ? 'history' : 'timeline')}
+                                className="p-1 text-red-400 hover:text-red-600 transition-colors"
+                                title="Delete event"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-600 line-clamp-2">{event.description}</p>
+                          {event.url && (
+                            <a
+                              href={event.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center space-x-1 text-xs text-blue-600 hover:text-blue-800 mt-1"
+                            >
+                              <FileText className="h-3 w-3" />
+                              <span>View Associated File</span>
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
+                          )}
+                          {title.includes('History') && (
+                            <button
+                              onClick={() => setSelectedEventForDetail(event)}
+                              className="text-xs text-blue-600 hover:text-blue-800 mt-1 block"
+                            >
+                              View Details →
+                            </button>
+                          )}
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-2 ${
                             event.type === 'case-event' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
                           }`}>
@@ -314,7 +374,7 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
             <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-3 min-w-max">
               {tabs.map((tab) => (
                 <button
-                  onClick={handleAddTask}
+                  key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`px-3 sm:px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
                     activeTab === tab.id 
@@ -535,7 +595,10 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
                   <h3 className="text-lg font-semibold text-gray-900">Case Documents</h3>
                   <p className="text-sm text-gray-600 mt-1">{documents.length} document{documents.length !== 1 ? 's' : ''} total</p>
                 </div>
-                <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                <button
+                  onClick={() => setShowDocumentModal(true)}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Upload Document
                 </button>
@@ -749,7 +812,10 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
                     <h3 className="text-lg font-semibold text-gray-900">Billing History</h3>
                     <p className="text-sm text-gray-600 mt-1">{billingEntries.length} billing entr{billingEntries.length !== 1 ? 'ies' : 'y'}</p>
                   </div>
-                  <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                  <button
+                    onClick={() => setShowBillingModal(true)}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                  >
                     <Plus className="h-4 w-4 mr-2" />
                     Add Billing Entry
                   </button>
@@ -882,6 +948,119 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
           users={users}
           editingTask={editingTask}
         />
+      )}
+      
+      {/* Timeline Event Modal */}
+      <TimelineEventModal
+        isOpen={showTimelineModal}
+        onClose={() => setShowTimelineModal(false)}
+        onSubmit={(eventData) => {
+          if (onTimelineEventCreate) {
+            onTimelineEventCreate(eventData);
+          }
+          setShowTimelineModal(false);
+        }}
+        caseId={caseData.id}
+        eventType="timeline"
+      />
+      
+      {/* History Event Modal */}
+      <TimelineEventModal
+        isOpen={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+        onSubmit={(eventData) => {
+          if (onTimelineEventCreate) {
+            onTimelineEventCreate(eventData);
+          }
+          setShowHistoryModal(false);
+        }}
+        caseId={caseData.id}
+        eventType="history"
+      />
+      
+      {/* Document Upload Modal */}
+      {onDocumentUpload && currentUser && (
+        <DocumentUploadModal
+          isOpen={showDocumentModal}
+          onClose={() => setShowDocumentModal(false)}
+          onSubmit={(documentData) => {
+            onDocumentUpload(documentData);
+            setShowDocumentModal(false);
+          }}
+          caseId={caseData.id}
+          currentUser={currentUser}
+        />
+      )}
+      
+      {/* Billing Entry Modal */}
+      {onBillingEntryCreate && currentUser && (
+        <BillingEntryModal
+          isOpen={showBillingModal}
+          onClose={() => setShowBillingModal(false)}
+          onSubmit={(billingData) => {
+            onBillingEntryCreate(billingData);
+            setShowBillingModal(false);
+          }}
+          caseId={caseData.id}
+          currentUser={currentUser}
+          users={users}
+        />
+      )}
+      
+      {/* Event Detail Modal for History */}
+      {selectedEventForDetail && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">{selectedEventForDetail.title}</h3>
+                <button
+                  onClick={() => setSelectedEventForDetail(null)}
+                  className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <X className="h-5 w-5 text-gray-500" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Date</h4>
+                <p className="text-sm text-gray-600">{formatDate(selectedEventForDetail.date)}</p>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Category</h4>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                  selectedEventForDetail.type === 'case-event' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                }`}>
+                  {selectedEventForDetail.category}
+                </span>
+              </div>
+              
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-2">Description</h4>
+                <p className="text-sm text-gray-600 whitespace-pre-wrap">{selectedEventForDetail.description}</p>
+              </div>
+              
+              {selectedEventForDetail.url && (
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Associated Files</h4>
+                  <a
+                    href={selectedEventForDetail.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center space-x-2 text-sm text-blue-600 hover:text-blue-800"
+                  >
+                    <FileText className="h-4 w-4" />
+                    <span>View File</span>
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
