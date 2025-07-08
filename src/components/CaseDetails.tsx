@@ -660,24 +660,6 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
 
         {activeTab === 'tasks' && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="p-4 sm:p-6 border-b border-gray-200">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Case Tasks</h3>
-                  <p className="text-sm text-gray-600 mt-1">{caseTasks.length} task{caseTasks.length !== 1 ? 's' : ''} for this case</p>
-                </div>
-                {onTaskCreate && currentUser && (
-                  <button
-                    onClick={() => setShowTaskModal(true)}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Task
-                  </button>
-                )}
-              </div>
-            </div>
-            
             {caseTasks.length === 0 ? (
               <div className="text-center py-12">
                 <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-3" />
@@ -693,17 +675,15 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
                 )}
               </div>
             ) : (
-              <div>
-                <TaskList 
-                  tasks={caseTasks}
-                  title="Case Tasks"
-                  showAssignee={true}
-                  onAddTask={handleAddTask}
-                  onTaskUpdate={onTaskUpdate}
-                  onTaskEdit={onTaskEdit}
-                  currentUser={currentUser}
-                />
-              </div>
+              <TaskList 
+                tasks={caseTasks}
+                title="Case Tasks"
+                showAssignee={true}
+                onAddTask={handleAddTask}
+                onTaskUpdate={onTaskUpdate}
+                onTaskEdit={onTaskEdit}
+                currentUser={currentUser}
+              />
             )}
           </div>
         )}
