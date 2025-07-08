@@ -27,6 +27,8 @@ function App() {
   const [currentView, setCurrentView] = useState<'dashboard' | 'case-details'>('dashboard');
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
   const [tasks, setTasks] = useState(mockTasks);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [showTaskModal, setShowTaskModal] = useState(false);
 
   const handleLogin = (user: User) => {
     setCurrentUser(user);
@@ -74,10 +76,13 @@ function App() {
   };
 
   const handleTaskEdit = (task: Task) => {
-    // For now, we'll just log the task to edit
-    // In a real app, this would open the task creation modal in edit mode
-    console.log('Edit task:', task);
-    // You could set a state to track the editing task and pass it to TaskCreationModal
+    setEditingTask(task);
+    setShowTaskModal(true);
+  };
+
+  const handleTaskModalClose = () => {
+    setShowTaskModal(false);
+    setEditingTask(null);
   };
 
   // Filter data based on user role and permissions
@@ -199,6 +204,9 @@ function App() {
           onTaskUpdate={handleTaskUpdate}
           onTaskEdit={handleTaskEdit}
           users={mockUsers}
+          editingTask={editingTask}
+          showTaskModal={showTaskModal}
+          onTaskModalClose={handleTaskModalClose}
         />
       )}
       
@@ -218,6 +226,9 @@ function App() {
           onTaskEdit={handleTaskEdit}
           currentUser={currentUser}
           users={mockUsers}
+          editingTask={editingTask}
+          showTaskModal={showTaskModal}
+          onTaskModalClose={handleTaskModalClose}
         />
       )}
     </div>

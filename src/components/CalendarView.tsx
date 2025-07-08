@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { Milestone, Task } from '../types';
 import TaskCreationModal from './TaskCreationModal';
+import { TaskDetailModal } from './TaskList';
 
 interface CalendarViewProps {
   milestones: Milestone[];
@@ -53,6 +54,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showTaskDetailModal, setShowTaskDetailModal] = useState(false);
 
   // Generate consistent times for events based on their ID and type
   const generateEventTime = (eventId: string, eventType: string) => {
@@ -197,9 +199,16 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   };
 
   const handleEventClick = (event: CalendarEvent) => {
-    setSelectedEvent(event);
-    if (onEventClick) {
-      onEventClick(event.data, event.type);
+    if (event.type === 'task') {
+      // Use the consistent task detail modal for tasks
+      setSelectedEvent(event);
+      setShowTaskDetailModal(true);
+    } else {
+      // Keep the existing modal for milestones
+      setSelectedEvent(event);
+      if (onEventClick) {
+        onEventClick(event.data, event.type);
+      }
     }
   };
 
@@ -254,7 +263,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
   // Event Detail Modal with enhanced links
   const EventDetailModal = () => {
-    if (!selectedEvent) return null;
+    if (!selectedEvent || selectedEvent.type === 'task') return null; // Tasks use TaskDetailModal now
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -437,7 +446,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                       {day.events.map((event) => (
                         <button
                           key={event.id}
-                          onClick={() => handleEventClick(event)}
+                          onClick={() => {
+                            if (event.type === 'task') {
+                              setSelectedEvent(event);
+                              setShowTaskDetailModal(true);
+                            } else {
+                              handleEventClick(event);
+                            }
+                          }}
                           className={`w-full flex items-center space-x-2 p-2 rounded border transition-colors ${getEventColor(event)}`}
                         >
                           {getEventIcon(event)}
@@ -464,6 +480,37 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           </div>
         </div>
         <EventDetailModal />
+        
+        {/* Task Detail Modal for consistent task viewing */}
+        {selectedEvent?.type === 'task' && (
+          <TaskDetailModal
+            task={selectedEvent.data as Task}
+            isOpen={showTaskDetailModal}
+            onClose={() => {
+              setShowTaskDetailModal(false);
+              setSelectedEvent(null);
+            }}
+            onEdit={(task) => {
+              setShowTaskDetailModal(false);
+              setSelectedEvent(null);
+              // Handle edit if needed
+              console.log('Edit task from calendar:', task);
+            }}
+            onComplete={(taskId) => {
+              // Handle completion if needed
+              console.log('Complete task from calendar:', taskId);
+              setShowTaskDetailModal(false);
+              setSelectedEvent(null);
+            }}
+            onReopen={(taskId) => {
+              // Handle reopen if needed
+              console.log('Reopen task from calendar:', taskId);
+              setShowTaskDetailModal(false);
+              setSelectedEvent(null);
+            }}
+            currentUser={currentUser}
+          />
+        )}
       </>
     );
   }
@@ -600,6 +647,37 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         </div>
       </div>
       <EventDetailModal />
+      
+      {/* Task Detail Modal for consistent task viewing */}
+      {selectedEvent?.type === 'task' && (
+        <TaskDetailModal
+          task={selectedEvent.data as Task}
+          isOpen={showTaskDetailModal}
+          onClose={() => {
+            setShowTaskDetailModal(false);
+            setSelectedEvent(null);
+          }}
+          onEdit={(task) => {
+            setShowTaskDetailModal(false);
+            setSelectedEvent(null);
+            // Handle edit if needed - you can pass this up to parent
+            console.log('Edit task from calendar:', task);
+          }}
+          onComplete={(taskId) => {
+            // Handle completion if needed - you can pass this up to parent
+            console.log('Complete task from calendar:', taskId);
+            setShowTaskDetailModal(false);
+            setSelectedEvent(null);
+          }}
+          onReopen={(taskId) => {
+            // Handle reopen if needed - you can pass this up to parent
+            console.log('Reopen task from calendar:', taskId);
+            setShowTaskDetailModal(false);
+            setSelectedEvent(null);
+          }}
+          currentUser={currentUser}
+        />
+      )}
       
       {/* Task Creation Modal */}
       {onTaskCreate && currentUser && (

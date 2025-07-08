@@ -20,6 +20,9 @@ interface CaseDetailsProps {
   onTaskCreate?: (taskData: Partial<any>) => void;
   onTaskUpdate?: (taskId: string, updates: Partial<Task>) => void;
   onTaskEdit?: (task: Task) => void;
+  editingTask?: Task | null;
+  showTaskModal?: boolean;
+  onTaskModalClose?: () => void;
   currentUser?: any;
   users?: any[];
 }
@@ -36,13 +39,39 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
   onTaskCreate,
   onTaskUpdate,
   onTaskEdit,
+  editingTask,
+  showTaskModal = false,
+  onTaskModalClose,
   currentUser,
   users = []
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'pre-engagement' | 'documents' | 'notes' | 'tasks' | 'billing'>('overview');
   const [editingNote, setEditingNote] = useState<string | null>(null);
   const [newNote, setNewNote] = useState('');
-  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [localShowTaskModal, setLocalShowTaskModal] = useState(false);
+
+  // Use prop showTaskModal if provided, otherwise use local state
+  const isTaskModalOpen = showTaskModal || localShowTaskModal;
+  
+  const handleTaskModalClose = () => {
+    if (onTaskModalClose) {
+      onTaskModalClose();
+    } else {
+      setLocalShowTaskModal(false);
+    }
+  };
+
+  const handleAddTask = () => {
+    if (onTaskModalClose) {
+      // If we have the prop handler, we're using external state
+      onTaskModalClose(); // This will clear editingTask
+      setTimeout(() => {
+        setLocalShowTaskModal(true);
+      }, 0);
+    } else {
+      setLocalShowTaskModal(true);
+    }
+  };
 
   const handleTaskCreate = (taskData: Partial<any>) => {
     if (onTaskCreate) {
@@ -53,7 +82,7 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
       };
       onTaskCreate(enhancedTaskData);
     }
-    setShowTaskModal(false);
+    handleTaskModalClose();
   };
 
   const formatDate = (date: Date) => {
@@ -258,7 +287,7 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
             </div>
             {onTaskCreate && currentUser && (
               <button
-                onClick={() => setShowTaskModal(true)}
+                onClick={handleAddTask}
                 className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors ml-3"
               >
                 <Plus className="h-4 w-4" />
@@ -272,7 +301,7 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
             <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-3 min-w-max">
               {tabs.map((tab) => (
                 <button
-                  key={tab.id}
+                  onClick={handleAddTask}
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`px-3 sm:px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
                     activeTab === tab.id 
@@ -642,7 +671,7 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
                 <p className="text-gray-500 mb-4">No tasks created for this case yet</p>
                 {onTaskCreate && currentUser && (
                   <button
-                    onClick={() => setShowTaskModal(true)}
+                    onClick={handleAddTask}
                     className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -656,7 +685,7 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
                   tasks={caseTasks}
                   title="Case Tasks"
                   showAssignee={true}
-                  onAddTask={() => setShowTaskModal(true)}
+                  onAddTask={handleAddTask}
                   onTaskUpdate={onTaskUpdate}
                   onTaskEdit={onTaskEdit}
                   currentUser={currentUser}
@@ -852,12 +881,13 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
       {/* Task Creation Modal */}
       {onTaskCreate && currentUser && (
         <TaskCreationModal
-          isOpen={showTaskModal}
-          onClose={() => setShowTaskModal(false)}
+          isOpen={isTaskModalOpen}
+          onClose={handleTaskModalClose}
           onSubmit={handleTaskCreate}
           currentUser={currentUser}
           cases={[caseData]} // Only show current case
           users={users}
+          editingTask={editingTask}
         />
       )}
     </div>

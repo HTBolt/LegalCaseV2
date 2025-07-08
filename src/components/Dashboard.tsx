@@ -15,6 +15,9 @@ interface DashboardProps {
   onTaskCreate?: (taskData: Partial<Task>) => void;
   onTaskUpdate?: (taskId: string, updates: Partial<Task>) => void;
   onTaskEdit?: (task: Task) => void;
+  editingTask?: Task | null;
+  showTaskModal?: boolean;
+  onTaskModalClose?: () => void;
   users?: User[];
 }
 
@@ -27,10 +30,36 @@ const Dashboard: React.FC<DashboardProps> = ({
   onTaskCreate,
   onTaskUpdate,
   onTaskEdit,
+  editingTask,
+  showTaskModal = false,
+  onTaskModalClose,
   users = []
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'tasks'>('overview');
-  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [localShowTaskModal, setLocalShowTaskModal] = useState(false);
+
+  // Use prop showTaskModal if provided, otherwise use local state
+  const isTaskModalOpen = showTaskModal || localShowTaskModal;
+  
+  const handleTaskModalClose = () => {
+    if (onTaskModalClose) {
+      onTaskModalClose();
+    } else {
+      setLocalShowTaskModal(false);
+    }
+  };
+
+  const handleAddTask = () => {
+    if (onTaskModalClose) {
+      // If we have the prop handler, we're using external state
+      onTaskModalClose(); // This will clear editingTask
+      setTimeout(() => {
+        setLocalShowTaskModal(true);
+      }, 0);
+    } else {
+      setLocalShowTaskModal(true);
+    }
+  };
 
   // Filter out completed tasks from dashboard view
   const activeTasks = tasks.filter(task => task.status !== 'completed');
@@ -93,7 +122,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     if (onTaskCreate) {
       onTaskCreate(taskData);
     }
-    setShowTaskModal(false);
+    handleTaskModalClose();
   };
 
   const getRoleSpecificStats = () => {
@@ -279,7 +308,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   tasks={tasks.filter(task => task.assignedTo.id === currentUser.id).slice(0, 10)}
                   title="My Tasks"
                   showAssignee={false}
-                  onAddTask={() => setShowTaskModal(true)}
+                  onAddTask={handleAddTask}
                   onTaskUpdate={onTaskUpdate}
                   onTaskEdit={onTaskEdit}
                   currentUser={currentUser}
@@ -291,7 +320,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     tasks={tasks.filter(task => task.assignedTo.id !== currentUser.id).slice(0, 10)}
                     title="Team Tasks"
                     showAssignee={true}
-                    onAddTask={() => setShowTaskModal(true)}
+                    onAddTask={handleAddTask}
                     onTaskUpdate={onTaskUpdate}
                     onTaskEdit={onTaskEdit}
                     currentUser={currentUser}
@@ -303,7 +332,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   tasks={tasks.filter(t => t.assignedBy.id !== currentUser.id).slice(0, 10)}
                   title="All Case Tasks"
                   showAssignee={true}
-                  onAddTask={() => setShowTaskModal(true)}
+                  onAddTask={handleAddTask}
                   onTaskUpdate={onTaskUpdate}
                   onTaskEdit={onTaskEdit}
                   currentUser={currentUser}
@@ -329,7 +358,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 tasks={tasks.filter(task => task.assignedTo.id === currentUser.id)}
                 title="My Tasks"
                 showAssignee={false}
-                onAddTask={() => setShowTaskModal(true)}
+                onAddTask={handleAddTask}
                 onTaskUpdate={onTaskUpdate}
                 onTaskEdit={onTaskEdit}
                 currentUser={currentUser}
@@ -341,7 +370,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   tasks={tasks.filter(task => task.assignedTo.id !== currentUser.id)}
                   title="Team Tasks"
                   showAssignee={true}
-                  onAddTask={() => setShowTaskModal(true)}
+                  onAddTask={handleAddTask}
                   onTaskUpdate={onTaskUpdate}
                   onTaskEdit={onTaskEdit}
                   currentUser={currentUser}
@@ -353,7 +382,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 tasks={tasks.filter(t => t.assignedBy.id !== currentUser.id)}
                 title="All Case Tasks"
                 showAssignee={true}
-                onAddTask={() => setShowTaskModal(true)}
+                onAddTask={handleAddTask}
                 onTaskUpdate={onTaskUpdate}
                 onTaskEdit={onTaskEdit}
                 currentUser={currentUser}
@@ -365,12 +394,13 @@ const Dashboard: React.FC<DashboardProps> = ({
       
       {/* Task Creation Modal */}
       <TaskCreationModal
-        isOpen={showTaskModal}
-        onClose={() => setShowTaskModal(false)}
+        isOpen={isTaskModalOpen}
+        onClose={handleTaskModalClose}
         onSubmit={handleTaskCreate}
         currentUser={currentUser}
         cases={cases}
         users={users}
+        editingTask={editingTask}
       />
     </div>
   );

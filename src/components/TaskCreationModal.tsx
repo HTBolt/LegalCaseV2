@@ -13,6 +13,7 @@ interface TaskCreationModalProps {
   currentUser: UserType;
   cases: Case[];
   users: UserType[];
+  editingTask?: Task | null;
 }
 
 interface FileAttachment {
@@ -32,27 +33,79 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   onSubmit,
   currentUser,
   cases,
-  users
+  users,
+  editingTask = null
 }) => {
+  const isEditing = !!editingTask;
+  
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    startDate: '',
-    startTime: '',
-    dueDate: '',
-    dueTime: '',
-    priority: 'medium' as PriorityLevel,
-    taskType: 'generic' as 'court-appearance' | 'generic',
-    caseId: '',
-    genericCategory: '',
-    assignedToId: currentUser.id,
-    status: 'pending' as 'pending' | 'completed'
+    title: editingTask?.title || '',
+    description: editingTask?.description || '',
+    startDate: editingTask && (editingTask as any).startDate ? 
+      new Date((editingTask as any).startDate).toISOString().split('T')[0] : '',
+    startTime: editingTask && (editingTask as any).startDate ? 
+      new Date((editingTask as any).startDate).toTimeString().slice(0, 5) : '',
+    dueDate: editingTask ? editingTask.dueDate.toISOString().split('T')[0] : '',
+    dueTime: editingTask ? editingTask.dueDate.toTimeString().slice(0, 5) : '',
+    priority: (editingTask && (editingTask as any).detailedPriority) || 
+              (editingTask?.priority === 'high' ? 'high' : 
+               editingTask?.priority === 'low' ? 'low' : 'medium') as PriorityLevel,
+    taskType: (editingTask?.type === 'court' ? 'court-appearance' : 'generic') as 'court-appearance' | 'generic',
+    caseId: editingTask?.caseId || '',
+    genericCategory: editingTask && (editingTask as any).genericCategory || '',
+    assignedToId: editingTask?.assignedTo.id || currentUser.id,
+    status: editingTask?.status || 'pending' as 'pending' | 'completed'
   });
 
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Initialize form data when editingTask changes
+  React.useEffect(() => {
+    if (editingTask) {
+      setFormData({
+        title: editingTask.title,
+        description: editingTask.description,
+        startDate: (editingTask as any).startDate ? 
+          new Date((editingTask as any).startDate).toISOString().split('T')[0] : '',
+        startTime: (editingTask as any).startDate ? 
+          new Date((editingTask as any).startDate).toTimeString().slice(0, 5) : '',
+        dueDate: editingTask.dueDate.toISOString().split('T')[0],
+        dueTime: editingTask.dueDate.toTimeString().slice(0, 5),
+        priority: (editingTask as any).detailedPriority || 
+                  (editingTask.priority === 'high' ? 'high' : 
+                   editingTask.priority === 'low' ? 'low' : 'medium'),
+        taskType: editingTask.type === 'court' ? 'court-appearance' : 'generic',
+        caseId: editingTask.caseId || '',
+        genericCategory: (editingTask as any).genericCategory || '',
+        assignedToId: editingTask.assignedTo.id,
+        status: editingTask.status
+      });
+      
+      // Set attachments if they exist
+      if ((editingTask as any).attachments) {
+        setAttachments((editingTask as any).attachments);
+      }
+    } else {
+      // Reset form for new task
+      setFormData({
+        title: '',
+        description: '',
+        startDate: '',
+        startTime: '',
+        dueDate: '',
+        dueTime: '',
+        priority: 'medium',
+        taskType: 'generic',
+        caseId: '',
+        genericCategory: '',
+        assignedToId: currentUser.id,
+        status: 'pending'
+      });
+      setAttachments([]);
+    }
+  }, [editingTask, currentUser.id]);
   // Priority configuration
   const priorityOptions: { value: PriorityLevel; label: string; color: string }[] = [
     { value: 'on-hold', label: 'On Hold', color: '#6b7280' },
@@ -199,6 +252,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                            formData.priority as 'high' | 'medium' | 'low';
 
       const taskData: Partial<Task> = {
+        ...(isEditing && { id: editingTask.id }),
         title: formData.title.trim(),
         description: formData.description.trim(),
         dueDate: new Date(`${formData.dueDate}T${formData.dueTime}`),
@@ -207,8 +261,9 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
         type: formData.taskType === 'court-appearance' ? 'court' : 'other',
         caseId: formData.caseId || undefined,
         assignedTo: assignableUsers.find(u => u.id === formData.assignedToId)!,
-        assignedBy: currentUser,
-        createdAt: new Date(),
+        assignedBy: isEditing ? editingTask.assignedBy : currentUser,
+        createdAt: isEditing ? editingTask.createdAt : new Date(),
+        ...(isEditing && { updatedAt: new Date() }),
         isClientVisible: formData.assignedToId !== currentUser.id && 
                         assignableUsers.find(u => u.id === formData.assignedToId)?.role === 'client'
       };
@@ -320,8 +375,12 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
               <Plus className="h-6 w-6 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Create New Task</h2>
-              <p className="text-sm text-gray-600">Add a new task or court appearance</p>
+              <h2 className="text-xl font-semibold text-gray-900">
+                {isEditing ? 'Edit Task' : 'Create New Task'}
+              </h2>
+              <p className="text-sm text-gray-600">
+                {isEditing ? 'Update task details' : 'Add a new task or court appearance'}
+              </p>
             </div>
           </div>
           <button
@@ -704,10 +763,10 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
               {isSubmitting ? (
                 <div className="flex items-center space-x-2">
                   <div className="spinner h-4 w-4 border-white"></div>
-                  <span>Creating...</span>
+                  <span>{isEditing ? 'Updating...' : 'Creating...'}</span>
                 </div>
               ) : (
-                'Create Task'
+                isEditing ? 'Update Task' : 'Create Task'
               )}
             </button>
           </div>

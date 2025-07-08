@@ -12,7 +12,7 @@ interface TaskListProps {
   currentUser?: UserType;
 }
 
-interface TaskDetailModalProps {
+export interface TaskDetailModalProps {
   task: Task | null;
   isOpen: boolean;
   onClose: () => void;
@@ -22,7 +22,7 @@ interface TaskDetailModalProps {
   currentUser?: UserType;
 }
 
-const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
+export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   task,
   isOpen,
   onClose,
