@@ -132,6 +132,7 @@ function App() {
   const caseDocuments = selectedCaseId ? mockDocuments.filter(d => d.caseId === selectedCaseId) : [];
   const caseNotes = selectedCaseId ? mockNotes.filter(n => n.caseId === selectedCaseId) : [];
   const caseBillingEntries = selectedCaseId ? mockBillingEntries.filter(b => b.caseId === selectedCaseId) : [];
+  const caseTasks = selectedCaseId ? filteredTasks.filter(t => t.caseId === selectedCaseId) : [];
 
   // Client-specific data
   const clientCase = currentUser.role === 'client' ? cases[0] : null;
@@ -195,6 +196,7 @@ function App() {
           documents={caseDocuments}
           notes={caseNotes}
           billingEntries={caseBillingEntries}
+          caseTasks={caseTasks}
           onBack={handleBackToDashboard}
           onTaskCreate={handleTaskCreate}
           currentUser={currentUser}

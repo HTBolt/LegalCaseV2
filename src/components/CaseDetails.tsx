@@ -4,8 +4,10 @@ import {
   FileText, Plus, MessageSquare, Scale, Building, AlertTriangle,
   CheckCircle, Download, ExternalLink, Edit, Save, X, History,
   DollarSign, Receipt, CreditCard, AlertCircle, TrendingUp
+  DollarSign, Receipt, CreditCard, AlertCircle, TrendingUp, Search, Eye
 } from 'lucide-react';
 import { Case, TimelineEvent, Document, Note, BillingEntry } from '../types';
+import { Case, TimelineEvent, Document, Note, BillingEntry, Task } from '../types';
 import TaskCreationModal from './TaskCreationModal';
 
 interface CaseDetailsProps {
@@ -15,6 +17,7 @@ interface CaseDetailsProps {
   documents: Document[];
   notes: Note[];
   billingEntries: BillingEntry[];
+  caseTasks?: Task[];
   onBack: () => void;
   onTaskCreate?: (taskData: Partial<any>) => void;
   currentUser?: any;
@@ -29,11 +32,13 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
   notes, 
   billingEntries,
   onBack,
+  caseTasks = [],
   onTaskCreate,
   currentUser,
   users = []
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'pre-engagement' | 'documents' | 'notes' | 'billing'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'pre-engagement' | 'documents' | 'notes' | 'tasks' | 'billing'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'pre-engagement' | 'documents' | 'notes' | 'tasks' | 'billing'>('overview');
   const [editingNote, setEditingNote] = useState<string | null>(null);
   const [newNote, setNewNote] = useState('');
   const [showTaskModal, setShowTaskModal] = useState(false);
@@ -218,6 +223,7 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
     { id: 'pre-engagement', label: 'History' },
     { id: 'documents', label: 'Docs' },
     { id: 'notes', label: 'Notes' },
+    { id: 'tasks', label: 'Tasks' },
     { id: 'billing', label: 'Billing' }
   ];
 
@@ -606,6 +612,164 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {activeTab === 'tasks' && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="p-4 sm:p-6 border-b border-gray-200">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Case Tasks</h3>
+                  <p className="text-sm text-gray-600 mt-1">{caseTasks.length} task{caseTasks.length !== 1 ? 's' : ''} for this case</p>
+                </div>
+                {onTaskCreate && currentUser && (
+                  <button
+                    onClick={() => setShowTaskModal(true)}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Task
+                  </button>
+                )}
+              </div>
+            </div>
+            
+            {caseTasks.length === 0 ? (
+              <div className="text-center py-12">
+                <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                <p className="text-gray-500 mb-4">No tasks created for this case yet</p>
+                {onTaskCreate && currentUser && (
+                  <button
+                    onClick={() => setShowTaskModal(true)}
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create First Task
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-200">
+                {caseTasks.map((task) => {
+                  const daysUntilDue = Math.ceil((new Date(task.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+                  const isOverdue = daysUntilDue < 0 && task.status !== 'completed';
+                  const isUrgent = daysUntilDue <= 3 && daysUntilDue >= 0 && task.status !== 'completed';
+                  
+                  return (
+                    <div key={task.id} className="p-4 sm:p-6 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <div className={`p-1.5 rounded ${
+                              task.priority === 'high' ? 'bg-red-100 text-red-600' :
+                              task.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
+                              'bg-green-100 text-green-600'
+                            }`}>
+                              {task.type === 'court' ? (
+                                <Scale className="h-4 w-4" />
+                              ) : task.type === 'filing' ? (
+                                <FileText className="h-4 w-4" />
+                              ) : task.type === 'research' ? (
+                                <Search className="h-4 w-4" />
+                              ) : task.type === 'meeting' ? (
+                                <MapPin className="h-4 w-4" />
+                              ) : (
+                                <CheckCircle className="h-4 w-4" />
+                              )}
+                            </div>
+                            <h4 className="text-sm font-medium text-gray-900 truncate flex-1">
+                              {task.title}
+                            </h4>
+                            {(isOverdue || isUrgent) && (
+                              <AlertTriangle className={`h-4 w-4 flex-shrink-0 ${isOverdue ? 'text-red-500' : 'text-yellow-500'}`} />
+                            )}
+                          </div>
+                          
+                          <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                            {task.description}
+                          </p>
+                          
+                          <div className="flex flex-wrap items-center gap-2 mb-3">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                              task.status === 'completed' ? 'bg-green-100 text-green-800 border-green-200' :
+                              task.status === 'in-progress' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                              isOverdue ? 'bg-red-100 text-red-800 border-red-200' :
+                              'bg-gray-100 text-gray-800 border-gray-200'
+                            }`}>
+                              {task.status === 'completed' ? 'Completed' :
+                               task.status === 'in-progress' ? 'In Progress' :
+                               isOverdue ? 'Overdue' : 'Pending'}
+                            </span>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              task.priority === 'high' ? 'bg-red-100 text-red-800' :
+                              task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-green-100 text-green-800'
+                            }`}>
+                              {task.priority} priority
+                            </span>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              task.type === 'court' ? 'bg-purple-100 text-purple-800' :
+                              'bg-blue-100 text-blue-800'
+                            }`}>
+                              {task.type === 'court' ? 'Court Appearance' : 'Task'}
+                            </span>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm text-gray-600">
+                            <div className="flex items-center space-x-1">
+                              <User className="h-3 w-3" />
+                              <span className="truncate">Assigned: {task.assignedTo.name}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <User className="h-3 w-3" />
+                              <span className="truncate">Created by: {task.assignedBy.name}</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Clock className="h-3 w-3" />
+                              <span className={`truncate ${isOverdue ? 'text-red-600 font-medium' : isUrgent ? 'text-yellow-600 font-medium' : ''}`}>
+                                Due: {task.dueDate.toLocaleDateString()} at {task.dueDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                {daysUntilDue === 0 ? ' (Today)' : 
+                                 daysUntilDue === 1 ? ' (Tomorrow)' : 
+                                 daysUntilDue < 0 ? ` (${Math.abs(daysUntilDue)} days overdue)` :
+                                 ` (${daysUntilDue} days)`}
+                              </span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Calendar className="h-3 w-3" />
+                              <span className="truncate">Created: {task.createdAt.toLocaleDateString()}</span>
+                            </div>
+                            {task.isClientVisible && (
+                              <div className="flex items-center space-x-1">
+                                <Eye className="h-3 w-3" />
+                                <span className="text-blue-600">Client Visible</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-2 ml-3">
+                          <button 
+                            className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+                            title="Edit task"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          {task.status !== 'completed' && (
+                            <button 
+                              className="p-2 text-gray-400 hover:text-green-600 transition-colors"
+                              title="Mark as completed"
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
