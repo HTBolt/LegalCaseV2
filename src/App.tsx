@@ -214,7 +214,7 @@ function App() {
     switch (currentUser.role) {
       case 'lawyer':
         // Lawyers see all cases they're assigned to
-        const lawyerCases = cases.filter(c => c.assignedLawyer.id === currentUser.id);
+        const lawyerCases = cases.filter(c => c.assignedLawyer && c.assignedLawyer.id === currentUser.id);
         const lawyerTasks = tasks.filter(t => 
           t.assignedTo.id === currentUser.id || 
           t.assignedBy.id === currentUser.id ||
