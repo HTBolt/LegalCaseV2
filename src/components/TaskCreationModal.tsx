@@ -4,6 +4,7 @@ import {
   Scale, CheckSquare, Upload, Link, Plus, Trash2
 } from 'lucide-react';
 import { User as UserType, Case, Task } from '../types';
+import '../styles/common.css';
 
 interface TaskCreationModalProps {
   isOpen: boolean;
@@ -23,6 +24,8 @@ interface FileAttachment {
   size?: number;
 }
 
+type PriorityLevel = 'on-hold' | 'low' | 'medium' | 'high' | 'urgent';
+
 const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   isOpen,
   onClose,
@@ -38,7 +41,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     startTime: '',
     dueDate: '',
     dueTime: '',
-    priority: 'medium' as 'high' | 'medium' | 'low',
+    priority: 'medium' as PriorityLevel,
     taskType: 'generic' as 'court-appearance' | 'generic',
     caseId: '',
     genericCategory: '',
@@ -49,6 +52,27 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Priority configuration
+  const priorityOptions: { value: PriorityLevel; label: string; color: string }[] = [
+    { value: 'on-hold', label: 'On Hold', color: '#6b7280' },
+    { value: 'low', label: 'Low', color: '#10b981' },
+    { value: 'medium', label: 'Medium', color: '#f59e0b' },
+    { value: 'high', label: 'High', color: '#ef4444' },
+    { value: 'urgent', label: 'Urgent', color: '#7c2d12' }
+  ];
+
+  const getPriorityIndex = (priority: PriorityLevel): number => {
+    return priorityOptions.findIndex(p => p.value === priority);
+  };
+
+  const getPriorityFromIndex = (index: number): PriorityLevel => {
+    return priorityOptions[index]?.value || 'medium';
+  };
+
+  const getCurrentPriorityConfig = () => {
+    return priorityOptions.find(p => p.value === formData.priority) || priorityOptions[2];
+  };
 
   // Get users that current user can assign tasks to
   const getAssignableUsers = () => {
@@ -169,11 +193,16 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     setIsSubmitting(true);
 
     try {
+      // Convert priority to the original format for compatibility
+      const legacyPriority = formData.priority === 'urgent' ? 'high' : 
+                           formData.priority === 'on-hold' ? 'low' : 
+                           formData.priority as 'high' | 'medium' | 'low';
+
       const taskData: Partial<Task> = {
         title: formData.title.trim(),
         description: formData.description.trim(),
         dueDate: new Date(`${formData.dueDate}T${formData.dueTime}`),
-        priority: formData.priority,
+        priority: legacyPriority,
         status: formData.status,
         type: formData.taskType === 'court-appearance' ? 'court' : 'other',
         caseId: formData.caseId || undefined,
@@ -199,6 +228,9 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
       if (attachments.length > 0) {
         (taskData as any).attachments = attachments;
       }
+
+      // Store the detailed priority for internal use
+      (taskData as any).detailedPriority = formData.priority;
 
       await onSubmit(taskData);
       handleClose();
@@ -279,10 +311,10 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+    <div className="modal-overlay">
+      <div className="modal-content">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="modal-header">
           <div className="flex items-center space-x-3">
             <div className="p-2 bg-blue-100 rounded-lg">
               <Plus className="h-6 w-6 text-blue-600" />
@@ -301,96 +333,122 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="overflow-y-auto max-h-[calc(90vh-140px)]">
+        <form onSubmit={handleSubmit} className="modal-body">
           <div className="p-6 space-y-6">
             {/* Basic Information */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="responsive-grid-2">
               {/* Task Title */}
               <div className="lg:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Task Title *
-                </label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className={`w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                    errors.title ? 'border-red-300' : ''
-                  }`}
-                  placeholder="Enter task title"
-                />
-                {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
+                <div className="form-group">
+                  <label className="form-label required">Task Title</label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className={`form-input ${errors.title ? 'error' : ''}`}
+                    placeholder="Enter task title"
+                  />
+                  {errors.title && <p className="form-error">{errors.title}</p>}
+                </div>
               </div>
 
               {/* Task Type */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Task Type *
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, taskType: 'generic' })}
-                    className={`p-3 rounded-lg border-2 transition-colors ${
-                      formData.taskType === 'generic'
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <CheckSquare className="h-5 w-5 mx-auto mb-1" />
-                    <span className="text-sm font-medium">Generic Task</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, taskType: 'court-appearance' })}
-                    className={`p-3 rounded-lg border-2 transition-colors ${
-                      formData.taskType === 'court-appearance'
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <Scale className="h-5 w-5 mx-auto mb-1" />
-                    <span className="text-sm font-medium">Court Appearance</span>
-                  </button>
+                <div className="form-group">
+                  <label className="form-label required">Task Type</label>
+                  <div className="toggle-group grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, taskType: 'generic' })}
+                      className={`toggle-button ${formData.taskType === 'generic' ? 'active' : ''}`}
+                    >
+                      <CheckSquare className="h-5 w-5 mx-auto mb-1" />
+                      <span className="text-sm font-medium">Generic Task</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, taskType: 'court-appearance' })}
+                      className={`toggle-button ${formData.taskType === 'court-appearance' ? 'active' : ''}`}
+                    >
+                      <Scale className="h-5 w-5 mx-auto mb-1" />
+                      <span className="text-sm font-medium">Court Appearance</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Priority */}
+              {/* Priority Slider */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Priority *
-                </label>
-                <select
-                  value={formData.priority}
-                  onChange={(e) => setFormData({ ...formData, priority: e.target.value as any })}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                >
-                  <option value="low">Low Priority</option>
-                  <option value="medium">Medium Priority</option>
-                  <option value="high">High Priority</option>
-                </select>
+                <div className="form-group">
+                  <label className="form-label required">Priority</label>
+                  <div className="space-y-3">
+                    <div className="relative">
+                      <input
+                        type="range"
+                        min="0"
+                        max="4"
+                        step="1"
+                        value={getPriorityIndex(formData.priority)}
+                        onChange={(e) => setFormData({ 
+                          ...formData, 
+                          priority: getPriorityFromIndex(parseInt(e.target.value)) 
+                        })}
+                        className="priority-slider w-full h-2 appearance-none cursor-pointer"
+                        style={{
+                          background: `linear-gradient(to right, 
+                            #6b7280 0%, #6b7280 20%, 
+                            #10b981 20%, #10b981 40%, 
+                            #f59e0b 40%, #f59e0b 60%, 
+                            #ef4444 60%, #ef4444 80%, 
+                            #7c2d12 80%, #7c2d12 100%)`
+                        }}
+                      />
+                    </div>
+                    <div className="priority-labels">
+                      {priorityOptions.map((option, index) => (
+                        <span 
+                          key={option.value}
+                          className={`priority-label ${formData.priority === option.value ? 'active' : ''}`}
+                          style={{ 
+                            color: formData.priority === option.value ? option.color : undefined 
+                          }}
+                        >
+                          {option.label}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="text-center">
+                      <span 
+                        className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border"
+                        style={{ 
+                          backgroundColor: getCurrentPriorityConfig().color + '20',
+                          borderColor: getCurrentPriorityConfig().color + '40',
+                          color: getCurrentPriorityConfig().color
+                        }}
+                      >
+                        {getCurrentPriorityConfig().label} Priority
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Description */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description *
-              </label>
+            <div className="form-group">
+              <label className="form-label required">Description</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={4}
-                className={`w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                  errors.description ? 'border-red-300' : ''
-                }`}
+                className={`form-textarea ${errors.description ? 'error' : ''}`}
                 placeholder="Provide detailed description of the task"
               />
-              {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
+              {errors.description && <p className="form-error">{errors.description}</p>}
             </div>
 
             {/* Date and Time */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="responsive-grid-2">
               {/* Start Date and Time */}
               <div className="space-y-4">
                 <h3 className="text-sm font-medium text-gray-700 flex items-center">
@@ -398,28 +456,26 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                   Start Date & Time (Optional)
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Date</label>
+                  <div className="form-group">
+                    <label className="form-label">Date</label>
                     <input
                       type="date"
                       value={formData.startDate}
                       onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                      className={`w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                        errors.startDate ? 'border-red-300' : ''
-                      }`}
+                      className={`form-input ${errors.startDate ? 'error' : ''}`}
                     />
                   </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Time</label>
+                  <div className="form-group">
+                    <label className="form-label">Time</label>
                     <input
                       type="time"
                       value={formData.startTime}
                       onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                      className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      className="form-input"
                     />
                   </div>
                 </div>
-                {errors.startDate && <p className="text-sm text-red-600">{errors.startDate}</p>}
+                {errors.startDate && <p className="form-error">{errors.startDate}</p>}
               </div>
 
               {/* Due Date and Time */}
@@ -429,47 +485,41 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                   Due Date & Time *
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Date</label>
+                  <div className="form-group">
+                    <label className="form-label">Date</label>
                     <input
                       type="date"
                       value={formData.dueDate}
                       onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                      className={`w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                        errors.dueDate ? 'border-red-300' : ''
-                      }`}
+                      className={`form-input ${errors.dueDate ? 'error' : ''}`}
                     />
-                    {errors.dueDate && <p className="mt-1 text-xs text-red-600">{errors.dueDate}</p>}
+                    {errors.dueDate && <p className="form-error">{errors.dueDate}</p>}
                   </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Time</label>
+                  <div className="form-group">
+                    <label className="form-label">Time</label>
                     <input
                       type="time"
                       value={formData.dueTime}
                       onChange={(e) => setFormData({ ...formData, dueTime: e.target.value })}
-                      className={`w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                        errors.dueTime ? 'border-red-300' : ''
-                      }`}
+                      className={`form-input ${errors.dueTime ? 'error' : ''}`}
                     />
-                    {errors.dueTime && <p className="mt-1 text-xs text-red-600">{errors.dueTime}</p>}
+                    {errors.dueTime && <p className="form-error">{errors.dueTime}</p>}
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Case Association and Assignment */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="responsive-grid-2">
               {/* Case Association */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+              <div className="form-group">
+                <label className="form-label">
                   Case Association {formData.taskType === 'court-appearance' && '*'}
                 </label>
                 <select
                   value={formData.caseId}
                   onChange={(e) => setFormData({ ...formData, caseId: e.target.value })}
-                  className={`w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                    errors.caseId ? 'border-red-300' : ''
-                  }`}
+                  className={`form-select ${errors.caseId ? 'error' : ''}`}
                 >
                   <option value="">Select a case (optional)</option>
                   {accessibleCases.map(case_ => (
@@ -478,62 +528,52 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                     </option>
                   ))}
                 </select>
-                {errors.caseId && <p className="mt-1 text-sm text-red-600">{errors.caseId}</p>}
+                {errors.caseId && <p className="form-error">{errors.caseId}</p>}
               </div>
 
               {/* Generic Category (only if no case selected and generic task) */}
               {formData.taskType === 'generic' && !formData.caseId && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Generic Category *
-                  </label>
+                <div className="form-group">
+                  <label className="form-label required">Generic Category</label>
                   <input
                     type="text"
                     value={formData.genericCategory}
                     onChange={(e) => setFormData({ ...formData, genericCategory: e.target.value })}
-                    className={`w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                      errors.genericCategory ? 'border-red-300' : ''
-                    }`}
+                    className={`form-input ${errors.genericCategory ? 'error' : ''}`}
                     placeholder="e.g., Administrative, Research, Training"
                   />
-                  {errors.genericCategory && <p className="mt-1 text-sm text-red-600">{errors.genericCategory}</p>}
+                  {errors.genericCategory && <p className="form-error">{errors.genericCategory}</p>}
                 </div>
               )}
 
               {/* Assignee */}
               <div className={formData.taskType === 'generic' && !formData.caseId ? '' : 'lg:col-start-2'}>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Assign To *
-                </label>
-                <select
-                  value={formData.assignedToId}
-                  onChange={(e) => setFormData({ ...formData, assignedToId: e.target.value })}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                >
-                  {assignableUsers.map(user => (
-                    <option key={user.id} value={user.id}>
-                      {user.name} ({user.role})
-                      {user.id === currentUser.id && ' - Me'}
-                    </option>
-                  ))}
-                </select>
+                <div className="form-group">
+                  <label className="form-label required">Assign To</label>
+                  <select
+                    value={formData.assignedToId}
+                    onChange={(e) => setFormData({ ...formData, assignedToId: e.target.value })}
+                    className="form-select"
+                  >
+                    {assignableUsers.map(user => (
+                      <option key={user.id} value={user.id}>
+                        {user.name} ({user.role})
+                        {user.id === currentUser.id && ' - Me'}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
             {/* Task Status */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Task Status
-              </label>
-              <div className="grid grid-cols-2 gap-3 max-w-md">
+            <div className="form-group">
+              <label className="form-label">Task Status</label>
+              <div className="toggle-group grid-cols-2 max-w-md">
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, status: 'pending' })}
-                  className={`p-3 rounded-lg border-2 transition-colors ${
-                    formData.status === 'pending'
-                      ? 'border-yellow-500 bg-yellow-50 text-yellow-700'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`toggle-button ${formData.status === 'pending' ? 'active' : ''}`}
                 >
                   <Clock className="h-5 w-5 mx-auto mb-1" />
                   <span className="text-sm font-medium">Pending</span>
@@ -541,11 +581,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, status: 'completed' })}
-                  className={`p-3 rounded-lg border-2 transition-colors ${
-                    formData.status === 'completed'
-                      ? 'border-green-500 bg-green-50 text-green-700'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`toggle-button ${formData.status === 'completed' ? 'active' : ''}`}
                 >
                   <CheckSquare className="h-5 w-5 mx-auto mb-1" />
                   <span className="text-sm font-medium">Completed</span>
@@ -554,16 +590,14 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
             </div>
 
             {/* File Attachments */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                File Attachments
-              </label>
+            <div className="form-group">
+              <label className="form-label">File Attachments</label>
               
               {/* Upload Controls */}
               <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                <label className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 cursor-pointer transition-colors">
-                  <Upload className="h-4 w-4" />
-                  <span>Upload PDF</span>
+                <label className="btn-primary cursor-pointer">
+                  <Upload className="h-4 w-4 mr-2 inline" />
+                  Upload PDF
                   <input
                     type="file"
                     accept=".pdf"
@@ -575,10 +609,10 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                 <button
                   type="button"
                   onClick={addLinkAttachment}
-                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                  className="btn-success"
                 >
-                  <Link className="h-4 w-4" />
-                  <span>Add Link</span>
+                  <Link className="h-4 w-4 mr-2 inline" />
+                  Add Link
                 </button>
               </div>
 
@@ -586,7 +620,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
               {attachments.length > 0 && (
                 <div className="space-y-3">
                   {attachments.map((attachment, index) => (
-                    <div key={attachment.id} className="p-3 border border-gray-200 rounded-lg">
+                    <div key={attachment.id} className="attachment-item">
                       {attachment.type === 'file' ? (
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
@@ -627,49 +661,49 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                               placeholder="Link name"
                               value={attachment.name}
                               onChange={(e) => updateAttachment(attachment.id, { name: e.target.value })}
-                              className="text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                              className="form-input text-sm"
                             />
                             <input
                               type="url"
                               placeholder="https://..."
                               value={attachment.url || ''}
                               onChange={(e) => updateAttachment(attachment.id, { url: e.target.value })}
-                              className="text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                              className="form-input text-sm"
                             />
                           </div>
                         </div>
                       )}
                       {errors[`attachment_${index}`] && (
-                        <p className="mt-1 text-sm text-red-600">{errors[`attachment_${index}`]}</p>
+                        <p className="form-error mt-1">{errors[`attachment_${index}`]}</p>
                       )}
                     </div>
                   ))}
                 </div>
               )}
               
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="form-help mt-2">
                 Upload PDF files (max 10MB) or add links to files stored on Google Drive or other cloud storage.
               </p>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 p-6 border-t border-gray-200 bg-gray-50">
+          <div className="modal-footer">
             <button
               type="button"
               onClick={handleClose}
-              className="px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              className="btn-secondary"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-6 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <div className="flex items-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <div className="spinner h-4 w-4 border-white"></div>
                   <span>Creating...</span>
                 </div>
               ) : (

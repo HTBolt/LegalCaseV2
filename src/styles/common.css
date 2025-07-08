@@ -1,0 +1,275 @@
+/* Common UI Styles for Legal Case Management Application */
+
+/* Form Input Styles */
+.form-input {
+  @apply w-full rounded-md border border-blue-200 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-20 transition-colors;
+  background-color: #ffffff;
+}
+
+.form-input:hover {
+  @apply border-blue-300;
+}
+
+.form-input.error {
+  @apply border-red-300 focus:border-red-500 focus:ring-red-500;
+}
+
+.form-textarea {
+  @apply form-input resize-none;
+}
+
+.form-select {
+  @apply form-input;
+}
+
+/* Button Styles */
+.btn-primary {
+  @apply px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors font-medium;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors font-medium;
+}
+
+.btn-success {
+  @apply px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 transition-colors font-medium;
+}
+
+.btn-danger {
+  @apply px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition-colors font-medium;
+}
+
+/* Card Styles */
+.card {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200;
+}
+
+.card-header {
+  @apply p-4 sm:p-6 border-b border-gray-200;
+}
+
+.card-body {
+  @apply p-4 sm:p-6;
+}
+
+/* Priority Slider Styles */
+.priority-slider {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  background: linear-gradient(to right, 
+    #10b981 0%, 
+    #10b981 20%, 
+    #f59e0b 20%, 
+    #f59e0b 40%, 
+    #3b82f6 40%, 
+    #3b82f6 60%, 
+    #ef4444 60%, 
+    #ef4444 80%, 
+    #7c2d12 80%, 
+    #7c2d12 100%
+  );
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.priority-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #3b82f6;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.priority-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.priority-slider::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid #3b82f6;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.priority-slider::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.priority-slider::-webkit-slider-track {
+  background: transparent;
+}
+
+.priority-slider::-moz-range-track {
+  background: transparent;
+  border: none;
+}
+
+/* Priority Labels */
+.priority-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.priority-label {
+  text-align: center;
+  flex: 1;
+  font-weight: 500;
+}
+
+.priority-label.active {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50;
+}
+
+.modal-content {
+  @apply bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden;
+}
+
+.modal-header {
+  @apply flex items-center justify-between p-6 border-b border-gray-200;
+}
+
+.modal-body {
+  @apply overflow-y-auto max-h-[calc(90vh-140px)];
+}
+
+.modal-footer {
+  @apply flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 p-6 border-t border-gray-200 bg-gray-50;
+}
+
+/* Form Group Styles */
+.form-group {
+  @apply space-y-2;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700;
+}
+
+.form-label.required::after {
+  content: " *";
+  color: #ef4444;
+}
+
+.form-error {
+  @apply text-sm text-red-600;
+}
+
+.form-help {
+  @apply text-xs text-gray-500;
+}
+
+/* Toggle Button Group */
+.toggle-group {
+  @apply grid gap-3;
+}
+
+.toggle-button {
+  @apply p-3 rounded-lg border-2 transition-colors cursor-pointer text-center;
+}
+
+.toggle-button:not(.active) {
+  @apply border-gray-200 hover:border-gray-300 bg-white text-gray-700;
+}
+
+.toggle-button.active {
+  @apply border-blue-500 bg-blue-50 text-blue-700;
+}
+
+/* File Upload Styles */
+.file-upload-area {
+  @apply border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors;
+}
+
+.file-upload-area.dragover {
+  @apply border-blue-500 bg-blue-50;
+}
+
+/* Attachment Item */
+.attachment-item {
+  @apply p-3 border border-blue-200 rounded-lg bg-blue-50;
+}
+
+/* Status Indicators */
+.status-pending {
+  @apply bg-yellow-100 text-yellow-800 border-yellow-200;
+}
+
+.status-completed {
+  @apply bg-green-100 text-green-800 border-green-200;
+}
+
+.status-overdue {
+  @apply bg-red-100 text-red-800 border-red-200;
+}
+
+.status-in-progress {
+  @apply bg-blue-100 text-blue-800 border-blue-200;
+}
+
+/* Priority Indicators */
+.priority-high {
+  @apply bg-red-100 text-red-800 border-red-200;
+}
+
+.priority-medium {
+  @apply bg-yellow-100 text-yellow-800 border-yellow-200;
+}
+
+.priority-low {
+  @apply bg-green-100 text-green-800 border-green-200;
+}
+
+.priority-urgent {
+  @apply bg-orange-100 text-orange-800 border-orange-200;
+}
+
+.priority-on-hold {
+  @apply bg-gray-100 text-gray-800 border-gray-200;
+}
+
+/* Loading Spinner */
+.spinner {
+  @apply animate-spin rounded-full border-b-2;
+}
+
+/* Responsive Grid */
+.responsive-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4;
+}
+
+.responsive-grid-2 {
+  @apply grid grid-cols-1 lg:grid-cols-2 gap-6;
+}
+
+/* Utility Classes */
+.text-truncate {
+  @apply truncate;
+}
+
+.shadow-hover {
+  @apply hover:shadow-md transition-shadow;
+}
+
+.border-hover {
+  @apply hover:border-blue-300 transition-colors;
+}
