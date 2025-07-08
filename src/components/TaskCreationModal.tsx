@@ -305,23 +305,6 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     onClose();
   };
 
-  // Reset form when modal closes (useEffect will handle this when editingTask changes)
-  React.useEffect(() => {
-    if (!isOpen) {
-      // Reset form state when modal is closed
-      setErrors({});
-      setIsSubmitting(false);
-      if (!editingTask) {
-        setAttachments([]);
-      }
-    }
-  }, [isOpen, editingTask]);
-
-  // Don't render if not open
-  if (!isOpen) {
-    return null;
-  }
-
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     
@@ -367,6 +350,10 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
+
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div className="modal-overlay">
