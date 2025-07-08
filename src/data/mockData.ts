@@ -1,7 +1,5 @@
 import { User, Client, Case, Task, Milestone, TimelineEvent, Document, Note, LawFirm, LawyerPerformance, BillingEntry, ClientInvoice, MeetingRequest } from '../types';
 
-export { mockClients };
-
 export const mockLawFirm: LawFirm = {
   id: '1',
   name: 'Johnson & Associates Legal Group',
