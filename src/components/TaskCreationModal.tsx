@@ -238,6 +238,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation(); // Prevent event bubbling
     
     if (!validateForm()) {
       return;
@@ -296,7 +297,12 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     }
   };
 
-  const handleClose = () => {
+  const handleClose = React.useCallback(() => {
+    console.log('=== MODAL: handleClose called ===');
+    console.log('=== MODAL: About to call onClose prop ===');
+    console.log('=== MODAL: onClose function:', onClose);
+    console.log('=== MODAL: Current isOpen state:', isOpen);
+    
     setFormData({
       title: '',
       description: '',
@@ -314,8 +320,11 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     setAttachments([]);
     setErrors({});
     setIsSubmitting(false);
+    
+    console.log('=== MODAL: About to call onClose() ===');
     onClose();
-  };
+    console.log('=== MODAL: onClose() called ===');
+  }, [onClose, isOpen]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -386,6 +395,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
           <button
             onClick={handleClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            type="button"
           >
             <X className="h-6 w-6 text-gray-500" />
           </button>
@@ -663,6 +673,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                     multiple
                     onChange={handleFileUpload}
                     className="hidden"
+                    onClick={(e) => e.stopPropagation()}
                   />
                 </label>
                 <button

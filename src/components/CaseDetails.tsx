@@ -54,26 +54,35 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
   const isTaskModalOpen = showTaskModal || localShowTaskModal;
   
   const handleTaskModalClose = () => {
+    console.log('=== CASE_DETAILS: handleTaskModalClose called ===');
+    console.log('=== CASE_DETAILS: Current localShowTaskModal state:', localShowTaskModal);
     if (onTaskModalClose) {
+      console.log('=== CASE_DETAILS: Calling parent onTaskModalClose ===');
       onTaskModalClose();
     } else {
+      console.log('=== CASE_DETAILS: Setting localShowTaskModal to false ===');
       setLocalShowTaskModal(false);
     }
   };
 
   const handleAddTask = () => {
+    console.log('=== CASE_DETAILS: handleAddTask called ===');
     if (onTaskModalClose) {
       // If we have the prop handler, we're using external state
+      console.log('=== CASE_DETAILS: Using external state, clearing editingTask first ===');
       onTaskModalClose(); // This will clear editingTask
       setTimeout(() => {
+        console.log('=== CASE_DETAILS: Setting localShowTaskModal to true after timeout ===');
         setLocalShowTaskModal(true);
       }, 0);
     } else {
+      console.log('=== CASE_DETAILS: Using local state, setting localShowTaskModal to true ===');
       setLocalShowTaskModal(true);
     }
   };
 
   const handleTaskCreate = (taskData: Partial<any>) => {
+    console.log('=== CASE_DETAILS: handleTaskCreate called ===');
     if (onTaskCreate) {
       // Pre-populate with case information
       const enhancedTaskData = {
@@ -82,6 +91,7 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
       };
       onTaskCreate(enhancedTaskData);
     }
+    console.log('=== CASE_DETAILS: About to close modal ===');
     handleTaskModalClose();
   };
 

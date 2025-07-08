@@ -51,6 +51,7 @@ function App() {
   };
 
   const handleTaskCreate = (taskData: Partial<Task>) => {
+    console.log('=== PARENT: handleTaskCreate called ===');
     const newTask: Task = {
       id: Date.now().toString(),
       title: taskData.title!,
@@ -67,6 +68,7 @@ function App() {
     };
     
     setTasks(prev => [...prev, newTask]);
+    console.log('=== PARENT: New task created, about to close modal ===');
   };
 
   const handleTaskUpdate = (taskId: string, updates: Partial<Task>) => {
@@ -76,15 +78,15 @@ function App() {
   };
 
   const handleTaskEdit = (task: Task) => {
+    console.log('=== PARENT: handleTaskEdit called with task:', task.id);
     setEditingTask(task);
     setShowTaskModal(true);
+    console.log('=== PARENT: setEditingTask and setShowTaskModal(true) called ===');
   };
 
   const handleTaskModalClose = () => {
-    setShowTaskModal(false);
-    setEditingTask(null);
-  };
-
+    console.log('=== PARENT: handleTaskModalClose called ===');
+    console.log('=== PARENT: Current showTaskModal state:', showTaskModal);
   // Filter data based on user role and permissions
   const getFilteredData = () => {
     if (!currentUser) return { cases: [], tasks: [], milestones: [] };
@@ -140,8 +142,11 @@ function App() {
 
   // If not logged in, show login form
   if (!currentUser) {
+    console.log('=== APP: No current user, showing login form ===');
     return <LoginForm onLogin={handleLogin} users={mockUsers} />;
   }
+
+  console.log('=== APP: Rendering with showTaskModal:', showTaskModal, 'editingTask:', editingTask?.id);
 
   const { cases, tasks: filteredTasks, milestones } = getFilteredData();
   const selectedCase = selectedCaseId ? cases.find(c => c.id === selectedCaseId) : null;

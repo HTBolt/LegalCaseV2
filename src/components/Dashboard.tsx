@@ -42,21 +42,29 @@ const Dashboard: React.FC<DashboardProps> = ({
   const isTaskModalOpen = showTaskModal || localShowTaskModal;
   
   const handleTaskModalClose = () => {
+    console.log('=== DASHBOARD: handleTaskModalClose called ===');
+    console.log('=== DASHBOARD: Current localShowTaskModal state:', localShowTaskModal);
     if (onTaskModalClose) {
+      console.log('=== DASHBOARD: Calling parent onTaskModalClose ===');
       onTaskModalClose();
     } else {
+      console.log('=== DASHBOARD: Setting localShowTaskModal to false ===');
       setLocalShowTaskModal(false);
     }
   };
 
   const handleAddTask = () => {
+    console.log('=== DASHBOARD: handleAddTask called ===');
     if (onTaskModalClose) {
       // If we have the prop handler, we're using external state
+      console.log('=== DASHBOARD: Using external state, clearing editingTask first ===');
       onTaskModalClose(); // This will clear editingTask
       setTimeout(() => {
+        console.log('=== DASHBOARD: Setting localShowTaskModal to true after timeout ===');
         setLocalShowTaskModal(true);
       }, 0);
     } else {
+      console.log('=== DASHBOARD: Using local state, setting localShowTaskModal to true ===');
       setLocalShowTaskModal(true);
     }
   };
@@ -119,9 +127,11 @@ const Dashboard: React.FC<DashboardProps> = ({
   };
 
   const handleTaskCreate = (taskData: Partial<Task>) => {
+    console.log('=== DASHBOARD: handleTaskCreate called ===');
     if (onTaskCreate) {
       onTaskCreate(taskData);
     }
+    console.log('=== DASHBOARD: About to close modal ===');
     handleTaskModalClose();
   };
 
