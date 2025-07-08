@@ -141,27 +141,26 @@ const CaseList: React.FC<CaseListProps> = ({
                                   daysUntilHearing === 1 ? 'Tomorrow' : 
                                   `${daysUntilHearing} days`})
                               </span>
-                        <div className="flex items-center justify-between mb-2">
+                            )}
                           </div>
                         )}
                         
-                          <div className="flex items-center space-x-2">
-                            {isUrgent && (
-                              <AlertTriangle className="h-4 w-4 text-yellow-500 flex-shrink-0" />
-                            )}
-                            {canEditCase(caseItem) && onCaseEdit && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onCaseEdit(caseItem);
-                                }}
-                                className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
-                                title="Edit case"
-                              >
-                                <Edit className="h-4 w-4" />
-                              </button>
-                            )}
-                          </div>
+                        <div className="flex items-center space-x-2">
+                          {isUrgent && (
+                            <AlertTriangle className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+                          )}
+                          {canEditCase(caseItem) && onCaseEdit && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onCaseEdit(caseItem);
+                              }}
+                              className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                              title="Edit case"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </button>
+                          )}
                         </div>
                         
                         {caseItem.supportingInterns.length > 0 && (
