@@ -125,7 +125,7 @@ function App() {
     return <LoginForm onLogin={handleLogin} users={mockUsers} />;
   }
 
-  const { cases, tasks, milestones } = getFilteredData();
+  const { cases, tasks: filteredTasks, milestones } = getFilteredData();
   const selectedCase = selectedCaseId ? cases.find(c => c.id === selectedCaseId) : null;
   const caseTimelineEvents = selectedCaseId ? mockTimelineEvents.filter(e => e.caseId === selectedCaseId) : [];
   const preEngagementEvents = selectedCaseId ? mockPreEngagementEvents.filter(e => e.caseId === selectedCaseId) : [];
@@ -150,7 +150,7 @@ function App() {
       {currentUser.role === 'client' && clientCase && (
         <ClientDashboard
           clientCase={clientCase}
-          clientTasks={tasks}
+          clientTasks={filteredTasks}
           milestones={milestones}
           timelineEvents={caseTimelineEvents}
           preEngagementEvents={preEngagementEvents}
@@ -177,7 +177,7 @@ function App() {
       {currentView === 'dashboard' && currentUser.role !== 'firm-admin' && currentUser.role !== 'client' && (
         <Dashboard
           cases={cases}
-          tasks={tasks}
+          tasks={filteredTasks}
           milestones={milestones}
           currentUser={currentUser}
           onCaseSelect={handleCaseSelect}
