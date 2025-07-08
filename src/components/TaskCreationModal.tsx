@@ -297,6 +297,25 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   };
 
   const handleClose = () => {
+    // Reset form data to initial state
+    if (!editingTask) {
+      setFormData({
+        title: '',
+        description: '',
+        startDate: '',
+        startTime: '',
+        dueDate: '',
+        dueTime: '',
+        priority: 'medium',
+        taskType: 'generic',
+        caseId: '',
+        genericCategory: '',
+        assignedToId: currentUser.id,
+        status: 'pending'
+      });
+      setAttachments([]);
+    }
+    
     // Clear form errors and submission state
     setErrors({});
     setIsSubmitting(false);
@@ -308,10 +327,31 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   // Handle clicking outside the modal to close it
   const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
     // Only close if clicking on the overlay itself, not on the modal content
-    if (e.target === e.currentTarget) {
+    if (e.target === e.currentTarget && !isSubmitting) {
       handleClose();
     }
   };
+
+  // Handle escape key to close modal
+  React.useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen && !isSubmitting) {
+        handleClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscapeKey);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, isSubmitting]);
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     
@@ -383,6 +423,8 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
           <button
             onClick={handleClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            type="button"
+            disabled={isSubmitting}
           >
             <X className="h-6 w-6 text-gray-500" />
           </button>
@@ -749,6 +791,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
               type="button"
               onClick={handleClose}
               className="btn-secondary"
+              disabled={isSubmitting}
             >
               Cancel
             </button>
