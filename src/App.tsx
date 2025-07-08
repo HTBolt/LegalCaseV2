@@ -363,6 +363,7 @@ function App() {
           onTimelineEventDelete={handleTimelineEventDelete}
           onDocumentUpload={handleDocumentUpload}
           onBillingEntryCreate={handleBillingEntryCreate}
+          onCaseEdit={handleCaseEdit}
         />
       )}
       

@@ -29,6 +29,7 @@ interface CaseDetailsProps {
   onTaskModalClose?: () => void;
   currentUser?: any;
   users?: any[];
+  onCaseEdit?: (case_: Case) => void;
   onTimelineEventCreate?: (eventData: Partial<TimelineEvent>) => void;
   onTimelineEventDelete?: (eventId: string, eventType: 'timeline' | 'history') => void;
   onDocumentUpload?: (documentData: Partial<Document>) => void;
@@ -52,6 +53,7 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
   onTaskModalClose,
   currentUser,
   users = [],
+  onCaseEdit
   onTimelineEventCreate,
   onTimelineEventDelete,
   onDocumentUpload,
@@ -114,6 +116,12 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
     handleTaskModalClose();
   };
 
+  const canEditCase = () => {
+    return currentUser && (
+      currentUser.role === 'firm-admin' ||
+      (currentUser.role === 'lawyer' && caseData.assignedLawyer.id === currentUser.id)
+    );
+  };
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', { 
       weekday: 'long', 
@@ -358,6 +366,17 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
                 </span>
               </div>
             </div>
+            <div className="flex items-center space-x-3">
+              {canEditCase() && onCaseEdit && (
+                <button
+                  onClick={() => onCaseEdit(caseData)}
+                  className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                  title="Edit case details"
+                >
+                  <Edit className="h-4 w-4" />
+                  <span className="hidden sm:inline">Edit Case</span>
+                </button>
+              )}
             {onTaskCreate && currentUser && (
               <button
                 onClick={handleAddTask}
@@ -367,6 +386,7 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
                 <span className="hidden sm:inline">Add Task</span>
               </button>
             )}
+            </div>
           </div>
           
           {/* Mobile-optimized tabs */}

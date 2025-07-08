@@ -27,7 +27,11 @@ const CaseFormModal: React.FC<CaseFormModalProps> = ({
   const [formData, setFormData] = useState({
     title: '',
     caseType: '',
-    clientId: '',
+    clientName: '',
+    clientEmail: '',
+    clientPhone: '',
+    clientAddress: '',
+    clientCompany: '',
     referredBy: '',
     assignedLawyerId: currentUser.id,
     supportingInternIds: [] as string[],
@@ -51,7 +55,11 @@ const CaseFormModal: React.FC<CaseFormModalProps> = ({
       setFormData({
         title: editingCase.title,
         caseType: editingCase.caseType,
-        clientId: editingCase.clientId,
+        clientName: editingCase.client.name,
+        clientEmail: editingCase.client.email,
+        clientPhone: editingCase.client.phone,
+        clientAddress: editingCase.client.address,
+        clientCompany: editingCase.client.company || '',
         referredBy: editingCase.referredBy,
         assignedLawyerId: editingCase.assignedLawyer.id,
         supportingInternIds: editingCase.supportingInterns.map(intern => intern.id),
@@ -71,7 +79,11 @@ const CaseFormModal: React.FC<CaseFormModalProps> = ({
       setFormData({
         title: '',
         caseType: '',
-        clientId: '',
+        clientName: '',
+        clientEmail: '',
+        clientPhone: '',
+        clientAddress: '',
+        clientCompany: '',
         referredBy: '',
         assignedLawyerId: currentUser.id,
         supportingInternIds: [],
@@ -131,8 +143,26 @@ const CaseFormModal: React.FC<CaseFormModalProps> = ({
       newErrors.caseType = 'Case type is required';
     }
 
-    if (!formData.clientId) {
-      newErrors.clientId = 'Client selection is required';
+    if (!formData.clientName.trim()) {
+      newErrors.clientName = 'Client name is required';
+    }
+
+    if (!formData.clientEmail.trim()) {
+      newErrors.clientEmail = 'Client email is required';
+    } else {
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.clientEmail.trim())) {
+        newErrors.clientEmail = 'Please enter a valid email address';
+      }
+    }
+
+    if (!formData.clientPhone.trim()) {
+      newErrors.clientPhone = 'Client phone is required';
+    }
+
+    if (!formData.clientAddress.trim()) {
+      newErrors.clientAddress = 'Client address is required';
     }
 
     if (!formData.referredBy.trim()) {
@@ -164,7 +194,23 @@ const CaseFormModal: React.FC<CaseFormModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      const selectedClient = clients.find(c => c.id === formData.clientId)!;
+      // Create or find client
+      let selectedClient = clients.find(c => 
+        c.email.toLowerCase() === formData.clientEmail.toLowerCase().trim()
+      );
+      
+      if (!selectedClient) {
+        // Create new client
+        selectedClient = {
+          id: Date.now().toString(),
+          name: formData.clientName.trim(),
+          email: formData.clientEmail.toLowerCase().trim(),
+          phone: formData.clientPhone.trim(),
+          address: formData.clientAddress.trim(),
+          company: formData.clientCompany.trim() || undefined
+        };
+      }
+      
       const selectedLawyer = availableLawyers.find(l => l.id === formData.assignedLawyerId)!;
       const selectedInterns = availableInterns.filter(i => 
         formData.supportingInternIds.includes(i.id)
@@ -174,7 +220,7 @@ const CaseFormModal: React.FC<CaseFormModalProps> = ({
         ...(isEditing && { id: editingCase.id }),
         title: formData.title.trim(),
         caseType: formData.caseType,
-        clientId: formData.clientId,
+        clientId: selectedClient.id,
         client: selectedClient,
         assignedLawyer: selectedLawyer,
         supportingInterns: selectedInterns,
@@ -211,7 +257,11 @@ const CaseFormModal: React.FC<CaseFormModalProps> = ({
     setFormData({
       title: '',
       caseType: '',
-      clientId: '',
+      clientName: '',
+      clientEmail: '',
+      clientPhone: '',
+      clientAddress: '',
+      clientCompany: '',
       referredBy: '',
       assignedLawyerId: currentUser.id,
       supportingInternIds: [],
@@ -306,26 +356,78 @@ const CaseFormModal: React.FC<CaseFormModalProps> = ({
               </div>
 
               {/* Client */}
-              <div>
+              <div className="lg:col-span-2">
                 <div className="form-group">
-                  <label className="form-label required">Client</label>
-                  <select
-                    value={formData.clientId}
-                    onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
-                    className={`form-select ${errors.clientId ? 'error' : ''}`}
-                  >
-                    <option value="">Select client</option>
-                    {clients.map(client => (
-                      <option key={client.id} value={client.id}>
-                        {client.name} {client.company && `(${client.company})`}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.clientId && <p className="form-error">{errors.clientId}</p>}
+                  <label className="form-label required">Client Name</label>
+                  <input
+                    type="text"
+                    value={formData.clientName}
+                    onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
+                    className={`form-input ${errors.clientName ? 'error' : ''}`}
+                    placeholder="Enter client name"
+                  />
+                  {errors.clientName && <p className="form-error">{errors.clientName}</p>}
                 </div>
               </div>
             </div>
 
+            {/* Client Contact Information */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-gray-700 flex items-center">
+                <User className="h-4 w-4 mr-2" />
+                Client Contact Information
+              </h3>
+              <div className="responsive-grid-2">
+                <div className="form-group">
+                  <label className="form-label required">Email</label>
+                  <input
+                    type="email"
+                    value={formData.clientEmail}
+                    onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
+                    className={`form-input ${errors.clientEmail ? 'error' : ''}`}
+                    placeholder="client@email.com"
+                  />
+                  {errors.clientEmail && <p className="form-error">{errors.clientEmail}</p>}
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label required">Phone</label>
+                  <input
+                    type="tel"
+                    value={formData.clientPhone}
+                    onChange={(e) => setFormData({ ...formData, clientPhone: e.target.value })}
+                    className={`form-input ${errors.clientPhone ? 'error' : ''}`}
+                    placeholder="+1 (555) 123-4567"
+                  />
+                  {errors.clientPhone && <p className="form-error">{errors.clientPhone}</p>}
+                </div>
+              </div>
+              
+              <div className="responsive-grid-2">
+                <div className="form-group">
+                  <label className="form-label required">Address</label>
+                  <textarea
+                    value={formData.clientAddress}
+                    onChange={(e) => setFormData({ ...formData, clientAddress: e.target.value })}
+                    rows={2}
+                    className={`form-textarea ${errors.clientAddress ? 'error' : ''}`}
+                    placeholder="123 Main St, City, State 12345"
+                  />
+                  {errors.clientAddress && <p className="form-error">{errors.clientAddress}</p>}
+                </div>
+                
+                <div className="form-group">
+                  <label className="form-label">Company (Optional)</label>
+                  <input
+                    type="text"
+                    value={formData.clientCompany}
+                    onChange={(e) => setFormData({ ...formData, clientCompany: e.target.value })}
+                    className="form-input"
+                    placeholder="Company name"
+                  />
+                </div>
+              </div>
+            </div>
             {/* Assignment and Referral */}
             <div className="responsive-grid-2">
               {/* Referred By */}
