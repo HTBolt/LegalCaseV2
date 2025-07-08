@@ -336,6 +336,7 @@ function App() {
           onTaskModalClose={handleTaskModalClose}
           onCaseCreate={handleCaseCreate}
           onCaseEdit={handleCaseEdit}
+          onNewCaseClick={() => setShowCaseModal(true)}
         />
       )}
       

@@ -22,6 +22,7 @@ interface DashboardProps {
   users?: User[];
   onCaseCreate?: (caseData: Partial<Case>) => void;
   onCaseEdit?: (case_: Case) => void;
+  onNewCaseClick?: () => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ 
@@ -38,7 +39,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   onTaskModalClose,
   users = [],
   onCaseCreate,
-  onCaseEdit
+  onCaseEdit,
+  onNewCaseClick
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'tasks'>('overview');
   const [localShowTaskModal, setLocalShowTaskModal] = useState(false);
@@ -231,7 +233,7 @@ const Dashboard: React.FC<DashboardProps> = ({
               {/* Create Case Button - Only for lawyers and firm admins */}
               {(currentUser.role === 'lawyer' || currentUser.role === 'firm-admin') && onCaseCreate && (
                 <button
-                  onClick={() => onCaseCreate({})}
+                  onClick={onNewCaseClick}
                   className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
                 >
                   <Plus className="h-4 w-4" />
