@@ -178,7 +178,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     } else if (currentUser.role === 'intern') {
       baseStats.push({
         title: 'Completed Tasks',
-        value: myTasks.filter(t => t.status === 'completed').length,
+        value: tasks.filter(t => t.assignedTo.id === currentUser.id && t.status === 'completed').length,
         icon: CheckCircle,
         color: 'bg-yellow-500',
         clickAction: 'completed-tasks',
@@ -296,7 +296,7 @@ const Dashboard: React.FC<DashboardProps> = ({
               <div className="lg:col-span-2">
                 <CalendarView 
                   milestones={milestones} 
-                  tasks={tasks} 
+                  tasks={activeTasks} 
                   compact={true} 
                   onCaseSelect={onCaseSelect}
                 />
@@ -317,7 +317,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             <div className="mt-6 sm:mt-8 space-y-6 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-8">
               <div id="urgent-tasks-section">
                 <TaskList 
-                  tasks={tasks.filter(task => task.assignedTo.id === currentUser.id).slice(0, 10)}
+                  tasks={myTasks.slice(0, 10)}
                   title="My Tasks"
                   showAssignee={false}
                   onAddTask={handleAddTask}
@@ -329,7 +329,7 @@ const Dashboard: React.FC<DashboardProps> = ({
               {currentUser.role !== 'intern' && (
                 <div id="team-tasks-section">
                   <TaskList 
-                    tasks={tasks.filter(task => task.assignedTo.id !== currentUser.id).slice(0, 10)}
+                    tasks={otherTasks.slice(0, 10)}
                     title="Team Tasks"
                     showAssignee={true}
                     onAddTask={handleAddTask}
@@ -341,7 +341,7 @@ const Dashboard: React.FC<DashboardProps> = ({
               )}
               {currentUser.role === 'intern' && (
                 <TaskList 
-                  tasks={tasks.filter(t => t.assignedBy.id !== currentUser.id).slice(0, 10)}
+                  tasks={activeTasks.filter(t => t.assignedBy.id !== currentUser.id).slice(0, 10)}
                   title="All Case Tasks"
                   showAssignee={true}
                   onAddTask={handleAddTask}
@@ -357,7 +357,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         {activeTab === 'calendar' && (
           <CalendarView 
             milestones={milestones} 
-            tasks={tasks} 
+            tasks={activeTasks} 
             compact={false} 
             onCaseSelect={onCaseSelect}
           />
