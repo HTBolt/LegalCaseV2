@@ -36,7 +36,6 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
   users = []
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'pre-engagement' | 'documents' | 'notes' | 'tasks' | 'billing'>('overview');
-  const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'pre-engagement' | 'documents' | 'notes' | 'tasks' | 'billing'>('overview');
   const [editingNote, setEditingNote] = useState<string | null>(null);
   const [newNote, setNewNote] = useState('');
   const [showTaskModal, setShowTaskModal] = useState(false);
