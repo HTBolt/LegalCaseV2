@@ -44,7 +44,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
 
-  // Generate random times for events (in real app, this would come from data)
+  // Generate consistent times for events based on their ID and type
   const generateEventTime = (eventId: string, eventType: string) => {
     const hash = eventId.split('').reduce((a, b) => {
       a = ((a << 5) - a) + b.charCodeAt(0);
@@ -200,11 +200,12 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     setSelectedEvent(null);
   };
 
+  // Consistent function to get events for any date
   const getEventsForDate = (date: Date) => {
     return filteredEvents.filter(event => {
       const eventDate = new Date(event.date);
       return eventDate.toDateString() === date.toDateString();
-    });
+    }).sort((a, b) => a.time!.localeCompare(b.time!));
   };
 
   const getWeekDates = (date: Date) => {
@@ -524,6 +525,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
               onEventClick={handleEventClick}
               getEventColor={getEventColor}
               getEventIcon={getEventIcon}
+              getEventsForDate={getEventsForDate}
             />
           )}
           
@@ -535,6 +537,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
               getEventColor={getEventColor}
               getEventIcon={getEventIcon}
               formatTime={formatTime}
+              getEventsForDate={getEventsForDate}
+              getWeekDates={getWeekDates}
             />
           )}
           
@@ -546,6 +550,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
               getEventColor={getEventColor}
               getEventIcon={getEventIcon}
               formatTime={formatTime}
+              getEventsForDate={getEventsForDate}
             />
           )}
         </div>
@@ -562,21 +567,14 @@ const MonthView: React.FC<{
   onEventClick: (event: CalendarEvent) => void;
   getEventColor: (event: CalendarEvent) => string;
   getEventIcon: (event: CalendarEvent) => React.ReactNode;
-}> = ({ currentDate, events, onEventClick, getEventColor, getEventIcon }) => {
+  getEventsForDate: (date: Date) => CalendarEvent[];
+}> = ({ currentDate, events, onEventClick, getEventColor, getEventIcon, getEventsForDate }) => {
   const getDaysInMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
   };
 
   const getFirstDayOfMonth = (date: Date) => {
     return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-  };
-
-  const getEventsForDate = (day: number) => {
-    const dateToCheck = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    return events.filter(event => {
-      const eventDate = new Date(event.date);
-      return eventDate.toDateString() === dateToCheck.toDateString();
-    });
   };
 
   const daysInMonth = getDaysInMonth(currentDate);
@@ -600,8 +598,9 @@ const MonthView: React.FC<{
           <div key={`empty-${index}`} className="h-20 sm:h-32 p-1"></div>
         ))}
         {days.map((day) => {
-          const dayEvents = getEventsForDate(day);
-          const isToday = new Date().toDateString() === new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString();
+          const dayDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+          const dayEvents = getEventsForDate(dayDate);
+          const isToday = new Date().toDateString() === dayDate.toDateString();
           
           return (
             <div key={day} className={`h-20 sm:h-32 p-1 border border-gray-200 ${isToday ? 'bg-blue-50' : 'bg-white'} hover:bg-gray-50 transition-colors`}>
@@ -644,28 +643,10 @@ const WeekView: React.FC<{
   getEventColor: (event: CalendarEvent) => string;
   getEventIcon: (event: CalendarEvent) => React.ReactNode;
   formatTime: (time: string) => string;
-}> = ({ currentDate, events, onEventClick, getEventColor, getEventIcon, formatTime }) => {
-  const getWeekDates = (date: Date) => {
-    const week = [];
-    const startOfWeek = new Date(date);
-    startOfWeek.setDate(date.getDate() - date.getDay());
-    
-    for (let i = 0; i < 7; i++) {
-      const day = new Date(startOfWeek);
-      day.setDate(startOfWeek.getDate() + i);
-      week.push(day);
-    }
-    return week;
-  };
-
+  getEventsForDate: (date: Date) => CalendarEvent[];
+  getWeekDates: (date: Date) => Date[];
+}> = ({ currentDate, events, onEventClick, getEventColor, getEventIcon, formatTime, getEventsForDate, getWeekDates }) => {
   const weekDates = getWeekDates(currentDate);
-
-  const getEventsForDate = (date: Date) => {
-    return events.filter(event => {
-      const eventDate = new Date(event.date);
-      return eventDate.toDateString() === date.toDateString();
-    }).sort((a, b) => a.time!.localeCompare(b.time!));
-  };
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-7 gap-2 sm:gap-4">
@@ -774,11 +755,9 @@ const DayView: React.FC<{
   getEventColor: (event: CalendarEvent) => string;
   getEventIcon: (event: CalendarEvent) => React.ReactNode;
   formatTime: (time: string) => string;
-}> = ({ currentDate, events, onEventClick, getEventColor, getEventIcon, formatTime }) => {
-  const dayEvents = events.filter(event => {
-    const eventDate = new Date(event.date);
-    return eventDate.toDateString() === currentDate.toDateString();
-  }).sort((a, b) => a.time!.localeCompare(b.time!));
+  getEventsForDate: (date: Date) => CalendarEvent[];
+}> = ({ currentDate, events, onEventClick, getEventColor, getEventIcon, formatTime, getEventsForDate }) => {
+  const dayEvents = getEventsForDate(currentDate);
 
   const courtEvents = dayEvents.filter(e => e.type === 'milestone' && e.category === 'court-appearance');
   const otherMilestones = dayEvents.filter(e => e.type === 'milestone' && e.category !== 'court-appearance');
