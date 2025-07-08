@@ -4,6 +4,7 @@ import { Case, Task, Milestone, User } from '../types';
 import CalendarView from './CalendarView';
 import TaskList from './TaskList';
 import CaseList from './CaseList';
+import TaskCreationModal from './TaskCreationModal';
 
 interface DashboardProps {
   cases: Case[];
@@ -11,6 +12,8 @@ interface DashboardProps {
   milestones: Milestone[];
   currentUser: User;
   onCaseSelect: (caseId: string) => void;
+  onTaskCreate?: (taskData: Partial<Task>) => void;
+  users?: User[];
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ 
@@ -18,9 +21,12 @@ const Dashboard: React.FC<DashboardProps> = ({
   tasks, 
   milestones, 
   currentUser, 
-  onCaseSelect 
+  onCaseSelect,
+  onTaskCreate,
+  users = []
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'tasks'>('overview');
+  const [showTaskModal, setShowTaskModal] = useState(false);
 
   const myTasks = tasks.filter(task => task.assignedTo.id === currentUser.id);
   const otherTasks = tasks.filter(task => task.assignedTo.id !== currentUser.id);
@@ -75,6 +81,13 @@ const Dashboard: React.FC<DashboardProps> = ({
         console.log('Navigate to user management');
         break;
     }
+  };
+
+  const handleTaskCreate = (taskData: Partial<Task>) => {
+    if (onTaskCreate) {
+      onTaskCreate(taskData);
+    }
+    setShowTaskModal(false);
   };
 
   const getRoleSpecificStats = () => {
@@ -260,6 +273,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   tasks={myTasks.slice(0, 10)}
                   title="My Tasks"
                   showAssignee={false}
+                  onAddTask={() => setShowTaskModal(true)}
                 />
               </div>
               {currentUser.role !== 'intern' && (
@@ -268,6 +282,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     tasks={otherTasks.slice(0, 10)}
                     title="Team Tasks"
                     showAssignee={true}
+                    onAddTask={() => setShowTaskModal(true)}
                   />
                 </div>
               )}
@@ -276,6 +291,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   tasks={tasks.filter(t => t.assignedBy.id !== currentUser.id).slice(0, 10)}
                   title="All Case Tasks"
                   showAssignee={true}
+                  onAddTask={() => setShowTaskModal(true)}
                 />
               )}
             </div>
@@ -298,6 +314,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 tasks={myTasks}
                 title="My Tasks"
                 showAssignee={false}
+                onAddTask={() => setShowTaskModal(true)}
               />
             </div>
             {currentUser.role !== 'intern' && (
@@ -306,6 +323,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   tasks={otherTasks}
                   title="Team Tasks"
                   showAssignee={true}
+                  onAddTask={() => setShowTaskModal(true)}
                 />
               </div>
             )}
@@ -314,11 +332,22 @@ const Dashboard: React.FC<DashboardProps> = ({
                 tasks={tasks.filter(t => t.assignedBy.id !== currentUser.id)}
                 title="All Case Tasks"
                 showAssignee={true}
+                onAddTask={() => setShowTaskModal(true)}
               />
             )}
           </div>
         )}
       </div>
+      
+      {/* Task Creation Modal */}
+      <TaskCreationModal
+        isOpen={showTaskModal}
+        onClose={() => setShowTaskModal(false)}
+        onSubmit={handleTaskCreate}
+        currentUser={currentUser}
+        cases={cases}
+        users={users}
+      />
     </div>
   );
 };

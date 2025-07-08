@@ -1,14 +1,15 @@
 import React from 'react';
-import { Clock, User, AlertTriangle, CheckCircle, FileText, Search, Calendar, MapPin } from 'lucide-react';
+import { Clock, User, AlertTriangle, CheckCircle, FileText, Search, Calendar, MapPin, Plus } from 'lucide-react';
 import { Task } from '../types';
 
 interface TaskListProps {
   tasks: Task[];
   title: string;
   showAssignee?: boolean;
+  onAddTask?: () => void;
 }
 
-const TaskList: React.FC<TaskListProps> = ({ tasks, title, showAssignee = false }) => {
+const TaskList: React.FC<TaskListProps> = ({ tasks, title, showAssignee = false, onAddTask }) => {
   const sortedTasks = [...tasks].sort((a, b) => {
     // Sort by priority first, then by due date
     const priorityOrder = { high: 0, medium: 1, low: 2 };
@@ -88,8 +89,20 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, title, showAssignee = false 
     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
       <div className="p-4 sm:p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-          <span className="text-sm text-gray-500">{tasks.length} task{tasks.length !== 1 ? 's' : ''}</span>
+          <div className="flex items-center space-x-3">
+            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+            <span className="text-sm text-gray-500">{tasks.length} task{tasks.length !== 1 ? 's' : ''}</span>
+          </div>
+          {onAddTask && (
+            <button
+              onClick={onAddTask}
+              className="flex items-center space-x-1 px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 hover:border-blue-300 transition-colors"
+              title="Add new task"
+            >
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">Add Task</span>
+            </button>
+          )}
         </div>
         
         {sortedTasks.length === 0 ? (

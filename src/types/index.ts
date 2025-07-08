@@ -58,6 +58,9 @@ export interface Task {
   type: 'filing' | 'research' | 'meeting' | 'court' | 'document' | 'other';
   createdAt: Date;
   isClientVisible?: boolean; // New field to determine if client can see this task
+  startDate?: Date; // Optional start date
+  genericCategory?: string; // For generic tasks not associated with cases
+  attachments?: any[]; // File attachments and links
 }
 
 export interface Milestone {

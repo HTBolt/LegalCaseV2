@@ -20,12 +20,13 @@ import {
   mockClientInvoices,
   mockMeetingRequests
 } from './data/mockData';
-import { User } from './types';
+import { User, Task } from './types';
 
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentView, setCurrentView] = useState<'dashboard' | 'case-details'>('dashboard');
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
+  const [tasks, setTasks] = useState(mockTasks);
 
   const handleLogin = (user: User) => {
     setCurrentUser(user);
@@ -47,6 +48,25 @@ function App() {
     setSelectedCaseId(null);
   };
 
+  const handleTaskCreate = (taskData: Partial<Task>) => {
+    const newTask: Task = {
+      id: Date.now().toString(),
+      title: taskData.title!,
+      description: taskData.description!,
+      caseId: taskData.caseId!,
+      assignedTo: taskData.assignedTo!,
+      assignedBy: taskData.assignedBy!,
+      dueDate: taskData.dueDate!,
+      priority: taskData.priority!,
+      status: taskData.status!,
+      type: taskData.type!,
+      createdAt: taskData.createdAt!,
+      isClientVisible: taskData.isClientVisible
+    };
+    
+    setTasks(prev => [...prev, newTask]);
+  };
+
   // Filter data based on user role and permissions
   const getFilteredData = () => {
     if (!currentUser) return { cases: [], tasks: [], milestones: [] };
@@ -55,7 +75,7 @@ function App() {
       case 'lawyer':
         // Lawyers see all cases they're assigned to
         const lawyerCases = mockCases.filter(c => c.assignedLawyer.id === currentUser.id);
-        const lawyerTasks = mockTasks.filter(t => 
+        const lawyerTasks = tasks.filter(t => 
           t.assignedTo.id === currentUser.id || 
           t.assignedBy.id === currentUser.id ||
           lawyerCases.some(c => c.id === t.caseId)
@@ -70,7 +90,7 @@ function App() {
         const internCases = mockCases.filter(c => 
           c.supportingInterns.some(intern => intern.id === currentUser.id)
         );
-        const internTasks = mockTasks.filter(t => 
+        const internTasks = tasks.filter(t => 
           t.assignedTo.id === currentUser.id ||
           internCases.some(c => c.id === t.caseId)
         );
@@ -82,7 +102,7 @@ function App() {
       case 'client':
         // Clients see only their own case
         const clientCases = mockCases.filter(c => c.client.email === currentUser.email);
-        const clientTasks = mockTasks.filter(t => 
+        const clientTasks = tasks.filter(t => 
           t.assignedTo.id === currentUser.id && t.isClientVisible
         );
         const clientMilestones = mockMilestones.filter(m => 
@@ -93,7 +113,7 @@ function App() {
       case 'admin':
       case 'firm-admin':
         // Admins and firm admins see everything
-        return { cases: mockCases, tasks: mockTasks, milestones: mockMilestones };
+        return { cases: mockCases, tasks: tasks, milestones: mockMilestones };
 
       default:
         return { cases: [], tasks: [], milestones: [] };
@@ -145,7 +165,7 @@ function App() {
       {currentView === 'dashboard' && currentUser.role === 'firm-admin' && (
         <FirmDashboard
           cases={mockCases}
-          tasks={mockTasks}
+          tasks={tasks}
           users={mockUsers}
           lawyerPerformance={mockLawyerPerformance}
           firmInfo={mockLawFirm}
@@ -161,6 +181,8 @@ function App() {
           milestones={milestones}
           currentUser={currentUser}
           onCaseSelect={handleCaseSelect}
+          onTaskCreate={handleTaskCreate}
+          users={mockUsers}
         />
       )}
       
@@ -174,6 +196,9 @@ function App() {
           notes={caseNotes}
           billingEntries={caseBillingEntries}
           onBack={handleBackToDashboard}
+          onTaskCreate={handleTaskCreate}
+          currentUser={currentUser}
+          users={mockUsers}
         />
       )}
     </div>

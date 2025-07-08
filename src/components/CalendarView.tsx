@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { 
   ChevronLeft, ChevronRight, Calendar, Clock, MapPin, AlertCircle, 
   Filter, Eye, EyeOff, Scale, CheckSquare, Users, X, ExternalLink,
-  FileText, User
+  FileText, User, Plus
 } from 'lucide-react';
 import { Milestone, Task } from '../types';
+import TaskCreationModal from './TaskCreationModal';
 
 interface CalendarViewProps {
   milestones: Milestone[];
@@ -12,6 +13,10 @@ interface CalendarViewProps {
   compact?: boolean;
   onEventClick?: (event: Milestone | Task, type: 'milestone' | 'task') => void;
   onCaseSelect?: (caseId: string) => void;
+  onTaskCreate?: (taskData: Partial<Task>) => void;
+  currentUser?: any;
+  cases?: any[];
+  users?: any[];
 }
 
 type ViewMode = 'month' | 'week' | 'day';
@@ -37,12 +42,17 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   tasks = [], 
   compact = false, 
   onEventClick,
-  onCaseSelect
+  onCaseSelect,
+  onTaskCreate,
+  currentUser,
+  cases = [],
+  users = []
 }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<ViewMode>('month');
   const [filterMode, setFilterMode] = useState<FilterMode>('all');
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [showTaskModal, setShowTaskModal] = useState(false);
 
   // Generate consistent times for events based on their ID and type
   const generateEventTime = (eventId: string, eventType: string) => {
@@ -198,6 +208,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       onCaseSelect(caseId);
     }
     setSelectedEvent(null);
+  };
+
+  const handleTaskCreate = (taskData: Partial<Task>) => {
+    if (onTaskCreate) {
+      onTaskCreate(taskData);
+    }
+    setShowTaskModal(false);
   };
 
   // Consistent function to get events for any date
@@ -464,6 +481,15 @@ const CalendarView: React.FC<CalendarViewProps> = ({
                 >
                   Today
                 </button>
+                {onTaskCreate && currentUser && (
+                  <button
+                    onClick={() => setShowTaskModal(true)}
+                    className="flex items-center space-x-1 px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden sm:inline">Add Task</span>
+                  </button>
+                )}
               </div>
               
               {/* View mode selector */}
@@ -556,6 +582,18 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         </div>
       </div>
       <EventDetailModal />
+      
+      {/* Task Creation Modal */}
+      {onTaskCreate && currentUser && (
+        <TaskCreationModal
+          isOpen={showTaskModal}
+          onClose={() => setShowTaskModal(false)}
+          onSubmit={handleTaskCreate}
+          currentUser={currentUser}
+          cases={cases}
+          users={users}
+        />
+      )}
     </>
   );
 };

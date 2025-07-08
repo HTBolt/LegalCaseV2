@@ -3,9 +3,10 @@ import {
   ArrowLeft, Calendar, User, Users, Clock, MapPin, Phone, Mail, 
   FileText, Plus, MessageSquare, Scale, Building, AlertTriangle,
   CheckCircle, Download, ExternalLink, Edit, Save, X, History,
-  DollarSign, Receipt, CreditCard, AlertCircle, TrendingUp
+  DollarSign, Receipt, CreditCard, AlertCircle, TrendingUp, Plus
 } from 'lucide-react';
 import { Case, TimelineEvent, Document, Note, BillingEntry } from '../types';
+import TaskCreationModal from './TaskCreationModal';
 
 interface CaseDetailsProps {
   caseData: Case;
@@ -15,6 +16,9 @@ interface CaseDetailsProps {
   notes: Note[];
   billingEntries: BillingEntry[];
   onBack: () => void;
+  onTaskCreate?: (taskData: Partial<any>) => void;
+  currentUser?: any;
+  users?: any[];
 }
 
 const CaseDetails: React.FC<CaseDetailsProps> = ({ 
@@ -24,11 +28,27 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
   documents, 
   notes, 
   billingEntries,
-  onBack 
+  onBack,
+  onTaskCreate,
+  currentUser,
+  users = []
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'pre-engagement' | 'documents' | 'notes' | 'billing'>('overview');
   const [editingNote, setEditingNote] = useState<string | null>(null);
   const [newNote, setNewNote] = useState('');
+  const [showTaskModal, setShowTaskModal] = useState(false);
+
+  const handleTaskCreate = (taskData: Partial<any>) => {
+    if (onTaskCreate) {
+      // Pre-populate with case information
+      const enhancedTaskData = {
+        ...taskData,
+        caseId: caseData.id
+      };
+      onTaskCreate(enhancedTaskData);
+    }
+    setShowTaskModal(false);
+  };
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', { 
@@ -229,6 +249,15 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
                 </span>
               </div>
             </div>
+            {onTaskCreate && currentUser && (
+              <button
+                onClick={() => setShowTaskModal(true)}
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors ml-3"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="hidden sm:inline">Add Task</span>
+              </button>
+            )}
           </div>
           
           {/* Mobile-optimized tabs */}
@@ -762,6 +791,18 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
           </div>
         )}
       </div>
+      
+      {/* Task Creation Modal */}
+      {onTaskCreate && currentUser && (
+        <TaskCreationModal
+          isOpen={showTaskModal}
+          onClose={() => setShowTaskModal(false)}
+          onSubmit={handleTaskCreate}
+          currentUser={currentUser}
+          cases={[caseData]} // Only show current case
+          users={users}
+        />
+      )}
     </div>
   );
 };
