@@ -53,7 +53,7 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
   onTaskModalClose,
   currentUser,
   users = [],
-  onCaseEdit
+  onCaseEdit,
   onTimelineEventCreate,
   onTimelineEventDelete,
   onDocumentUpload,
