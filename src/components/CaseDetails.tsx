@@ -3,7 +3,7 @@ import {
   ArrowLeft, Calendar, User, Users, Clock, MapPin, Phone, Mail, 
   FileText, Plus, MessageSquare, Scale, Building, AlertTriangle,
   CheckCircle, Download, ExternalLink, Edit, Save, X, History,
-  DollarSign, Receipt, CreditCard, AlertCircle, TrendingUp, Plus
+  DollarSign, Receipt, CreditCard, AlertCircle, TrendingUp
 } from 'lucide-react';
 import { Case, TimelineEvent, Document, Note, BillingEntry } from '../types';
 import TaskCreationModal from './TaskCreationModal';
