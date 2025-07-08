@@ -296,7 +296,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     }
   };
 
-  const handleClose = () => {
+  const handleClose = React.useCallback(() => {
     console.log('handleClose called');
     // Reset form data to initial state
     if (!editingTask) {
