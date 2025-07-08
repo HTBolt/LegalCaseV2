@@ -334,6 +334,8 @@ function App() {
           editingTask={editingTask}
           showTaskModal={showTaskModal}
           onTaskModalClose={handleTaskModalClose}
+          onCaseCreate={handleCaseCreate}
+          onCaseEdit={handleCaseEdit}
         />
       )}
       
