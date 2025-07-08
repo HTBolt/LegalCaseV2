@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { Case, TimelineEvent, Document, Note, BillingEntry, Task } from '../types';
 import TaskCreationModal from './TaskCreationModal';
+import TaskList from './TaskList';
 
 interface CaseDetailsProps {
   caseData: Case;
