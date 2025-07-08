@@ -67,6 +67,19 @@ function App() {
     setTasks(prev => [...prev, newTask]);
   };
 
+  const handleTaskUpdate = (taskId: string, updates: Partial<Task>) => {
+    setTasks(prev => prev.map(task => 
+      task.id === taskId ? { ...task, ...updates } : task
+    ));
+  };
+
+  const handleTaskEdit = (task: Task) => {
+    // For now, we'll just log the task to edit
+    // In a real app, this would open the task creation modal in edit mode
+    console.log('Edit task:', task);
+    // You could set a state to track the editing task and pass it to TaskCreationModal
+  };
+
   // Filter data based on user role and permissions
   const getFilteredData = () => {
     if (!currentUser) return { cases: [], tasks: [], milestones: [] };
@@ -183,6 +196,8 @@ function App() {
           currentUser={currentUser}
           onCaseSelect={handleCaseSelect}
           onTaskCreate={handleTaskCreate}
+          onTaskUpdate={handleTaskUpdate}
+          onTaskEdit={handleTaskEdit}
           users={mockUsers}
         />
       )}
@@ -199,6 +214,8 @@ function App() {
           caseTasks={caseTasks}
           onBack={handleBackToDashboard}
           onTaskCreate={handleTaskCreate}
+          onTaskUpdate={handleTaskUpdate}
+          onTaskEdit={handleTaskEdit}
           currentUser={currentUser}
           users={mockUsers}
         />

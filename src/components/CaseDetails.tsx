@@ -18,6 +18,8 @@ interface CaseDetailsProps {
   caseTasks?: Task[];
   onBack: () => void;
   onTaskCreate?: (taskData: Partial<any>) => void;
+  onTaskUpdate?: (taskId: string, updates: Partial<Task>) => void;
+  onTaskEdit?: (task: Task) => void;
   currentUser?: any;
   users?: any[];
 }
@@ -32,6 +34,8 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
   onBack,
   caseTasks = [],
   onTaskCreate,
+  onTaskUpdate,
+  onTaskEdit,
   currentUser,
   users = []
 }) => {
@@ -647,124 +651,16 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
                 )}
               </div>
             ) : (
-              <div className="divide-y divide-gray-200">
-                {caseTasks.map((task) => {
-                  const daysUntilDue = Math.ceil((new Date(task.dueDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-                  const isOverdue = daysUntilDue < 0 && task.status !== 'completed';
-                  const isUrgent = daysUntilDue <= 3 && daysUntilDue >= 0 && task.status !== 'completed';
-                  
-                  return (
-                    <div key={task.id} className="p-4 sm:p-6 hover:bg-gray-50 transition-colors">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-3 mb-2">
-                            <div className={`p-1.5 rounded ${
-                              task.priority === 'high' ? 'bg-red-100 text-red-600' :
-                              task.priority === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                              'bg-green-100 text-green-600'
-                            }`}>
-                              {task.type === 'court' ? (
-                                <Scale className="h-4 w-4" />
-                              ) : task.type === 'filing' ? (
-                                <FileText className="h-4 w-4" />
-                              ) : task.type === 'research' ? (
-                                <Search className="h-4 w-4" />
-                              ) : task.type === 'meeting' ? (
-                                <MapPin className="h-4 w-4" />
-                              ) : (
-                                <CheckCircle className="h-4 w-4" />
-                              )}
-                            </div>
-                            <h4 className="text-sm font-medium text-gray-900 truncate flex-1">
-                              {task.title}
-                            </h4>
-                            {(isOverdue || isUrgent) && (
-                              <AlertTriangle className={`h-4 w-4 flex-shrink-0 ${isOverdue ? 'text-red-500' : 'text-yellow-500'}`} />
-                            )}
-                          </div>
-                          
-                          <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                            {task.description}
-                          </p>
-                          
-                          <div className="flex flex-wrap items-center gap-2 mb-3">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                              task.status === 'completed' ? 'bg-green-100 text-green-800 border-green-200' :
-                              task.status === 'in-progress' ? 'bg-blue-100 text-blue-800 border-blue-200' :
-                              isOverdue ? 'bg-red-100 text-red-800 border-red-200' :
-                              'bg-gray-100 text-gray-800 border-gray-200'
-                            }`}>
-                              {task.status === 'completed' ? 'Completed' :
-                               task.status === 'in-progress' ? 'In Progress' :
-                               isOverdue ? 'Overdue' : 'Pending'}
-                            </span>
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              task.priority === 'high' ? 'bg-red-100 text-red-800' :
-                              task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-green-100 text-green-800'
-                            }`}>
-                              {task.priority} priority
-                            </span>
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              task.type === 'court' ? 'bg-purple-100 text-purple-800' :
-                              'bg-blue-100 text-blue-800'
-                            }`}>
-                              {task.type === 'court' ? 'Court Appearance' : 'Task'}
-                            </span>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm text-gray-600">
-                            <div className="flex items-center space-x-1">
-                              <User className="h-3 w-3" />
-                              <span className="truncate">Assigned: {task.assignedTo.name}</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <User className="h-3 w-3" />
-                              <span className="truncate">Created by: {task.assignedBy.name}</span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <Clock className="h-3 w-3" />
-                              <span className={`truncate ${isOverdue ? 'text-red-600 font-medium' : isUrgent ? 'text-yellow-600 font-medium' : ''}`}>
-                                Due: {task.dueDate.toLocaleDateString()} at {task.dueDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                {daysUntilDue === 0 ? ' (Today)' : 
-                                 daysUntilDue === 1 ? ' (Tomorrow)' : 
-                                 daysUntilDue < 0 ? ` (${Math.abs(daysUntilDue)} days overdue)` :
-                                 ` (${daysUntilDue} days)`}
-                              </span>
-                            </div>
-                            <div className="flex items-center space-x-1">
-                              <Calendar className="h-3 w-3" />
-                              <span className="truncate">Created: {task.createdAt.toLocaleDateString()}</span>
-                            </div>
-                            {task.isClientVisible && (
-                              <div className="flex items-center space-x-1">
-                                <Eye className="h-3 w-3" />
-                                <span className="text-blue-600">Client Visible</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-center space-x-2 ml-3">
-                          <button 
-                            className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
-                            title="Edit task"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </button>
-                          {task.status !== 'completed' && (
-                            <button 
-                              className="p-2 text-gray-400 hover:text-green-600 transition-colors"
-                              title="Mark as completed"
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div>
+                <TaskList 
+                  tasks={caseTasks}
+                  title="Case Tasks"
+                  showAssignee={true}
+                  onAddTask={() => setShowTaskModal(true)}
+                  onTaskUpdate={onTaskUpdate}
+                  onTaskEdit={onTaskEdit}
+                  currentUser={currentUser}
+                />
               </div>
             )}
           </div>

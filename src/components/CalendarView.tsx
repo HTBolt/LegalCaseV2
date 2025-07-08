@@ -326,7 +326,25 @@ const CalendarView: React.FC<CalendarViewProps> = ({
             {selectedEvent.status && (
               <div className="flex items-center space-x-2 text-sm">
                 <span className="font-medium text-gray-700">Status:</span>
-                <span className="text-gray-600">{selectedEvent.status}</span>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    selectedEvent.status === 'completed' ? 'bg-green-100 text-green-800' :
+                    selectedEvent.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
+                    selectedEvent.status === 'overdue' ? 'bg-red-100 text-red-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {selectedEvent.status}
+                  </span>
+              </div>
+            )}
+            
+            {/* Completion Date for completed tasks */}
+            {selectedEvent.type === 'task' && selectedEvent.status === 'completed' && 
+             'completedAt' in selectedEvent.data && (selectedEvent.data as any).completedAt && (
+              <div className="flex items-center space-x-2 text-sm">
+                <span className="font-medium text-gray-700">Completed:</span>
+                <span className="text-gray-600">
+                  {((selectedEvent.data as any).completedAt as Date).toLocaleDateString()}
+                </span>
               </div>
             )}
             
