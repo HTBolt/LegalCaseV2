@@ -13,6 +13,8 @@ interface DashboardProps {
   currentUser: User;
   onCaseSelect: (caseId: string) => void;
   onTaskCreate?: (taskData: Partial<Task>) => void;
+  onTaskUpdate?: (taskId: string, updates: Partial<Task>) => void;
+  onTaskEdit?: (task: Task) => void;
   users?: User[];
 }
 
@@ -23,13 +25,17 @@ const Dashboard: React.FC<DashboardProps> = ({
   currentUser, 
   onCaseSelect,
   onTaskCreate,
+  onTaskUpdate,
+  onTaskEdit,
   users = []
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'tasks'>('overview');
   const [showTaskModal, setShowTaskModal] = useState(false);
 
-  const myTasks = tasks.filter(task => task.assignedTo.id === currentUser.id);
-  const otherTasks = tasks.filter(task => task.assignedTo.id !== currentUser.id);
+  // Filter out completed tasks from dashboard view
+  const activeTasks = tasks.filter(task => task.status !== 'completed');
+  const myTasks = activeTasks.filter(task => task.assignedTo.id === currentUser.id);
+  const otherTasks = activeTasks.filter(task => task.assignedTo.id !== currentUser.id);
   
   const urgentTasks = myTasks.filter(task => {
     const dueDate = new Date(task.dueDate);
@@ -270,19 +276,25 @@ const Dashboard: React.FC<DashboardProps> = ({
             <div className="mt-6 sm:mt-8 space-y-6 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-8">
               <div id="urgent-tasks-section">
                 <TaskList 
-                  tasks={myTasks.slice(0, 10)}
+                  tasks={tasks.filter(task => task.assignedTo.id === currentUser.id).slice(0, 10)}
                   title="My Tasks"
                   showAssignee={false}
                   onAddTask={() => setShowTaskModal(true)}
+                  onTaskUpdate={onTaskUpdate}
+                  onTaskEdit={onTaskEdit}
+                  currentUser={currentUser}
                 />
               </div>
               {currentUser.role !== 'intern' && (
                 <div id="team-tasks-section">
                   <TaskList 
-                    tasks={otherTasks.slice(0, 10)}
+                    tasks={tasks.filter(task => task.assignedTo.id !== currentUser.id).slice(0, 10)}
                     title="Team Tasks"
                     showAssignee={true}
                     onAddTask={() => setShowTaskModal(true)}
+                    onTaskUpdate={onTaskUpdate}
+                    onTaskEdit={onTaskEdit}
+                    currentUser={currentUser}
                   />
                 </div>
               )}
@@ -292,6 +304,9 @@ const Dashboard: React.FC<DashboardProps> = ({
                   title="All Case Tasks"
                   showAssignee={true}
                   onAddTask={() => setShowTaskModal(true)}
+                  onTaskUpdate={onTaskUpdate}
+                  onTaskEdit={onTaskEdit}
+                  currentUser={currentUser}
                 />
               )}
             </div>
@@ -311,19 +326,25 @@ const Dashboard: React.FC<DashboardProps> = ({
           <div className="space-y-6 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-8">
             <div id="my-tasks-section">
               <TaskList 
-                tasks={myTasks}
+                tasks={tasks.filter(task => task.assignedTo.id === currentUser.id)}
                 title="My Tasks"
                 showAssignee={false}
                 onAddTask={() => setShowTaskModal(true)}
+                onTaskUpdate={onTaskUpdate}
+                onTaskEdit={onTaskEdit}
+                currentUser={currentUser}
               />
             </div>
             {currentUser.role !== 'intern' && (
               <div id="team-tasks-section">
                 <TaskList 
-                  tasks={otherTasks}
+                  tasks={tasks.filter(task => task.assignedTo.id !== currentUser.id)}
                   title="Team Tasks"
                   showAssignee={true}
                   onAddTask={() => setShowTaskModal(true)}
+                  onTaskUpdate={onTaskUpdate}
+                  onTaskEdit={onTaskEdit}
+                  currentUser={currentUser}
                 />
               </div>
             )}
@@ -333,6 +354,9 @@ const Dashboard: React.FC<DashboardProps> = ({
                 title="All Case Tasks"
                 showAssignee={true}
                 onAddTask={() => setShowTaskModal(true)}
+                onTaskUpdate={onTaskUpdate}
+                onTaskEdit={onTaskEdit}
+                currentUser={currentUser}
               />
             )}
           </div>
