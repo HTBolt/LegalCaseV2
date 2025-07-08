@@ -653,7 +653,7 @@ const WeekView: React.FC<{
       {weekDates.map((date, index) => {
         const dayEvents = getEventsForDate(date);
         const isToday = new Date().toDateString() === date.toDateString();
-        const courtEvents = dayEvents.filter(e => e.type === 'milestone' && e.category === 'court-appearance');
+        const milestoneEvents = dayEvents.filter(e => e.type === 'milestone');
         const taskEvents = dayEvents.filter(e => e.type === 'task');
         
         return (
@@ -665,14 +665,14 @@ const WeekView: React.FC<{
             </div>
             
             <div className="space-y-2">
-              {/* Court Appearances */}
-              {courtEvents.length > 0 && (
+              {/* Legal Events & Milestones */}
+              {milestoneEvents.length > 0 && (
                 <div>
                   <div className="text-xs font-medium text-red-700 mb-1 flex items-center">
                     <Scale className="h-3 w-3 mr-1" />
-                    Court ({courtEvents.length})
+                    Legal ({milestoneEvents.length})
                   </div>
-                  {courtEvents.map((event) => (
+                  {milestoneEvents.map((event) => (
                     <button
                       key={event.id}
                       onClick={() => onEventClick(event)}
