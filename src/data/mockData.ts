@@ -479,7 +479,7 @@ export const mockCases: Case[] = [
     title: 'GlobalTech Merger & Acquisition',
     clientId: '4',
     client: mockClients[3],
-    assignedLawyer: mockUsers[4], // David Martinez
+    assignedLawyer: mockUsers[4], // Jennifer Walsh
     supportingInterns: [mockUsers[6]],
     caseType: 'Corporate Law',
     status: 'active',
