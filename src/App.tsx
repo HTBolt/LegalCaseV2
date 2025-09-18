@@ -282,6 +282,173 @@ function App() {
     setBillingEntries(prev => [...prev, newBillingEntry]);
   };
 
+  // User management handlers
+  const handleApproveUser = (userId: string) => {
+    setUsers(prev => prev.map(user => 
+      user.id === userId ? { ...user, approvalStatus: 'approved' } : user
+    ));
+    
+    // If user is being approved to join a firm, add them to firm members
+    const user = users.find(u => u.id === userId);
+    if (user && user.firmId) {
+      setFirms(prev => prev.map(firm => 
+        firm.id === user.firmId 
+          ? { 
+              ...firm, 
+              members: [...firm.members, userId],
+              pendingApprovals: firm.pendingApprovals.filter(id => id !== userId)
+            }
+          : firm
+      ));
+    }
+  };
+
+  const handleRejectUser = (userId: string) => {
+    setUsers(prev => prev.map(user => 
+      user.id === userId ? { ...user, approvalStatus: 'rejected' } : user
+    ));
+    
+    // Remove from firm's pending approvals
+    const user = users.find(u => u.id === userId);
+    if (user && user.firmId) {
+      setFirms(prev => prev.map(firm => 
+        firm.id === user.firmId 
+          ? { 
+              ...firm, 
+              pendingApprovals: firm.pendingApprovals.filter(id => id !== userId)
+            }
+          : firm
+      ));
+    }
+  };
+
+  const handleUpdateUserRole = (userId: string, newRole: User['role']) => {
+    setUsers(prev => prev.map(user => 
+      user.id === userId ? { ...user, role: newRole } : user
+    ));
+    
+    // If promoting to firm-admin, update firm's adminId
+    if (newRole === 'firm-admin') {
+      const user = users.find(u => u.id === userId);
+      if (user && user.firmId) {
+        setFirms(prev => prev.map(firm => 
+          firm.id === user.firmId ? { ...firm, adminId: userId } : firm
+        ));
+      }
+    }
+  };
+
+  const handleDeleteUser = (userId: string) => {
+    // Remove user from users array
+    setUsers(prev => prev.filter(user => user.id !== userId));
+    
+    // Remove user from all firms
+    setFirms(prev => prev.map(firm => ({
+      ...firm,
+      members: firm.members.filter(id => id !== userId),
+      pendingApprovals: firm.pendingApprovals.filter(id => id !== userId),
+      adminId: firm.adminId === userId ? firm.members.find(id => id !== userId) || '' : firm.adminId
+    })));
+  };
+
+  // Firm management handlers
+  const handleCreateFirm = (firmData: Partial<LawFirm>) => {
+    const newFirm: LawFirm = {
+      id: Date.now().toString(),
+      name: firmData.name!,
+      address: firmData.address || '',
+      phone: firmData.phone || '',
+      email: firmData.email!,
+      adminId: firmData.adminId!,
+      members: [firmData.adminId!],
+      pendingApprovals: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    setFirms(prev => [...prev, newFirm]);
+  };
+
+  const handleUpdateFirm = (firmId: string, updates: Partial<LawFirm>) => {
+    setFirms(prev => prev.map(firm => 
+      firm.id === firmId 
+        ? { ...firm, ...updates, updatedAt: new Date() }
+        : firm
+    ));
+  };
+
+  const handleDeleteFirm = (firmId: string) => {
+    // Remove firm
+    setFirms(prev => prev.filter(firm => firm.id !== firmId));
+    
+    // Update users who belonged to this firm
+    setUsers(prev => prev.map(user => 
+      user.firmId === firmId 
+        ? { ...user, firmId: undefined, approvalStatus: 'pending' }
+        : user
+    ));
+  };
+
+  const handleRemoveUserFromFirm = (userId: string, firmId: string) => {
+    // Remove user from firm
+    setFirms(prev => prev.map(firm => 
+      firm.id === firmId 
+        ? { 
+            ...firm, 
+            members: firm.members.filter(id => id !== userId),
+            pendingApprovals: firm.pendingApprovals.filter(id => id !== userId)
+          }
+        : firm
+    ));
+    
+    // Update user's firm association
+    setUsers(prev => prev.map(user => 
+      user.id === userId 
+        ? { ...user, firmId: undefined, approvalStatus: 'pending' }
+        : user
+    ));
+  };
+
+  const handleInviteUser = (email: string, role: User['role'], firmId: string) => {
+    const newUserId = Date.now().toString();
+    const newUser: User = {
+      id: newUserId,
+      name: `Invited ${role}`,
+      email,
+      role,
+      firmId,
+      approvalStatus: 'pending',
+      createdAt: new Date()
+    };
+    
+    setUsers(prev => [...prev, newUser]);
+    
+    // Add to firm's pending approvals
+    setFirms(prev => prev.map(firm => 
+      firm.id === firmId 
+        ? { ...firm, pendingApprovals: [...firm.pendingApprovals, newUserId] }
+        : firm
+    ));
+  };
+
+  const handleTransferAdminRole = (currentAdminId: string, newAdminId: string, firmId: string) => {
+    // Update firm's admin
+    setFirms(prev => prev.map(firm => 
+      firm.id === firmId ? { ...firm, adminId: newAdminId } : firm
+    ));
+    
+    // Update user roles
+    setUsers(prev => prev.map(user => {
+      if (user.id === currentAdminId) {
+        return { ...user, role: 'lawyer' };
+      }
+      if (user.id === newAdminId) {
+        return { ...user, role: 'firm-admin' };
+      }
+      return user;
+    }));
+  };
+
   // Filter data based on user role and permissions
   const getFilteredData = () => {
     if (!currentUser) return { cases: [], tasks: [], milestones: [] };
