@@ -122,6 +122,8 @@ function App() {
     setCurrentUser(null);
     setCurrentView('dashboard');
     setSelectedCaseId(null);
+    setAuthState(prev => ({ ...prev, currentUser: null, currentScreen: 'login' }));
+    setPendingUser(null);
   };
 
   const handleCaseSelect = (caseId: string) => {
