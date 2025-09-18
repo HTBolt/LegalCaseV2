@@ -67,7 +67,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   onUpdateUserRole,
   onRemoveUser,
   onInviteUser,
-  onTransferAdminRole
+  onTransferAdminRole,
   isFirmAdmin = false
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'tasks' | 'firm-analytics' | 'firm-management'>('overview');
@@ -456,7 +456,6 @@ const Dashboard: React.FC<DashboardProps> = ({
           </div>
         )}
 
-        {activeTab === 'firm-analytics' && currentUser.role === 'firm-admin' && (
         {activeTab === 'firm-analytics' && isFirmAdmin && (
           <FirmDashboard
             cases={allCases}
