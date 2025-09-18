@@ -630,20 +630,6 @@ function App() {
       )}
       
       {/* Regular User Dashboard */}
-      {currentView === 'dashboard' && (currentUser.role === 'lawyer' || currentUser.role === 'intern') && isApproved && (
-        <Dashboard
-          cases={cases}
-          tasks={tasks}
-          users={mockUsers}
-          lawyerPerformance={mockLawyerPerformance}
-          firmInfo={mockLawFirm}
-          currentUser={currentUser}
-          onCaseCreate={handleCaseCreate}
-          onCaseEdit={handleCaseEdit}
-        />
-      )}
-      
-      {/* Regular User Dashboard */}
       {currentView === 'dashboard' && currentUser.role !== 'firm-admin' && currentUser.role !== 'client' && (
         <Dashboard
           cases={filteredCases}

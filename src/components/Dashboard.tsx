@@ -79,7 +79,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   };
 
   // Filter out completed tasks from dashboard view
-  const activeTasks = tasks.filter(task => task.status !== 'completed');
+  const activeTasks = (tasks || []).filter(task => task.status !== 'completed');
   const myTasks = activeTasks.filter(task => task.assignedTo.id === currentUser.id);
   const otherTasks = activeTasks.filter(task => task.assignedTo.id !== currentUser.id);
   
@@ -91,7 +91,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   });
 
   const activeCases = cases.filter(c => c.status === 'active');
-  const upcomingHearings = milestones.filter(m => m.type === 'court-appearance' && m.status === 'upcoming');
+  const upcomingHearings = (milestones || []).filter(m => m.type === 'court-appearance' && m.status === 'upcoming');
 
   // Handle stat tile clicks
   const handleStatClick = (statType: string) => {
