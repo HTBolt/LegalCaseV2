@@ -2056,6 +2056,6 @@ export const mockLawyerPerformance: LawyerPerformance[] = [
     billableHours: 299, // Active: 143 + Closed: 156
     averageHourlyRate: 500,
     winRate: 100 // 2 favorable outcomes out of 2 decided cases
+    totalCases: 3,
   }
 ];
-    totalCases: 3,
