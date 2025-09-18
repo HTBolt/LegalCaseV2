@@ -583,8 +583,6 @@ function App() {
       <Header 
         currentUser={currentUser} 
         onLogout={handleLogout}
-        currentView={currentView}
-        onViewChange={handleViewChange}
       />
       
       {/* Approval Pending Message */}
@@ -634,36 +632,18 @@ function App() {
           onCaseCreate={handleCaseCreate}
           onCaseEdit={handleCaseEdit}
           onNewCaseClick={() => setShowCaseModal(true)}
-        />
-      )}
-      
-      {/* Firm Analytics Dashboard */}
-      {currentView === 'firm-dashboard' && (currentUser.role === 'firm-admin' || currentUser.role === 'lawyer') && isApproved && (
-        <FirmDashboard
-          cases={cases}
-          tasks={tasks}
-          users={users}
+          allCases={cases}
+          allTasks={tasks}
+          allUsers={users}
           lawyerPerformance={mockLawyerPerformance}
           firmInfo={currentFirm || mockLawFirm}
-          currentUser={currentUser}
+          onApproveUser={handleApproveUser}
+          onRejectUser={handleRejectUser}
+          onUpdateUserRole={handleUpdateUserRole}
+          onRemoveUser={(userId) => handleRemoveUserFromFirm(userId, currentUser.firmId!)}
+          onInviteUser={(email, role) => handleInviteUser(email, role, currentUser.firmId!)}
+          onTransferAdminRole={(newAdminId) => handleTransferAdminRole(currentUser.id, newAdminId, currentUser.firmId!)}
         />
-      )}
-      
-      {/* Firm Management - Separate View */}
-      {currentView === 'firm-management' && currentUser.role === 'firm-admin' && isApproved && currentFirm && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <FirmManagement
-            currentFirm={currentFirm}
-            users={users}
-            currentUser={currentUser}
-            onApproveUser={handleApproveUser}
-            onRejectUser={handleRejectUser}
-            onUpdateUserRole={handleUpdateUserRole}
-            onRemoveUser={handleRemoveUserFromFirm}
-            onInviteUser={handleInviteUser}
-            onTransferAdminRole={handleTransferAdminRole}
-          />
-        </div>
       )}
       
       {/* Regular User Dashboard */}

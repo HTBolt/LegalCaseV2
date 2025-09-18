@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, Users, FileText, AlertTriangle, CheckCircle, UserCheck } from 'lucide-react';
+import { Calendar, Clock, Users, FileText, AlertTriangle, CheckCircle, UserCheck, BarChart3, Building } from 'lucide-react';
 import { Case, Task, Milestone, User } from '../types';
 import CalendarView from './CalendarView';
 import TaskList from './TaskList';
 import CaseList from './CaseList';
 import TaskCreationModal from './TaskCreationModal';
+import FirmDashboard from './FirmDashboard';
+import FirmManagement from './FirmManagement';
 import { Plus } from 'lucide-react';
 
 interface DashboardProps {
@@ -23,6 +25,18 @@ interface DashboardProps {
   onCaseCreate?: (caseData: Partial<Case>) => void;
   onCaseEdit?: (case_: Case) => void;
   onNewCaseClick?: () => void;
+  // Firm admin specific props
+  allCases?: Case[];
+  allTasks?: Task[];
+  allUsers?: User[];
+  lawyerPerformance?: any[];
+  firmInfo?: any;
+  onApproveUser?: (userId: string) => void;
+  onRejectUser?: (userId: string) => void;
+  onUpdateUserRole?: (userId: string, newRole: User['role']) => void;
+  onRemoveUser?: (userId: string) => void;
+  onInviteUser?: (email: string, role: User['role']) => void;
+  onTransferAdminRole?: (newAdminId: string) => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ 
@@ -40,9 +54,21 @@ const Dashboard: React.FC<DashboardProps> = ({
   users = [],
   onCaseCreate,
   onCaseEdit,
-  onNewCaseClick
+  onNewCaseClick,
+  // Firm admin props
+  allCases = [],
+  allTasks = [],
+  allUsers = [],
+  lawyerPerformance = [],
+  firmInfo,
+  onApproveUser,
+  onRejectUser,
+  onUpdateUserRole,
+  onRemoveUser,
+  onInviteUser,
+  onTransferAdminRole
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'tasks'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'tasks' | 'firm-analytics' | 'firm-management'>('overview');
   const [localShowTaskModal, setLocalShowTaskModal] = useState(false);
 
   // Use prop showTaskModal if provided, otherwise use local state
@@ -205,7 +231,26 @@ const Dashboard: React.FC<DashboardProps> = ({
     return baseStats;
   };
 
+  const getTabsForRole = () => {
+    const baseTabs = [
+      { id: 'overview', label: 'Overview', icon: FileText },
+      { id: 'calendar', label: 'Calendar', icon: Calendar },
+      { id: 'tasks', label: 'Tasks', icon: CheckCircle }
+    ];
+
+    // Add firm admin specific tabs
+    if (currentUser.role === 'firm-admin') {
+      baseTabs.push(
+        { id: 'firm-analytics', label: 'Firm Analytics', icon: BarChart3 },
+        { id: 'firm-management', label: 'Firm Management', icon: Building }
+      );
+    }
+
+    return baseTabs;
+  };
+
   const stats = getRoleSpecificStats();
+  const tabs = getTabsForRole();
 
   const getDashboardTitle = () => {
     switch (currentUser.role) {
@@ -242,37 +287,21 @@ const Dashboard: React.FC<DashboardProps> = ({
               )}
               
               <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg overflow-x-auto">
-              <button
-                onClick={() => setActiveTab('overview')}
-                className={`px-3 sm:px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
-                  activeTab === 'overview' 
-                    ? 'bg-white text-blue-600 shadow-sm' 
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Overview
-              </button>
-              <button
-                onClick={() => setActiveTab('calendar')}
-                className={`px-3 sm:px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
-                  activeTab === 'calendar' 
-                    ? 'bg-white text-blue-600 shadow-sm' 
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Calendar
-              </button>
-              <button
-                onClick={() => setActiveTab('tasks')}
-                className={`px-3 sm:px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
-                  activeTab === 'tasks' 
-                    ? 'bg-white text-blue-600 shadow-sm' 
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                Tasks
-              </button>
-            </div>
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`flex items-center space-x-1 px-3 sm:px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
+                      activeTab === tab.id 
+                        ? 'bg-white text-blue-600 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    <tab.icon className="h-4 w-4" />
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -423,6 +452,31 @@ const Dashboard: React.FC<DashboardProps> = ({
               />
             )}
           </div>
+        )}
+
+        {activeTab === 'firm-analytics' && currentUser.role === 'firm-admin' && (
+          <FirmDashboard
+            cases={allCases}
+            tasks={allTasks}
+            users={allUsers}
+            lawyerPerformance={lawyerPerformance}
+            firmInfo={firmInfo}
+            currentUser={currentUser}
+          />
+        )}
+
+        {activeTab === 'firm-management' && currentUser.role === 'firm-admin' && (
+          <FirmManagement
+            currentFirm={firmInfo}
+            users={allUsers}
+            currentUser={currentUser}
+            onApproveUser={onApproveUser!}
+            onRejectUser={onRejectUser!}
+            onUpdateUserRole={onUpdateUserRole!}
+            onRemoveUser={onRemoveUser!}
+            onInviteUser={(email, role) => onInviteUser!(email, role)}
+            onTransferAdminRole={onTransferAdminRole!}
+          />
         )}
       </div>
       
