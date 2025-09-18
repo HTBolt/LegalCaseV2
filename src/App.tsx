@@ -525,17 +525,32 @@ function App() {
           milestones={milestones}
           currentUser={currentUser}
           onCaseSelect={handleCaseSelect}
+          onBackToDashboard={handleBackToDashboard}
+          onTaskCreate={handleTaskCreate}
+          onTaskUpdate={handleTaskUpdate}
+          onTaskEdit={handleTaskEdit}
+          onTimelineEventCreate={handleTimelineEventCreate}
+          onTimelineEventDelete={handleTimelineEventDelete}
+          onDocumentUpload={handleDocumentUpload}
+          onBillingEntryCreate={handleBillingEntryCreate}
+          users={users}
+          editingTask={editingTask}
+          showTaskModal={showTaskModal}
+          onTaskModalClose={handleTaskModalClose}
+        />
+      )}
+      
       {/* Case Creation/Editing Modal */}
       {isApproved && (
         <CaseFormModal
-        isOpen={showCaseModal}
-        onClose={handleCaseModalClose}
-        onSubmit={editingCase ? handleCaseUpdate : handleCaseCreate}
-        currentUser={currentUser}
+          isOpen={showCaseModal}
+          onClose={handleCaseModalClose}
+          onSubmit={editingCase ? handleCaseUpdate : handleCaseCreate}
+          currentUser={currentUser}
           users={users}
-        clients={mockClients}
-        editingCase={editingCase}
-      />
+          clients={mockClients}
+          editingCase={editingCase}
+        />
       )}
     </div>
   );
