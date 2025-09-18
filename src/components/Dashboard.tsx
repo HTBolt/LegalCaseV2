@@ -199,7 +199,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     ];
 
     // Add role-specific stat
-    if (currentUser.role === 'lawyer') {
+    if (currentUser.role === 'lawyer' || currentUser.role === 'firm-admin') {
       baseStats.push({
         title: 'Team Tasks',
         value: otherTasks.length,
