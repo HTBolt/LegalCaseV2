@@ -638,7 +638,6 @@ function App() {
           allCases={cases}
           allTasks={tasks}
           allUsers={users}
-          lawyerPerformance={mockLawyerPerformance}
           firmInfo={currentFirm || mockLawFirm}
           onApproveUser={handleApproveUser}
           onRejectUser={handleRejectUser}
