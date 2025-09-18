@@ -26,6 +26,7 @@ import {
 } from './data/mockData';
 import { User, Task, Case, TimelineEvent, Document, BillingEntry, LawFirm, SignupData, AuthState } from './types';
 import CaseFormModal from './components/CaseFormModal';
+import { Clock } from 'lucide-react';
 
 function App() {
   const [authState, setAuthState] = useState<AuthState>({
@@ -617,6 +618,25 @@ function App() {
       
       {/* Firm Admin Dashboard */}
       {currentView === 'dashboard' && currentUser.role === 'firm-admin' && isApproved && (
+        <Dashboard
+          cases={filteredCases}
+          tasks={filteredTasks}
+          milestones={milestones}
+          currentUser={currentUser}
+          onCaseSelect={handleCaseSelect}
+          onTaskCreate={handleTaskCreate}
+          onTaskUpdate={handleTaskUpdate}
+          onTaskEdit={handleTaskEdit}
+          users={users}
+          editingTask={editingTask}
+          showTaskModal={showTaskModal}
+          onTaskModalClose={handleTaskModalClose}
+          onCaseCreate={handleCaseCreate}
+          onCaseEdit={handleCaseEdit}
+          onNewCaseClick={() => setShowCaseModal(true)}
+        />
+      )}
+      
       {/* Firm Analytics Dashboard */}
       {currentView === 'firm-dashboard' && (currentUser.role === 'firm-admin' || currentUser.role === 'lawyer') && isApproved && (
         <FirmDashboard
@@ -647,7 +667,7 @@ function App() {
       )}
       
       {/* Regular User Dashboard */}
-      {currentView === 'dashboard' && currentUser.role !== 'client' && isApproved && (
+      {currentView === 'dashboard' && currentUser.role !== 'client' && currentUser.role !== 'firm-admin' && isApproved && (
         <Dashboard
           cases={filteredCases}
           tasks={filteredTasks}
