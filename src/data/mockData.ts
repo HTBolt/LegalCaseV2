@@ -521,7 +521,7 @@ export const mockCases: Case[] = [
     title: 'Tech Startup IP Portfolio Review',
     clientId: '4',
     client: mockClients[3],
-    assignedLawyer: mockUsers[8], // Mark Rodriguez (id: '10' but will be index 8)
+    assignedLawyer: mockUsers[9], // Mark Rodriguez (id: '10' but will be index 9)
     supportingInterns: [mockUsers[6]], // James Wilson
     caseType: 'Intellectual Property',
     status: 'active',
@@ -541,7 +541,7 @@ export const mockCases: Case[] = [
     title: 'Employment Contract Negotiation',
     clientId: '5',
     client: mockClients[4],
-    assignedLawyer: mockUsers[8], // Mark Rodriguez
+    assignedLawyer: mockUsers[9], // Mark Rodriguez
     supportingInterns: [],
     caseType: 'Employment Law',
     status: 'active',
@@ -561,7 +561,7 @@ export const mockCases: Case[] = [
     title: 'Brown Family Custody Case',
     clientId: '5',
     client: mockClients[4],
-    assignedLawyer: mockUsers[5], // David Martinez
+    assignedLawyer: mockUsers[4], // David Martinez
     supportingInterns: [mockUsers[6]], // James Wilson (corrected index)
     caseType: 'Family Law',
     status: 'active',
@@ -590,8 +590,8 @@ export const mockCases: Case[] = [
     title: 'Wilson Real Estate Dispute',
     clientId: '6',
     client: mockClients[5],
-    assignedLawyer: mockUsers[9], // Lisa Thompson
-    supportingInterns: [mockUsers[10]], // Amanda Davis (id: '8' but index 10)
+    assignedLawyer: mockUsers[5], // Lisa Thompson
+    supportingInterns: [mockUsers[7]], // Amanda Davis (id: '8' but index 7)
     caseType: 'Real Estate Law',
     status: 'active',
     priority: 'medium',
@@ -631,8 +631,8 @@ export const mockCases: Case[] = [
     title: 'MedCorp Regulatory Compliance',
     clientId: '7',
     client: mockClients[6],
-    assignedLawyer: mockUsers[9], // Lisa Thompson
-    supportingInterns: [mockUsers[10]], // Amanda Davis
+    assignedLawyer: mockUsers[5], // Lisa Thompson
+    supportingInterns: [mockUsers[7]], // Amanda Davis
     caseType: 'Healthcare Law',
     status: 'active',
     priority: 'high',
@@ -716,7 +716,7 @@ export const mockCases: Case[] = [
     title: 'Corporate Merger Review',
     clientId: '4',
     client: mockClients[3],
-    assignedLawyer: mockUsers[5], // David Martinez
+    assignedLawyer: mockUsers[4], // David Martinez
     supportingInterns: [mockUsers[6]], // James Wilson
     caseType: 'Corporate Law',
     status: 'closed',
@@ -737,7 +737,7 @@ export const mockCases: Case[] = [
     title: 'IP Licensing Agreement Review',
     clientId: '7',
     client: mockClients[6],
-    assignedLawyer: mockUsers[8], // Mark Rodriguez
+    assignedLawyer: mockUsers[9], // Mark Rodriguez
     supportingInterns: [mockUsers[6]], // James Wilson
     caseType: 'Intellectual Property',
     status: 'closed',
@@ -758,8 +758,8 @@ export const mockCases: Case[] = [
     title: 'Property Development Dispute',
     clientId: '6',
     client: mockClients[5],
-    assignedLawyer: mockUsers[9], // Lisa Thompson
-    supportingInterns: [mockUsers[10]], // Amanda Davis
+    assignedLawyer: mockUsers[5], // Lisa Thompson
+    supportingInterns: [mockUsers[7]], // Amanda Davis
     caseType: 'Real Estate Law',
     status: 'closed',
     priority: 'high',
@@ -928,7 +928,7 @@ export const mockTasks: Task[] = [
     title: 'Provide Medical Records',
     description: 'Please provide all medical records related to your injury, including recent treatment reports',
     caseId: '2',
-    assignedTo: mockUsers[14], // Client user
+    assignedTo: mockUsers[8], // Client user
     assignedBy: mockUsers[0], // Sarah Johnson
     dueDate: new Date('2025-07-02'),
     priority: 'high',
@@ -942,7 +942,7 @@ export const mockTasks: Task[] = [
     title: 'Review Settlement Proposal',
     description: 'Please review the settlement proposal from the insurance company and provide your feedback',
     caseId: '2',
-    assignedTo: mockUsers[14], // Client user
+    assignedTo: mockUsers[8], // Client user
     assignedBy: mockUsers[0], // Sarah Johnson
     dueDate: new Date('2025-07-08'),
     priority: 'medium',
@@ -958,8 +958,8 @@ export const mockTasks: Task[] = [
     title: 'Review Merger Documents',
     description: 'Comprehensive review of all merger and acquisition documents',
     caseId: '4',
-    assignedTo: mockUsers[5],
-    assignedBy: mockUsers[5],
+    assignedTo: mockUsers[4],
+    assignedBy: mockUsers[4],
     dueDate: new Date('2025-07-15'),
     priority: 'high',
     status: 'in-progress',
@@ -973,7 +973,7 @@ export const mockTasks: Task[] = [
     description: 'Conduct thorough due diligence research on target company',
     caseId: '4',
     assignedTo: mockUsers[6],
-    assignedBy: mockUsers[5],
+    assignedBy: mockUsers[4],
     dueDate: new Date('2025-07-12'),
     priority: 'high',
     status: 'pending',
@@ -987,7 +987,7 @@ export const mockTasks: Task[] = [
     description: 'Prepare documentation for child custody evaluation',
     caseId: '5',
     assignedTo: mockUsers[6], // James Wilson (corrected index)
-    assignedBy: mockUsers[5],
+    assignedBy: mockUsers[4],
     dueDate: new Date('2025-07-10'),
     priority: 'medium',
     status: 'in-progress',
@@ -1002,8 +1002,8 @@ export const mockTasks: Task[] = [
     title: 'IP Portfolio Documentation',
     description: 'Document and organize intellectual property portfolio for startup',
     caseId: '15',
-    assignedTo: mockUsers[8], // Mark Rodriguez
-    assignedBy: mockUsers[8],
+    assignedTo: mockUsers[9], // Mark Rodriguez
+    assignedBy: mockUsers[9],
     dueDate: new Date('2025-08-05'),
     priority: 'medium',
     status: 'in-progress',
@@ -1017,7 +1017,7 @@ export const mockTasks: Task[] = [
     description: 'Conduct comprehensive patent search for potential conflicts',
     caseId: '15',
     assignedTo: mockUsers[6], // James Wilson
-    assignedBy: mockUsers[8], // Mark Rodriguez
+    assignedBy: mockUsers[9], // Mark Rodriguez
     dueDate: new Date('2025-08-02'),
     priority: 'high',
     status: 'pending',
@@ -1030,8 +1030,8 @@ export const mockTasks: Task[] = [
     title: 'Employment Contract Drafting',
     description: 'Draft employment contract with IP assignment clauses',
     caseId: '16',
-    assignedTo: mockUsers[8], // Mark Rodriguez
-    assignedBy: mockUsers[8],
+    assignedTo: mockUsers[9], // Mark Rodriguez
+    assignedBy: mockUsers[9],
     dueDate: new Date('2025-08-08'),
     priority: 'low',
     status: 'pending',
@@ -1046,8 +1046,8 @@ export const mockTasks: Task[] = [
     title: 'Property Title Research',
     description: 'Research property title history and potential issues',
     caseId: '6',
-    assignedTo: mockUsers[10], // Amanda Davis (corrected index)
-    assignedBy: mockUsers[9],
+    assignedTo: mockUsers[7], // Amanda Davis (corrected index)
+    assignedBy: mockUsers[5],
     dueDate: new Date('2025-07-08'),
     priority: 'medium',
     status: 'pending',
@@ -1060,8 +1060,8 @@ export const mockTasks: Task[] = [
     title: 'Regulatory Compliance Review',
     description: 'Review healthcare regulations and compliance requirements',
     caseId: '7',
-    assignedTo: mockUsers[9],
-    assignedBy: mockUsers[9],
+    assignedTo: mockUsers[5],
+    assignedBy: mockUsers[5],
     dueDate: new Date('2025-07-18'),
     priority: 'high',
     status: 'in-progress',
@@ -1074,8 +1074,8 @@ export const mockTasks: Task[] = [
     title: 'FDA Documentation Preparation',
     description: 'Prepare all required FDA documentation and submissions',
     caseId: '7',
-    assignedTo: mockUsers[10], // Amanda Davis (corrected index)
-    assignedBy: mockUsers[9],
+    assignedTo: mockUsers[7], // Amanda Davis (corrected index)
+    assignedBy: mockUsers[5],
     dueDate: new Date('2025-07-16'),
     priority: 'high',
     status: 'pending',
@@ -1089,8 +1089,8 @@ export const mockTasks: Task[] = [
     title: 'Healthcare Compliance Audit',
     description: 'Conduct comprehensive compliance audit for MedCorp',
     caseId: '7',
-    assignedTo: mockUsers[9], // Lisa Thompson
-    assignedBy: mockUsers[9],
+    assignedTo: mockUsers[5], // Lisa Thompson
+    assignedBy: mockUsers[5],
     dueDate: new Date('2025-07-22'),
     priority: 'high',
     status: 'pending',
@@ -1103,8 +1103,8 @@ export const mockTasks: Task[] = [
     title: 'Real Estate Documentation Review',
     description: 'Review all property documentation for Wilson case',
     caseId: '6',
-    assignedTo: mockUsers[9], // Lisa Thompson
-    assignedBy: mockUsers[9],
+    assignedTo: mockUsers[5], // Lisa Thompson
+    assignedBy: mockUsers[5],
     dueDate: new Date('2025-07-06'),
     priority: 'medium',
     status: 'in-progress',
@@ -1973,64 +1973,5 @@ export const mockBillingEntries: BillingEntry[] = [
     totalAmount: 5050,
     dueDate: new Date('2025-01-30'),
     status: 'pending',
-    invoiceNumber: 'INV-2025-003',
-    notes: 'Preparing for court-ordered mediation'
-  },
-
-  // Sarah Johnson's Closed Cases - Billing History
-  {
-    id: 'bill-13',
-    caseId: '8', // Anderson Contract Dispute (Closed)
-    date: new Date('2024-06-30'),
-    description: 'Contract dispute resolution and settlement negotiations',
-    lawyerHours: 15,
-    lawyerRate: 500,
-    internEntries: [
-      {
-        intern: mockUsers[1], // Michael Chen
-        hoursWorked: 3,
-        hoursBilled: 3,
-        rate: 150
-      }
-    ],
-    totalHours: 18,
-    totalAmount: 7950,
-    dueDate: new Date('2024-07-30'),
-    status: 'paid',
-    invoiceNumber: 'INV-2024-010',
-    paidDate: new Date('2024-07-25'),
-    notes: 'Case settled favorably for client'
   }
-];
-
-// Generate comprehensive lawyer performance data
-export const mockLawyerPerformance: LawyerPerformance[] = [
-  {
-    lawyerId: '1',
-    lawyer: mockUsers[0], // Sarah Johnson
-    totalCases: 4,
-    activeCases: 3,
-    closedCases: 1,
-    wonCases: 1,
-    lostCases: 0,
-    settledCases: 0,
-    totalRevenue: 189000, // Active cases: 150,000 + Closed: 39,000
-    billableHours: 379, // Active: 301 + Closed: 78
-    averageHourlyRate: 500,
-    winRate: 100 // 2 favorable outcomes out of 2 decided cases
-  },
-  {
-    lawyerId: '5',
-    lawyer: mockUsers[5], // David Martinez
-    totalCases: 4,
-    activeCases: 2,
-    closedCases: 1,
-    wonCases: 2,
-    lostCases: 0,
-    settledCases: 0,
-    totalRevenue: 151000, // Active: 95,000 + Closed: 56,000
-    billableHours: 299, // Active: 143 + Closed: 156
-    averageHourlyRate: 500,
-    winRate: 100
-  }
-];
+]
