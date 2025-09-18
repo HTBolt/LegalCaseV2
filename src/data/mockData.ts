@@ -1779,6 +1779,8 @@ export const mockBillingEntries: BillingEntry[] = [
     id: 'bill-13',
     caseId: '8', // Anderson Contract Dispute (Closed)
     date: new Date('2024-06-30'),
+  }
+]
 // Generate comprehensive lawyer performance data
 export const mockLawyerPerformance: LawyerPerformance[] = [
   {
