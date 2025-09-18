@@ -2042,6 +2042,7 @@ export const mockLawyerPerformance: LawyerPerformance[] = [
     averageHourlyRate: 500,
     winRate: 100 // 1 won out of 1 decided case
     totalCases: 3,
+  }
   {
     lawyerId: '6',
     lawyer: mockUsers[5], // Lisa Thompson

@@ -240,8 +240,8 @@ const Dashboard: React.FC<DashboardProps> = ({
       { id: 'tasks', label: 'Tasks', icon: CheckCircle }
     ];
 
-    // Add firm admin specific tabs
-    if (currentUser.role === 'firm-admin') {
+    // Add firm admin specific tabs - check if user has firm admin privileges
+    if (isFirmAdmin) {
       baseTabs.push(
         { id: 'firm-analytics', label: 'Firm Analytics', icon: BarChart3 },
         { id: 'firm-management', label: 'Firm Management', icon: Building }
@@ -457,6 +457,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         )}
 
         {activeTab === 'firm-analytics' && currentUser.role === 'firm-admin' && (
+        {activeTab === 'firm-analytics' && isFirmAdmin && (
           <FirmDashboard
             cases={allCases}
             tasks={allTasks}
@@ -467,7 +468,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           />
         )}
 
-        {activeTab === 'firm-management' && currentUser.role === 'firm-admin' && (
+        {activeTab === 'firm-management' && isFirmAdmin && (
           <FirmManagement
             currentFirm={firmInfo}
             users={allUsers}
