@@ -338,7 +338,17 @@ function App() {
   // If not logged in, show login form
   if (!currentUser) {
     console.log('=== APP: No current user, showing login form ===');
-    return <LoginForm onLogin={handleLogin} users={mockUsers} />;
+    return (
+      <AuthScreen
+        currentScreen={authState.currentScreen}
+        onLogin={handleLogin}
+        onSignup={handleSignup}
+        onScreenChange={handleScreenChange}
+        users={users}
+        firms={firms}
+        pendingUser={pendingUser}
+      />
+    );
   }
 
   console.log('=== APP: Rendering with showTaskModal:', showTaskModal, 'editingTask:', editingTask?.id);
