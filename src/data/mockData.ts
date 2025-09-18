@@ -1,6 +1,206 @@
 import { User, Client, Case, Task, Milestone, TimelineEvent, Document, Note, LawFirm, LawyerPerformance, BillingEntry, ClientInvoice, MeetingRequest } from '../types';
 
-export const mockLawFirm: LawFirm = {
+export const mockLawFirms: LawFirm[] = [
+  {
+    id: '1',
+    name: 'Johnson & Associates Legal Group',
+    address: '123 Legal Plaza, Suite 500, New York, NY 10001',
+    phone: '+1 (555) 123-4567',
+    email: 'info@johnsonlegal.com',
+    website: 'www.johnsonlegal.com',
+    foundedYear: 1995,
+    adminId: '4', // Robert Johnson
+    members: ['1', '2', '3', '4'], // Sarah, Michael, Emily, Robert
+    pendingApprovals: [],
+    createdAt: new Date('2020-01-01'),
+    updatedAt: new Date('2025-01-01')
+  },
+  {
+    id: '2',
+    name: 'Martinez & Partners LLP',
+    address: '456 Corporate Drive, Suite 200, Los Angeles, CA 90210',
+    phone: '+1 (555) 987-6543',
+    email: 'contact@martinezpartners.com',
+    website: 'www.martinezpartners.com',
+    foundedYear: 2010,
+    adminId: '5', // David Martinez
+    members: ['5', '7'], // David Martinez, James Wilson
+    pendingApprovals: [],
+    createdAt: new Date('2020-06-01'),
+    updatedAt: new Date('2024-12-01')
+  },
+  {
+    id: '3',
+    name: 'Thompson Legal Services',
+    address: '789 Business Blvd, Suite 300, Chicago, IL 60601',
+    phone: '+1 (555) 456-7890',
+    email: 'info@thompsonlegal.com',
+    foundedYear: 2015,
+    adminId: '6', // Lisa Thompson
+    members: ['6', '8'], // Lisa Thompson, Amanda Davis
+    pendingApprovals: [],
+    createdAt: new Date('2021-03-15'),
+    updatedAt: new Date('2024-11-15')
+  }
+];
+
+// For backward compatibility
+export const mockLawFirm: LawFirm = mockLawFirms[0];
+
+export const mockUsers: User[] = [
+  // System Admin
+  {
+    id: 'system-admin-1',
+    name: 'System Administrator',
+    email: 'admin@legalcasepro.com',
+    role: 'system-admin',
+    approvalStatus: 'approved',
+    createdAt: new Date('2020-01-01'),
+    lastLoginAt: new Date('2025-01-13')
+  },
+  // Johnson & Associates Legal Group
+  {
+    id: '1',
+    name: 'Sarah Johnson',
+    email: 'sarah.johnson@johnsonlegal.com',
+    role: 'lawyer',
+    firmId: '1',
+    approvalStatus: 'approved',
+    createdAt: new Date('2020-02-01'),
+    lastLoginAt: new Date('2025-01-14')
+  },
+  {
+    id: '2',
+    name: 'Michael Chen',
+    email: 'michael.chen@johnsonlegal.com',
+    role: 'intern',
+    firmId: '1',
+    approvalStatus: 'approved',
+    createdAt: new Date('2023-09-01'),
+    lastLoginAt: new Date('2025-01-14')
+  },
+  {
+    id: '3',
+    name: 'Emily Rodriguez',
+    email: 'emily.rodriguez@johnsonlegal.com',
+    role: 'intern',
+    firmId: '1',
+    approvalStatus: 'approved',
+    createdAt: new Date('2023-09-01'),
+    lastLoginAt: new Date('2025-01-13')
+  },
+  {
+    id: '4',
+    name: 'Robert Johnson',
+    email: 'robert.johnson@johnsonlegal.com',
+    role: 'firm-admin',
+    firmId: '1',
+    approvalStatus: 'approved',
+    createdAt: new Date('2020-01-15'),
+    lastLoginAt: new Date('2025-01-14')
+  },
+  // Martinez & Partners LLP
+  {
+    id: '5',
+    name: 'David Martinez',
+    email: 'david.martinez@martinezpartners.com',
+    role: 'firm-admin',
+    firmId: '2',
+    approvalStatus: 'approved',
+    createdAt: new Date('2020-06-01'),
+    lastLoginAt: new Date('2025-01-12')
+  },
+  {
+    id: '7',
+    name: 'James Wilson',
+    email: 'james.wilson@martinezpartners.com',
+    role: 'intern',
+    firmId: '2',
+    approvalStatus: 'approved',
+    createdAt: new Date('2024-01-15'),
+    lastLoginAt: new Date('2025-01-10')
+  },
+  // Thompson Legal Services
+  {
+    id: '6',
+    name: 'Lisa Thompson',
+    email: 'lisa.thompson@thompsonlegal.com',
+    role: 'firm-admin',
+    firmId: '3',
+    approvalStatus: 'approved',
+    createdAt: new Date('2021-03-15'),
+    lastLoginAt: new Date('2025-01-11')
+  },
+  {
+    id: '8',
+    name: 'Amanda Davis',
+    email: 'amanda.davis@thompsonlegal.com',
+    role: 'intern',
+    firmId: '3',
+    approvalStatus: 'approved',
+    createdAt: new Date('2024-06-01'),
+    lastLoginAt: new Date('2025-01-09')
+  },
+  // Pending Approvals - Examples
+  {
+    id: 'pending-lawyer-1',
+    name: 'Jennifer Smith',
+    email: 'jennifer.smith@email.com',
+    role: 'lawyer',
+    firmId: '1',
+    approvalStatus: 'pending',
+    createdAt: new Date('2025-01-10')
+  },
+  {
+    id: 'pending-intern-1',
+    name: 'Alex Johnson',
+    email: 'alex.johnson@student.edu',
+    role: 'intern',
+    firmId: '2',
+    approvalStatus: 'pending',
+    createdAt: new Date('2025-01-12')
+  },
+  // Client users
+  {
+    id: 'client-1',
+    name: 'John Smith',
+    email: 'john.smith@email.com',
+    role: 'client',
+    associatedLawyerIds: ['1'], // Associated with Sarah Johnson
+    invitedBy: '1',
+    approvalStatus: 'approved',
+    createdAt: new Date('2024-08-01'),
+    lastLoginAt: new Date('2025-01-14')
+  },
+  {
+    id: 'client-2',
+    name: 'Maria Garcia',
+    email: 'maria.garcia@email.com',
+    role: 'client',
+    associatedLawyerIds: ['1'], // Associated with Sarah Johnson
+    invitedBy: '1',
+    approvalStatus: 'approved',
+    createdAt: new Date('2024-09-15'),
+    lastLoginAt: new Date('2025-01-13')
+  },
+  {
+    id: 'client-3',
+    name: 'Robert Wilson',
+    email: 'robert.wilson@email.com',
+    role: 'client',
+    associatedLawyerIds: ['6'], // Associated with Lisa Thompson
+    invitedBy: '6',
+    approvalStatus: 'approved',
+    createdAt: new Date('2024-10-01'),
+    lastLoginAt: new Date('2025-01-12')
+  }
+];
+
+// Update pending approvals in firms
+mockLawFirms[0].pendingApprovals = ['pending-lawyer-1'];
+mockLawFirms[1].pendingApprovals = ['pending-intern-1'];
+
+export const mockUsers_old: User[] = [
   id: '1',
   name: 'Johnson & Associates Legal Group',
   address: '123 Legal Plaza, Suite 500, New York, NY 10001',
@@ -222,8 +422,8 @@ export const mockCases: Case[] = [
     title: 'Garcia Employment Discrimination',
     clientId: '3',
     client: mockClients[2],
-    assignedLawyer: mockUsers[0],
-    supportingInterns: [mockUsers[1], mockUsers[2]],
+    assignedLawyer: mockUsers.find(u => u.id === '1')!,
+    supportingInterns: [mockUsers.find(u => u.id === '2')!, mockUsers.find(u => u.id === '3')!],
     caseType: 'Employment Law',
     status: 'active',
     priority: 'high',

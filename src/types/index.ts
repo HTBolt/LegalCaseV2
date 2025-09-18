@@ -2,9 +2,14 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'lawyer' | 'intern' | 'admin' | 'firm-admin' | 'client';
+  role: 'system-admin' | 'lawyer' | 'firm-admin' | 'intern' | 'client';
   firmId?: string;
   avatar?: string;
+  approvalStatus?: 'pending' | 'approved' | 'rejected';
+  associatedLawyerIds?: string[]; // For client users
+  invitedBy?: string; // ID of lawyer who invited the client
+  createdAt?: Date;
+  lastLoginAt?: Date;
 }
 
 export interface Client {
@@ -14,6 +19,32 @@ export interface Client {
   phone: string;
   address: string;
   company?: string;
+}
+
+export interface LawFirm {
+  id: string;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  website?: string;
+  foundedYear?: number;
+  adminId: string; // ID of the firm admin user
+  members: string[]; // Array of user IDs belonging to the firm
+  pendingApprovals: string[]; // Array of user IDs awaiting approval
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface UserInvitation {
+  id: string;
+  email: string;
+  role: 'lawyer' | 'intern' | 'client';
+  firmId: string;
+  invitedBy: string; // User ID who sent the invitation
+  status: 'pending' | 'accepted' | 'declined' | 'expired';
+  createdAt: Date;
+  expiresAt: Date;
 }
 
 export interface Case {
@@ -195,4 +226,22 @@ export interface LawyerPerformance {
   billableHours: number;
   averageHourlyRate: number;
   winRate: number;
+}
+
+// Auth-related interfaces
+export interface AuthState {
+  currentUser: User | null;
+  currentScreen: 'login' | 'signup-choice' | 'signup-lawyer' | 'signup-intern' | 'pending-approval' | 'dashboard' | 'admin-panel' | 'firm-management';
+  selectedFirm?: LawFirm;
+}
+
+export interface SignupData {
+  name: string;
+  email: string;
+  role: 'lawyer' | 'intern';
+  firmId?: string;
+  newFirmName?: string;
+  newFirmAddress?: string;
+  newFirmPhone?: string;
+  newFirmEmail?: string;
 }

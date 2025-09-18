@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import LoginForm from './components/LoginForm';
+import AuthScreen from './components/AuthScreen';
+import SystemAdminDashboard from './components/SystemAdminDashboard';
+import FirmManagement from './components/FirmManagement';
 import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import FirmDashboard from './components/FirmDashboard';
 import ClientDashboard from './components/ClientDashboard';
 import CaseDetails from './components/CaseDetails';
 import { 
-  mockUsers, 
+  mockUsers,
+  mockLawFirms,
   mockCases, 
   mockTasks, 
   mockMilestones,
@@ -21,10 +24,18 @@ import {
   mockMeetingRequests,
   mockClients
 } from './data/mockData';
-import { User, Task, Case, TimelineEvent, Document, BillingEntry } from './types';
+import { User, Task, Case, TimelineEvent, Document, BillingEntry, LawFirm, SignupData, AuthState } from './types';
 import CaseFormModal from './components/CaseFormModal';
 
 function App() {
+  const [authState, setAuthState] = useState<AuthState>({
+    currentUser: null,
+    currentScreen: 'login',
+    selectedFirm: undefined
+  });
+  const [pendingUser, setPendingUser] = useState<User | null>(null);
+  const [users, setUsers] = useState(mockUsers);
+  const [firms, setFirms] = useState(mockLawFirms);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentView, setCurrentView] = useState<'dashboard' | 'case-details'>('dashboard');
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
@@ -40,7 +51,71 @@ function App() {
   const [editingCase, setEditingCase] = useState<Case | null>(null);
 
   const handleLogin = (user: User) => {
+    if (user.approvalStatus === 'pending') {
+      setPendingUser(user);
+      setAuthState(prev => ({ ...prev, currentScreen: 'pending-approval' }));
+      return;
+    }
+    
+    if (user.approvalStatus === 'rejected') {
+      return; // Should be handled in AuthScreen
+    }
+    
     setCurrentUser(user);
+    setAuthState(prev => ({ ...prev, currentUser: user, currentScreen: 'dashboard' }));
+  };
+
+  const handleSignup = (signupData: SignupData) => {
+    const newUserId = Date.now().toString();
+    
+    let newFirmId = signupData.firmId;
+    
+    // If creating a new firm, create it first
+    if (signupData.role === 'lawyer' && signupData.newFirmName) {
+      const newFirm: LawFirm = {
+        id: Date.now().toString(),
+        name: signupData.newFirmName,
+        address: signupData.newFirmAddress || '',
+        phone: signupData.newFirmPhone || '',
+        email: signupData.newFirmEmail || signupData.email,
+        adminId: newUserId,
+        members: [newUserId],
+        pendingApprovals: [],
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      
+      setFirms(prev => [...prev, newFirm]);
+      newFirmId = newFirm.id;
+    }
+    
+    const newUser: User = {
+      id: newUserId,
+      name: signupData.name,
+      email: signupData.email,
+      role: signupData.role === 'lawyer' && signupData.newFirmName ? 'firm-admin' : signupData.role,
+      firmId: newFirmId,
+      approvalStatus: signupData.role === 'lawyer' && signupData.newFirmName ? 'approved' : 'pending',
+      createdAt: new Date()
+    };
+    
+    setUsers(prev => [...prev, newUser]);
+    
+    // If joining existing firm, add to pending approvals
+    if (newFirmId && !signupData.newFirmName) {
+      setFirms(prev => prev.map(firm => 
+        firm.id === newFirmId 
+          ? { ...firm, pendingApprovals: [...firm.pendingApprovals, newUserId] }
+          : firm
+      ));
+    }
+    
+    setPendingUser(newUser);
+    setAuthState(prev => ({ ...prev, currentScreen: 'pending-approval' }));
+  };
+
+  const handleScreenChange = (screen: AuthState['currentScreen']) => {
+    setAuthState(prev => ({ ...prev, currentScreen: screen }));
   };
 
   const handleLogout = () => {
@@ -268,6 +343,27 @@ function App() {
 
   console.log('=== APP: Rendering with showTaskModal:', showTaskModal, 'editingTask:', editingTask?.id);
 
+  // System Admin Dashboard
+  if (currentUser.role === 'system-admin') {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header currentUser={currentUser} onLogout={handleLogout} />
+        <SystemAdminDashboard
+          users={users}
+          firms={firms}
+          currentUser={currentUser}
+          onApproveUser={handleApproveUser}
+          onRejectUser={handleRejectUser}
+          onUpdateUserRole={handleUpdateUserRole}
+          onDeleteUser={handleDeleteUser}
+          onCreateFirm={handleCreateFirm}
+          onUpdateFirm={handleUpdateFirm}
+          onDeleteFirm={handleDeleteFirm}
+        />
+      </div>
+    );
+  }
+
   const { cases: filteredCases, tasks: filteredTasks, milestones } = getFilteredData();
   const selectedCase = selectedCaseId ? filteredCases.find(c => c.id === selectedCaseId) : null;
   const caseTimelineEvents = selectedCaseId ? timelineEvents.filter(e => e.caseId === selectedCaseId) : [];
@@ -277,6 +373,11 @@ function App() {
   const caseBillingEntries = selectedCaseId ? billingEntries.filter(b => b.caseId === selectedCaseId) : [];
   const caseTasks = selectedCaseId ? filteredTasks.filter(t => t.caseId === selectedCaseId) : [];
 
+  // Get current user's firm for firm management
+  const currentFirm = currentUser.firmId ? firms.find(f => f.id === currentUser.firmId) : null;
+  
+  // Check if user's approval status is still pending
+  const isApproved = currentUser.approvalStatus === 'approved';
   // Client-specific data
   const clientCase = currentUser.role === 'client' ? filteredCases[0] : null;
   const clientInvoices = currentUser.role === 'client' && clientCase ? 
@@ -290,10 +391,25 @@ function App() {
     <div className="min-h-screen bg-gray-50">
       <Header currentUser={currentUser} onLogout={handleLogout} />
       
+      {/* Approval Pending Message */}
+      {!isApproved && (
+        <div className="bg-yellow-50 border-b border-yellow-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div className="flex items-center space-x-2">
+              <Clock className="h-5 w-5 text-yellow-600" />
+              <p className="text-sm font-medium text-yellow-800">
+                Your account is pending approval. Limited functionality is available until approved.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Client Dashboard */}
-      {currentUser.role === 'client' && clientCase && (
+      {currentUser.role === 'client' && clientCase && isApproved && (
         <ClientDashboard
           clientCase={clientCase}
+          currentUser={currentUser}
           clientTasks={filteredTasks}
           milestones={milestones}
           timelineEvents={caseTimelineEvents}
@@ -301,13 +417,44 @@ function App() {
           documents={clientDocuments}
           invoices={clientInvoices}
           meetingRequests={clientMeetingRequests}
-          currentUser={currentUser}
         />
       )}
       
       {/* Firm Admin Dashboard */}
-      {currentView === 'dashboard' && currentUser.role === 'firm-admin' && (
-        <FirmDashboard
+      {currentView === 'dashboard' && currentUser.role === 'firm-admin' && isApproved && (
+        <div className="space-y-8">
+          <FirmDashboard
+            cases={cases}
+            tasks={tasks}
+            users={users}
+            lawyerPerformance={mockLawyerPerformance}
+            firmInfo={currentFirm || mockLawFirm}
+            currentUser={currentUser}
+            onCaseCreate={handleCaseCreate}
+            onCaseEdit={handleCaseEdit}
+          />
+          
+          {currentFirm && (
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <FirmManagement
+                currentFirm={currentFirm}
+                users={users}
+                currentUser={currentUser}
+                onApproveUser={handleApproveUser}
+                onRejectUser={handleRejectUser}
+                onUpdateUserRole={handleUpdateUserRole}
+                onRemoveUser={handleRemoveUserFromFirm}
+                onInviteUser={handleInviteUser}
+                onTransferAdminRole={handleTransferAdminRole}
+              />
+            </div>
+          )}
+        </div>
+      )}
+      
+      {/* Regular User Dashboard */}
+      {currentView === 'dashboard' && (currentUser.role === 'lawyer' || currentUser.role === 'intern') && isApproved && (
+        <Dashboard
           cases={cases}
           tasks={tasks}
           users={mockUsers}
@@ -330,7 +477,7 @@ function App() {
           onTaskCreate={handleTaskCreate}
           onTaskUpdate={handleTaskUpdate}
           onTaskEdit={handleTaskEdit}
-          users={mockUsers}
+          users={users}
           editingTask={editingTask}
           showTaskModal={showTaskModal}
           onTaskModalClose={handleTaskModalClose}
@@ -340,8 +487,33 @@ function App() {
         />
       )}
       
+      {/* Pending/Limited Access Dashboard */}
+      {!isApproved && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+            <Clock className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Account Pending Approval</h2>
+            <p className="text-gray-600 mb-6">
+              Your account is awaiting approval from the firm administrator or system admin. 
+              You'll receive an email notification once your access is approved.
+            </p>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <h3 className="font-medium text-yellow-800 mb-2">Account Details:</h3>
+              <div className="text-left space-y-1 text-sm text-yellow-700">
+                <p><strong>Name:</strong> {currentUser.name}</p>
+                <p><strong>Email:</strong> {currentUser.email}</p>
+                <p><strong>Role:</strong> {currentUser.role}</p>
+                {currentUser.firmId && (
+                  <p><strong>Firm:</strong> {firms.find(f => f.id === currentUser.firmId)?.name}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Case Details */}
-      {currentView === 'case-details' && selectedCase && currentUser.role !== 'client' && (
+      {currentView === 'case-details' && selectedCase && currentUser.role !== 'client' && isApproved && (
         <CaseDetails
           caseData={selectedCase}
           timelineEvents={caseTimelineEvents}
@@ -349,34 +521,22 @@ function App() {
           documents={caseDocuments}
           notes={caseNotes}
           billingEntries={caseBillingEntries}
-          caseTasks={caseTasks}
-          onBack={handleBackToDashboard}
-          onTaskCreate={handleTaskCreate}
-          onTaskUpdate={handleTaskUpdate}
-          onTaskEdit={handleTaskEdit}
+          tasks={filteredTasks}
+          milestones={milestones}
           currentUser={currentUser}
-          users={mockUsers}
-          editingTask={editingTask}
-          showTaskModal={showTaskModal}
-          onTaskModalClose={handleTaskModalClose}
-          onTimelineEventCreate={handleTimelineEventCreate}
-          onTimelineEventDelete={handleTimelineEventDelete}
-          onDocumentUpload={handleDocumentUpload}
-          onBillingEntryCreate={handleBillingEntryCreate}
-          onCaseEdit={handleCaseEdit}
-        />
-      )}
-      
+          onCaseSelect={handleCaseSelect}
       {/* Case Creation/Editing Modal */}
-      <CaseFormModal
+      {isApproved && (
+        <CaseFormModal
         isOpen={showCaseModal}
         onClose={handleCaseModalClose}
         onSubmit={editingCase ? handleCaseUpdate : handleCaseCreate}
         currentUser={currentUser}
-        users={mockUsers}
+          users={users}
         clients={mockClients}
         editingCase={editingCase}
       />
+      )}
     </div>
   );
 }
