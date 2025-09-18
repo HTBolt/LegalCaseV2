@@ -2010,3 +2010,5 @@ export const mockLawyerPerformance: LawyerPerformance[] = [
     lostCases: 0,
     settledCases: 0,
     totalRevenue: 151000, // Active: 95,000 + Closed: 
+  }
+]
