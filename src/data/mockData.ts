@@ -201,14 +201,16 @@ mockLawFirms[0].pendingApprovals = ['pending-lawyer-1'];
 mockLawFirms[1].pendingApprovals = ['pending-intern-1'];
 
 export const mockUsers_old: User[] = [
-  id: '1',
-  name: 'Johnson & Associates Legal Group',
-  address: '123 Legal Plaza, Suite 500, New York, NY 10001',
-  phone: '+1 (555) 123-4567',
-  email: 'info@johnsonlegal.com',
-  website: 'www.johnsonlegal.com',
-  foundedYear: 1995
-};
+  {
+    id: '1',
+    name: 'Johnson & Associates Legal Group',
+    address: '123 Legal Plaza, Suite 500, New York, NY 10001',
+    phone: '+1 (555) 123-4567',
+    email: 'info@johnsonlegal.com',
+    website: 'www.johnsonlegal.com',
+    foundedYear: 1995
+  }
+];
 
 export const mockUsers: User[] = [
   {
