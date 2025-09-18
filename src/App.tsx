@@ -37,7 +37,7 @@ function App() {
   const [users, setUsers] = useState(mockUsers);
   const [firms, setFirms] = useState(mockLawFirms);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'case-details'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'case-details' | 'firm-dashboard' | 'firm-management'>('dashboard');
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
   const [tasks, setTasks] = useState(mockTasks);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -62,6 +62,9 @@ function App() {
     }
     
     setCurrentUser(user);
+    // Set initial view based on user role
+    const initialView = user.role === 'client' ? 'dashboard' : 'dashboard';
+    setCurrentView(initialView);
     setAuthState(prev => ({ ...prev, currentUser: user, currentScreen: 'dashboard' }));
   };
 
@@ -124,6 +127,14 @@ function App() {
     setSelectedCaseId(null);
     setAuthState(prev => ({ ...prev, currentUser: null, currentScreen: 'login' }));
     setPendingUser(null);
+  };
+
+  const handleViewChange = (view: string) => {
+    setCurrentView(view as any);
+    // Reset case selection when changing views
+    if (view !== 'case-details') {
+      setSelectedCaseId(null);
+    }
   };
 
   const handleCaseSelect = (caseId: string) => {
@@ -568,7 +579,12 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header currentUser={currentUser} onLogout={handleLogout} />
+      <Header 
+        currentUser={currentUser} 
+        onLogout={handleLogout}
+        currentView={currentView}
+        onViewChange={handleViewChange}
+      />
       
       {/* Approval Pending Message */}
       {!isApproved && (
@@ -601,38 +617,37 @@ function App() {
       
       {/* Firm Admin Dashboard */}
       {currentView === 'dashboard' && currentUser.role === 'firm-admin' && isApproved && (
-        <div className="space-y-8">
-          <FirmDashboard
-            cases={cases}
-            tasks={tasks}
+      {/* Firm Analytics Dashboard */}
+      {currentView === 'firm-dashboard' && (currentUser.role === 'firm-admin' || currentUser.role === 'lawyer') && isApproved && (
+        <FirmDashboard
+          cases={cases}
+          tasks={tasks}
+          users={users}
+          lawyerPerformance={mockLawyerPerformance}
+          firmInfo={currentFirm || mockLawFirm}
+          currentUser={currentUser}
+        />
+      )}
+      
+      {/* Firm Management - Separate View */}
+      {currentView === 'firm-management' && currentUser.role === 'firm-admin' && isApproved && currentFirm && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <FirmManagement
+            currentFirm={currentFirm}
             users={users}
-            lawyerPerformance={mockLawyerPerformance}
-            firmInfo={currentFirm || mockLawFirm}
             currentUser={currentUser}
-            onCaseCreate={handleCaseCreate}
-            onCaseEdit={handleCaseEdit}
+            onApproveUser={handleApproveUser}
+            onRejectUser={handleRejectUser}
+            onUpdateUserRole={handleUpdateUserRole}
+            onRemoveUser={handleRemoveUserFromFirm}
+            onInviteUser={handleInviteUser}
+            onTransferAdminRole={handleTransferAdminRole}
           />
-          
-          {currentFirm && (
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <FirmManagement
-                currentFirm={currentFirm}
-                users={users}
-                currentUser={currentUser}
-                onApproveUser={handleApproveUser}
-                onRejectUser={handleRejectUser}
-                onUpdateUserRole={handleUpdateUserRole}
-                onRemoveUser={handleRemoveUserFromFirm}
-                onInviteUser={handleInviteUser}
-                onTransferAdminRole={handleTransferAdminRole}
-              />
-            </div>
-          )}
         </div>
       )}
       
       {/* Regular User Dashboard */}
-      {currentView === 'dashboard' && currentUser.role !== 'firm-admin' && currentUser.role !== 'client' && (
+      {currentView === 'dashboard' && currentUser.role !== 'client' && isApproved && (
         <Dashboard
           cases={filteredCases}
           tasks={filteredTasks}
