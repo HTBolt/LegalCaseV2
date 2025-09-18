@@ -17,7 +17,6 @@ import {
   mockPreEngagementEvents,
   mockDocuments,
   mockNotes,
-  mockLawyerPerformance,
   mockLawFirm,
   mockBillingEntries,
   mockClientInvoices,
