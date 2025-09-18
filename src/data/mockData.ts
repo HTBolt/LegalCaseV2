@@ -1973,5 +1973,42 @@ export const mockBillingEntries: BillingEntry[] = [
     totalAmount: 5050,
     dueDate: new Date('2025-01-30'),
     status: 'pending',
+    invoiceNumber: 'INV-2025-003',
+    notes: 'Preparing for court-ordered mediation'
+  },
+
+  // Sarah Johnson's Closed Cases - Billing History
+  {
+    id: 'bill-13',
+    caseId: '8', // Anderson Contract Dispute (Closed)
+    date: new Date('2024-06-30'),
+  }
+]
+// Generate comprehensive lawyer performance data
+export const mockLawyerPerformance: LawyerPerformance[] = [
+  {
+    lawyerId: '1',
+    lawyer: mockUsers[0], // Sarah Johnson
+    totalCases: 4,
+    activeCases: 3,
+    closedCases: 1,
+    wonCases: 1,
+    lostCases: 0,
+    settledCases: 0,
+    totalRevenue: 189000, // Active cases: 150,000 + Closed: 39,000
+    billableHours: 379, // Active: 301 + Closed: 78
+    averageHourlyRate: 500,
+    winRate: 100 // 2 favorable outcomes out of 2 decided cases
+  },
+  {
+    lawyerId: '5',
+    lawyer: mockUsers[4], // David Martinez
+    totalCases: 4,
+    activeCases: 2,
+    closedCases: 1,
+    wonCases: 2,
+    lostCases: 0,
+    settledCases: 0,
+    totalRevenue: 151000, // Active: 95,000 + Closed: 
   }
 ]
