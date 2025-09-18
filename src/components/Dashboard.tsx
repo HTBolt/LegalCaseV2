@@ -37,6 +37,7 @@ interface DashboardProps {
   onRemoveUser?: (userId: string) => void;
   onInviteUser?: (email: string, role: User['role']) => void;
   onTransferAdminRole?: (newAdminId: string) => void;
+  isFirmAdmin?: boolean;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ 
@@ -67,6 +68,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   onRemoveUser,
   onInviteUser,
   onTransferAdminRole
+  isFirmAdmin = false
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'tasks' | 'firm-analytics' | 'firm-management'>('overview');
   const [localShowTaskModal, setLocalShowTaskModal] = useState(false);

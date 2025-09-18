@@ -567,6 +567,10 @@ function App() {
   // Get current user's firm for firm management
   const currentFirm = currentUser.firmId ? firms.find(f => f.id === currentUser.firmId) : null;
   
+  // Check if current user has firm admin privileges
+  const isFirmAdmin = currentUser.role === 'firm-admin' || 
+    (currentFirm && currentFirm.adminId === currentUser.id);
+  
   // Check if user's approval status is still pending
   const isApproved = currentUser.approvalStatus === 'approved';
   // Client-specific data
@@ -615,7 +619,7 @@ function App() {
       )}
       
       {/* Firm Admin Dashboard */}
-      {currentView === 'dashboard' && currentUser.role === 'firm-admin' && isApproved && (
+      {currentView === 'dashboard' && isFirmAdmin && isApproved && (
         <Dashboard
           cases={filteredCases}
           tasks={filteredTasks}
@@ -643,11 +647,12 @@ function App() {
           onRemoveUser={(userId) => handleRemoveUserFromFirm(userId, currentUser.firmId!)}
           onInviteUser={(email, role) => handleInviteUser(email, role, currentUser.firmId!)}
           onTransferAdminRole={(newAdminId) => handleTransferAdminRole(currentUser.id, newAdminId, currentUser.firmId!)}
+          isFirmAdmin={isFirmAdmin}
         />
       )}
       
       {/* Regular User Dashboard */}
-      {currentView === 'dashboard' && currentUser.role !== 'client' && currentUser.role !== 'firm-admin' && isApproved && (
+      {currentView === 'dashboard' && currentUser.role !== 'client' && !isFirmAdmin && isApproved && (
         <Dashboard
           cases={filteredCases}
           tasks={filteredTasks}

@@ -10,7 +10,7 @@ export const mockLawFirms: LawFirm[] = [
     website: 'www.johnsonlegal.com',
     foundedYear: 1995,
     adminId: '4', // Robert Johnson
-    members: ['1', '2', '3', '4'], // Sarah, Michael, Emily, Robert
+    members: ['1', '2', '3', '4', '9'], // Sarah, Michael, Emily, Robert, Jennifer
     pendingApprovals: [],
     createdAt: new Date('2020-01-01'),
     updatedAt: new Date('2025-01-01')
@@ -24,7 +24,7 @@ export const mockLawFirms: LawFirm[] = [
     website: 'www.martinezpartners.com',
     foundedYear: 2010,
     adminId: '5', // David Martinez
-    members: ['5', '7'], // David Martinez, James Wilson
+    members: ['5', '7', '10'], // David Martinez, James Wilson, Mark Rodriguez
     pendingApprovals: [],
     createdAt: new Date('2020-06-01'),
     updatedAt: new Date('2024-12-01')
@@ -36,8 +36,8 @@ export const mockLawFirms: LawFirm[] = [
     phone: '+1 (555) 456-7890',
     email: 'info@thompsonlegal.com',
     foundedYear: 2015,
-    adminId: '6', // Lisa Thompson
-    members: ['6', '8'], // Lisa Thompson, Amanda Davis
+    adminId: '11', // Patricia Thompson (pure admin)
+    members: ['6', '8', '11'], // Lisa Thompson (lawyer), Amanda Davis, Patricia Thompson
     pendingApprovals: [],
     createdAt: new Date('2021-03-15'),
     updatedAt: new Date('2024-11-15')
@@ -91,7 +91,7 @@ export const mockUsers: User[] = [
   },
   {
     id: '4',
-    name: 'Robert Johnson',
+    name: 'Robert Johnson', 
     email: 'robert.johnson@johnsonlegal.com',
     role: 'firm-admin',
     firmId: '1',
@@ -99,12 +99,22 @@ export const mockUsers: User[] = [
     createdAt: new Date('2020-01-15'),
     lastLoginAt: new Date('2025-01-14')
   },
+  {
+    id: '9',
+    name: 'Jennifer Walsh',
+    email: 'jennifer.walsh@johnsonlegal.com',
+    role: 'lawyer',
+    firmId: '1',
+    approvalStatus: 'approved',
+    createdAt: new Date('2021-05-01'),
+    lastLoginAt: new Date('2025-01-14')
+  },
   // Martinez & Partners LLP
   {
     id: '5',
     name: 'David Martinez',
     email: 'david.martinez@martinezpartners.com',
-    role: 'firm-admin',
+    role: 'lawyer', // This user will be treated as both lawyer and firm-admin
     firmId: '2',
     approvalStatus: 'approved',
     createdAt: new Date('2020-06-01'),
@@ -120,12 +130,22 @@ export const mockUsers: User[] = [
     createdAt: new Date('2024-01-15'),
     lastLoginAt: new Date('2025-01-10')
   },
+  {
+    id: '10',
+    name: 'Mark Rodriguez',
+    email: 'mark.rodriguez@martinezpartners.com',
+    role: 'lawyer',
+    firmId: '2',
+    approvalStatus: 'approved',
+    createdAt: new Date('2022-03-01'),
+    lastLoginAt: new Date('2025-01-13')
+  },
   // Thompson Legal Services
   {
     id: '6',
     name: 'Lisa Thompson',
     email: 'lisa.thompson@thompsonlegal.com',
-    role: 'firm-admin',
+    role: 'lawyer',
     firmId: '3',
     approvalStatus: 'approved',
     createdAt: new Date('2021-03-15'),
@@ -140,6 +160,16 @@ export const mockUsers: User[] = [
     approvalStatus: 'approved',
     createdAt: new Date('2024-06-01'),
     lastLoginAt: new Date('2025-01-09')
+  },
+  {
+    id: '11',
+    name: 'Patricia Thompson',
+    email: 'patricia.thompson@thompsonlegal.com',
+    role: 'firm-admin',
+    firmId: '3',
+    approvalStatus: 'approved',
+    createdAt: new Date('2021-03-15'),
+    lastLoginAt: new Date('2025-01-12')
   },
   // Pending Approvals - Examples
   {
@@ -339,8 +369,70 @@ export const mockCases: Case[] = [
       }
     ]
   },
+  // Jennifer Walsh's cases (Lawyer at Johnson & Associates)
   {
-    id: '3',
+    id: '13',
+    title: 'Downtown Development Contract Review',
+    clientId: '1',
+    client: mockClients[0],
+    assignedLawyer: mockUsers[4], // Jennifer Walsh (id: '9' in the array)
+    supportingInterns: [mockUsers[1]], // Michael Chen
+    caseType: 'Contract Law',
+    status: 'active',
+    priority: 'medium',
+    nextHearingDate: new Date('2025-07-25'),
+    courtStage: 'Contract Review',
+    referredBy: 'Existing Client',
+    createdAt: new Date('2024-11-15'),
+    updatedAt: new Date('2025-01-12'),
+    billableHours: 34,
+    totalRevenue: 17000,
+    opposingCounselHistory: [],
+    judgeHistory: []
+  },
+  {
+    id: '14',
+    title: 'Metropolitan Housing Rights Case',
+    clientId: '5',
+    client: mockClients[4],
+    assignedLawyer: mockUsers[4], // Jennifer Walsh
+    supportingInterns: [mockUsers[2]], // Emily Rodriguez
+    caseType: 'Real Estate Law',
+    status: 'active',
+    priority: 'high',
+    nextHearingDate: new Date('2025-07-30'),
+    courtStage: 'Preliminary Hearings',
+    referredBy: 'Bar Association',
+    judge: 'Hon. Rebecca Martinez',
+    courtLevel: 'district',
+    opposingCounsel: {
+      name: 'Christopher Lee',
+      firm: 'Lee & Associates',
+      email: 'clee@leelaw.com',
+      phone: '+1 (555) 678-9012'
+    },
+    createdAt: new Date('2024-12-01'),
+    updatedAt: new Date('2025-01-13'),
+    billableHours: 56,
+    totalRevenue: 28000,
+    opposingCounselHistory: [
+      {
+        name: 'Christopher Lee',
+        firm: 'Lee & Associates', 
+        email: 'clee@leelaw.com',
+        phone: '+1 (555) 678-9012',
+        date: new Date('2024-12-01')
+      }
+    ],
+    judgeHistory: [
+      {
+        name: 'Hon. Rebecca Martinez',
+        date: new Date('2024-12-01')
+      }
+    ]
+  },
+  {
+    id: '3', 
     title: 'Garcia Employment Discrimination',
     clientId: '3',
     client: mockClients[2],
@@ -423,13 +515,54 @@ export const mockCases: Case[] = [
       }
     ]
   },
+  // Mark Rodriguez's cases (Lawyer at Martinez & Partners)
+  {
+    id: '15',
+    title: 'Tech Startup IP Portfolio Review',
+    clientId: '4',
+    client: mockClients[3],
+    assignedLawyer: mockUsers[9], // Mark Rodriguez (id: '10' but will be index 9)
+    supportingInterns: [mockUsers[6]], // James Wilson
+    caseType: 'Intellectual Property',
+    status: 'active',
+    priority: 'medium',
+    nextHearingDate: new Date('2025-08-05'),
+    courtStage: 'Portfolio Analysis',
+    referredBy: 'Existing Client',
+    createdAt: new Date('2024-12-15'),
+    updatedAt: new Date('2025-01-14'),
+    billableHours: 28,
+    totalRevenue: 14000,
+    opposingCounselHistory: [],
+    judgeHistory: []
+  },
+  {
+    id: '16',
+    title: 'Employment Contract Negotiation',
+    clientId: '5',
+    client: mockClients[4],
+    assignedLawyer: mockUsers[9], // Mark Rodriguez
+    supportingInterns: [],
+    caseType: 'Employment Law',
+    status: 'active',
+    priority: 'low',
+    nextHearingDate: new Date('2025-08-10'),
+    courtStage: 'Contract Finalization',
+    referredBy: 'Referral Network',
+    createdAt: new Date('2025-01-05'),
+    updatedAt: new Date('2025-01-14'),
+    billableHours: 15,
+    totalRevenue: 7500,
+    opposingCounselHistory: [],
+    judgeHistory: []
+  },
   {
     id: '5',
     title: 'Brown Family Custody Case',
     clientId: '5',
     client: mockClients[4],
     assignedLawyer: mockUsers[4], // David Martinez
-    supportingInterns: [mockUsers[7]],
+    supportingInterns: [mockUsers[6]], // James Wilson (corrected index)
     caseType: 'Family Law',
     status: 'active',
     priority: 'medium',
@@ -458,7 +591,7 @@ export const mockCases: Case[] = [
     clientId: '6',
     client: mockClients[5],
     assignedLawyer: mockUsers[5], // Lisa Thompson
-    supportingInterns: [mockUsers[3]],
+    supportingInterns: [mockUsers[7]], // Amanda Davis (id: '8' but index 7)
     caseType: 'Real Estate Law',
     status: 'active',
     priority: 'medium',
@@ -499,7 +632,7 @@ export const mockCases: Case[] = [
     clientId: '7',
     client: mockClients[6],
     assignedLawyer: mockUsers[5], // Lisa Thompson
-    supportingInterns: [mockUsers[2], mockUsers[7]],
+    supportingInterns: [mockUsers[7]], // Amanda Davis
     caseType: 'Healthcare Law',
     status: 'active',
     priority: 'high',
@@ -523,7 +656,7 @@ export const mockCases: Case[] = [
   
   // Closed cases for analytics - distributed among lawyers
   {
-    id: '8',
+    id: '8', 
     title: 'Anderson Contract Dispute',
     clientId: '1',
     client: mockClients[0],
@@ -552,10 +685,10 @@ export const mockCases: Case[] = [
   },
   {
     id: '9',
-    title: 'Wilson Family Law Case',
+    title: 'Thompson Family Law Case',
     clientId: '2',
     client: mockClients[1],
-    assignedLawyer: mockUsers[0], // Sarah Johnson
+    assignedLawyer: mockUsers[4], // Jennifer Walsh
     supportingInterns: [],
     caseType: 'Family Law',
     status: 'closed',
@@ -584,7 +717,7 @@ export const mockCases: Case[] = [
     clientId: '4',
     client: mockClients[3],
     assignedLawyer: mockUsers[4], // David Martinez
-    supportingInterns: [mockUsers[6], mockUsers[7]],
+    supportingInterns: [mockUsers[6]], // James Wilson
     caseType: 'Corporate Law',
     status: 'closed',
     priority: 'high',
@@ -601,15 +734,15 @@ export const mockCases: Case[] = [
   },
   {
     id: '11',
-    title: 'Healthcare Compliance Audit',
+    title: 'IP Licensing Agreement Review',
     clientId: '7',
     client: mockClients[6],
-    assignedLawyer: mockUsers[5], // Lisa Thompson
-    supportingInterns: [mockUsers[3]],
-    caseType: 'Healthcare Law',
+    assignedLawyer: mockUsers[9], // Mark Rodriguez
+    supportingInterns: [mockUsers[6]], // James Wilson
+    caseType: 'Intellectual Property',
     status: 'closed',
     priority: 'medium',
-    courtStage: 'Compliance Achieved',
+    courtStage: 'Agreement Finalized',
     referredBy: 'Existing Client',
     outcome: 'won',
     createdAt: new Date('2024-02-01'),
@@ -626,7 +759,7 @@ export const mockCases: Case[] = [
     clientId: '6',
     client: mockClients[5],
     assignedLawyer: mockUsers[5], // Lisa Thompson
-    supportingInterns: [mockUsers[2]],
+    supportingInterns: [mockUsers[7]], // Amanda Davis
     caseType: 'Real Estate Law',
     status: 'closed',
     priority: 'high',
@@ -648,24 +781,25 @@ export const mockCases: Case[] = [
       }
     ]
   },
+  // Additional closed case for new lawyers
   {
-    id: '13',
-    title: 'Employment Contract Negotiation',
-    clientId: '5',
-    client: mockClients[4],
-    assignedLawyer: mockUsers[4], // David Martinez
-    supportingInterns: [],
-    caseType: 'Employment Law',
+    id: '17',
+    title: 'Commercial Lease Dispute Resolution',
+    clientId: '6',
+    client: mockClients[5],
+    assignedLawyer: mockUsers[4], // Jennifer Walsh
+    supportingInterns: [mockUsers[1]], // Michael Chen
+    caseType: 'Contract Law',
     status: 'closed',
-    priority: 'low',
-    courtStage: 'Contract Finalized',
-    referredBy: 'Referral Network',
-    outcome: 'won',
-    createdAt: new Date('2024-06-01'),
-    updatedAt: new Date('2024-09-30'),
-    closedAt: new Date('2024-09-30'),
-    billableHours: 34,
-    totalRevenue: 17000,
+    priority: 'medium',
+    courtStage: 'Settlement Reached',
+    referredBy: 'Bar Association',
+    outcome: 'settled',
+    createdAt: new Date('2024-07-01'),
+    updatedAt: new Date('2024-12-15'),
+    closedAt: new Date('2024-12-15'),
+    billableHours: 67,
+    totalRevenue: 33500,
     opposingCounselHistory: [],
     judgeHistory: []
   }
@@ -744,9 +878,53 @@ export const mockTasks: Task[] = [
     isClientVisible: false
   },
   
+  // Jennifer Walsh's tasks (Lawyer at Johnson & Associates)
+  {
+    id: '13',
+    title: 'Contract Terms Review',
+    description: 'Review and analyze contract terms for development project',
+    caseId: '13',
+    assignedTo: mockUsers[4], // Jennifer Walsh
+    assignedBy: mockUsers[4],
+    dueDate: new Date('2025-07-25'),
+    priority: 'medium',
+    status: 'in-progress',
+    type: 'document',
+    createdAt: new Date('2025-01-12'),
+    isClientVisible: false
+  },
+  {
+    id: '14',
+    title: 'Housing Rights Research',
+    description: 'Research tenant rights and housing regulations',
+    caseId: '14',
+    assignedTo: mockUsers[2], // Emily Rodriguez
+    assignedBy: mockUsers[4], // Jennifer Walsh
+    dueDate: new Date('2025-07-28'),
+    priority: 'high',
+    status: 'pending',
+    type: 'research',
+    createdAt: new Date('2025-01-13'),
+    isClientVisible: false
+  },
+  {
+    id: '15',
+    title: 'Tenant Interview Preparation',
+    description: 'Prepare questions and schedule tenant interviews',
+    caseId: '14',
+    assignedTo: mockUsers[4], // Jennifer Walsh
+    assignedBy: mockUsers[4],
+    dueDate: new Date('2025-07-30'),
+    priority: 'medium',
+    status: 'pending',
+    type: 'meeting',
+    createdAt: new Date('2025-01-14'),
+    isClientVisible: false
+  },
+
   // Client-visible tasks for John Smith (Case 2)
   {
-    id: 'client-1',
+    id: 'client-1', 
     title: 'Provide Medical Records',
     description: 'Please provide all medical records related to your injury, including recent treatment reports',
     caseId: '2',
@@ -808,7 +986,7 @@ export const mockTasks: Task[] = [
     title: 'Custody Evaluation Preparation',
     description: 'Prepare documentation for child custody evaluation',
     caseId: '5',
-    assignedTo: mockUsers[7],
+    assignedTo: mockUsers[6], // James Wilson (corrected index)
     assignedBy: mockUsers[4],
     dueDate: new Date('2025-07-10'),
     priority: 'medium',
@@ -818,13 +996,57 @@ export const mockTasks: Task[] = [
     isClientVisible: false
   },
   
+  // Mark Rodriguez's tasks (Lawyer at Martinez & Partners)
+  {
+    id: '16',
+    title: 'IP Portfolio Documentation',
+    description: 'Document and organize intellectual property portfolio for startup',
+    caseId: '15',
+    assignedTo: mockUsers[9], // Mark Rodriguez
+    assignedBy: mockUsers[9],
+    dueDate: new Date('2025-08-05'),
+    priority: 'medium',
+    status: 'in-progress',
+    type: 'document',
+    createdAt: new Date('2025-01-15'),
+    isClientVisible: false
+  },
+  {
+    id: '17',
+    title: 'Patent Search Analysis',
+    description: 'Conduct comprehensive patent search for potential conflicts',
+    caseId: '15',
+    assignedTo: mockUsers[6], // James Wilson
+    assignedBy: mockUsers[9], // Mark Rodriguez
+    dueDate: new Date('2025-08-02'),
+    priority: 'high',
+    status: 'pending',
+    type: 'research',
+    createdAt: new Date('2025-01-16'),
+    isClientVisible: false
+  },
+  {
+    id: '18',
+    title: 'Employment Contract Drafting',
+    description: 'Draft employment contract with IP assignment clauses',
+    caseId: '16',
+    assignedTo: mockUsers[9], // Mark Rodriguez
+    assignedBy: mockUsers[9],
+    dueDate: new Date('2025-08-08'),
+    priority: 'low',
+    status: 'pending',
+    type: 'document',
+    createdAt: new Date('2025-01-17'),
+    isClientVisible: false
+  },
+
   // Lisa Thompson's tasks
   {
     id: '9',
     title: 'Property Title Research',
     description: 'Research property title history and potential issues',
     caseId: '6',
-    assignedTo: mockUsers[3],
+    assignedTo: mockUsers[7], // Amanda Davis (corrected index)
     assignedBy: mockUsers[5],
     dueDate: new Date('2025-07-08'),
     priority: 'medium',
@@ -852,7 +1074,7 @@ export const mockTasks: Task[] = [
     title: 'FDA Documentation Preparation',
     description: 'Prepare all required FDA documentation and submissions',
     caseId: '7',
-    assignedTo: mockUsers[2],
+    assignedTo: mockUsers[7], // Amanda Davis (corrected index)
     assignedBy: mockUsers[5],
     dueDate: new Date('2025-07-16'),
     priority: 'high',
@@ -861,18 +1083,33 @@ export const mockTasks: Task[] = [
     createdAt: new Date('2025-01-14'),
     isClientVisible: false
   },
+  // Additional tasks for comprehensive data
   {
-    id: '12',
-    title: 'Medical Records Analysis',
-    description: 'Analyze medical records for compliance issues',
+    id: '19',
+    title: 'Healthcare Compliance Audit',
+    description: 'Conduct comprehensive compliance audit for MedCorp',
     caseId: '7',
-    assignedTo: mockUsers[7],
+    assignedTo: mockUsers[5], // Lisa Thompson
     assignedBy: mockUsers[5],
-    dueDate: new Date('2025-07-14'),
+    dueDate: new Date('2025-07-22'),
+    priority: 'high',
+    status: 'pending',
+    type: 'research',
+    createdAt: new Date('2025-01-18'),
+    isClientVisible: false
+  },
+  {
+    id: '20',
+    title: 'Real Estate Documentation Review',
+    description: 'Review all property documentation for Wilson case',
+    caseId: '6',
+    assignedTo: mockUsers[5], // Lisa Thompson
+    assignedBy: mockUsers[5],
+    dueDate: new Date('2025-07-06'),
     priority: 'medium',
     status: 'in-progress',
-    type: 'research',
-    createdAt: new Date('2025-01-15'),
+    type: 'document',
+    createdAt: new Date('2025-01-19'),
     isClientVisible: false
   }
 ];
@@ -976,7 +1213,29 @@ export const mockMilestones: Milestone[] = [
     location: 'Courtroom 2C, Federal Court'
   },
   
-  // Additional milestones for new lawyers
+  // Jennifer Walsh's case milestones
+  {
+    id: '15',
+    title: 'Contract Review Meeting',
+    description: 'Final contract review meeting with development team',
+    caseId: '13',
+    date: new Date('2025-07-25'),
+    type: 'meeting',
+    status: 'upcoming',
+    location: 'TechCorp Conference Room'
+  },
+  {
+    id: '16',
+    title: 'Housing Rights Hearing',
+    description: 'Preliminary hearing for housing rights case',
+    caseId: '14',
+    date: new Date('2025-07-30'),
+    type: 'court-appearance',
+    status: 'upcoming',
+    location: 'Housing Court, Courtroom 1A'
+  },
+
+  // David Martinez's case milestones (Lawyer + Firm Admin)
   {
     id: '11',
     title: 'Merger Closing Meeting',
@@ -997,6 +1256,30 @@ export const mockMilestones: Milestone[] = [
     status: 'upcoming',
     location: 'Family Court, Courtroom 2A'
   },
+
+  // Mark Rodriguez's case milestones
+  {
+    id: '17',
+    title: 'IP Portfolio Review Meeting',
+    description: 'Review intellectual property portfolio with startup executives',
+    caseId: '15',
+    date: new Date('2025-08-05'),
+    type: 'meeting',
+    status: 'upcoming',
+    location: 'Startup Headquarters'
+  },
+  {
+    id: '18',
+    title: 'Employment Contract Finalization',
+    description: 'Finalize employment contract terms',
+    caseId: '16',
+    date: new Date('2025-08-10'),
+    type: 'meeting',
+    status: 'upcoming',
+    location: 'Martinez & Partners Office'
+  },
+
+  // Lisa Thompson's case milestones
   {
     id: '13',
     title: 'Property Inspection',
@@ -1706,14 +1989,14 @@ export const mockLawyerPerformance: LawyerPerformance[] = [
   {
     lawyerId: '1',
     lawyer: mockUsers[0], // Sarah Johnson
-    totalCases: 5,
+    totalCases: 4,
     activeCases: 3,
-    closedCases: 2,
+    closedCases: 1,
     wonCases: 1,
     lostCases: 0,
-    settledCases: 1,
-    totalRevenue: 211500, // Active: 150,000 + Closed: 61,500
-    billableHours: 424, // Active: 301 + Closed: 123
+    settledCases: 0,
+    totalRevenue: 189000, // Active cases: 150,000 + Closed: 39,000
+    billableHours: 379, // Active: 301 + Closed: 78
     averageHourlyRate: 500,
     winRate: 100 // 2 favorable outcomes out of 2 decided cases
   },
@@ -1722,27 +2005,56 @@ export const mockLawyerPerformance: LawyerPerformance[] = [
     lawyer: mockUsers[4], // David Martinez
     totalCases: 4,
     activeCases: 2,
-    closedCases: 2,
+    closedCases: 1,
     wonCases: 2,
     lostCases: 0,
     settledCases: 0,
-    totalRevenue: 293500, // Active: 120,500 + Closed: 173,000
-    billableHours: 333, // Active: 143 + Closed: 190
+    totalRevenue: 151000, // Active: 95,000 + Closed: 56,000
+    billableHours: 302, // Active: 190 + Closed: 112
     averageHourlyRate: 500,
-    winRate: 100 // 2 won out of 2 decided cases
+    winRate: 100 // 1 settled out of 1 decided case
   },
+  {
+    lawyerId: '9',
+    lawyer: mockUsers[4], // Jennifer Walsh - Lawyer
+    totalCases: 3,
+    activeCases: 2,
+    closedCases: 1,
+    wonCases: 0,
+    lostCases: 0,
+    settledCases: 1,
+    totalRevenue: 78000, // Active: 45,000 + Closed: 33,500
+    billableHours: 157, // Active: 90 + Closed: 67
+    averageHourlyRate: 500,
+    winRate: 100 // 1 settled out of 1 decided case
+  },
+  {
+    lawyerId: '10',
+    lawyer: mockUsers[9], // Mark Rodriguez - Lawyer
+    totalCases: 3,
+    activeCases: 2,
+    closedCases: 1,
+    wonCases: 1,
+    lostCases: 0,
+    settledCases: 0,
+    totalRevenue: 110500, // Active: 21,500 + Closed: 89,000
+    billableHours: 132, // Active: 43 + Closed: 89
+    averageHourlyRate: 500,
+    winRate: 100 // 1 won out of 1 decided case
+    totalCases: 3,
   {
     lawyerId: '6',
     lawyer: mockUsers[5], // Lisa Thompson
     totalCases: 4,
     activeCases: 2,
-    closedCases: 2,
+    closedCases: 1,
     wonCases: 1,
     lostCases: 0,
     settledCases: 1,
-    totalRevenue: 240000, // Active: 95,000 + Closed: 145,000
-    billableHours: 391, // Active: 190 + Closed: 201
+    totalRevenue: 276500, // Active: 120,500 + Closed: 156,000
+    billableHours: 299, // Active: 143 + Closed: 156
     averageHourlyRate: 500,
     winRate: 100 // 2 favorable outcomes out of 2 decided cases
   }
 ];
+    totalCases: 3,
