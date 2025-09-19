@@ -343,7 +343,7 @@ export const mockCases: Case[] = [
     courtStage: 'Pre-trial Motions',
     referredBy: 'Referral Network',
     judge: 'Hon. Mark Thompson',
-    courtLevel: 'superior',
+    opposingParty: 'ABC Insurance Company',
     opposingCounsel: {
       name: 'Lisa Martinez',
       firm: 'Martinez Legal Group',
@@ -693,7 +693,7 @@ export const mockCases: Case[] = [
     assignedLawyer: mockUsers[4], // Jennifer Walsh
     supportingInterns: [],
     caseType: 'Family Law',
-    status: 'closed',
+    opposingParty: 'Michael Thompson',
     priority: 'low',
     courtStage: 'Final Judgment',
     referredBy: 'Referral Network',
