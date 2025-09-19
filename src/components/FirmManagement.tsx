@@ -163,14 +163,25 @@ const FirmManagement: React.FC<FirmManagementProps> = ({
                     
                     {canManageUser(member) && (
                       <div className="flex items-center space-x-1 ml-3">
-                        <select
-                          value={member.role}
-                          onChange={(e) => onUpdateUserRole(member.id, e.target.value as UserType['role'])}
-                          className="text-xs border border-gray-300 rounded px-2 py-1"
-                        >
-                          <option value="lawyer">Lawyer</option>
-                          <option value="intern">Intern</option>
-                        </select>
+                        {/* Only allow lawyer <-> firm-admin role changes */}
+                        {(member.role === 'lawyer' || member.role === 'firm-admin') && (
+                          <select
+                            value={member.role}
+                            onChange={(e) => onUpdateUserRole(member.id, e.target.value as UserType['role'])}
+                            className="text-xs border border-gray-300 rounded px-2 py-1"
+                          >
+                            <option value="lawyer">Lawyer</option>
+                            <option value="firm-admin">Firm Admin</option>
+                          </select>
+                        )}
+                        
+                        {/* Show read-only role for interns and clients */}
+                        {(member.role === 'intern' || member.role === 'client') && (
+                          <span className="text-xs text-gray-600 px-2 py-1 bg-gray-100 rounded">
+                            {member.role === 'intern' ? 'Intern' : 'Client'} (Fixed Role)
+                          </span>
+                        )}
+                        
                         <button
                           onClick={() => onRemoveUser(member.id)}
                           className="p-1 text-red-600 hover:bg-red-100 rounded transition-colors"
