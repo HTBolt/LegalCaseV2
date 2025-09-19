@@ -301,6 +301,7 @@ export const mockCases: Case[] = [
     courtStage: 'Discovery Phase',
     referredBy: 'Existing Client',
     judge: 'Hon. Patricia Williams',
+    opposingParty: 'InnovateLab Technologies Inc.',
     courtLevel: 'district',
     opposingCounsel: {
       name: 'Robert Davis',
@@ -652,6 +653,7 @@ export const mockCases: Case[] = [
     courtStage: 'Contract Finalization',
     referredBy: 'Referral Network',
     createdAt: new Date('2025-01-05'),
+    opposingParty: 'Global Manufacturing Corp',
     updatedAt: new Date('2025-01-14'),
     billableHours: 15,
     totalRevenue: 7500,
