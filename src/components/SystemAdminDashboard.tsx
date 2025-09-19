@@ -37,7 +37,7 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const pendingUsers = users.filter(u => u.approvalStatus === 'pending');
-  const activeUsers = users.filter(u => u.approvalStatus === 'approved');
+  const lawyers = users.filter(u => u.role === 'lawyer' || u.role === 'firm-admin');
   const rejectedUsers = users.filter(u => u.approvalStatus === 'rejected');
 
   const filteredUsers = users.filter(user => {
@@ -135,30 +135,6 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
               <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200">
                 <div className="flex items-center">
-                  <div className="bg-blue-500 p-2 sm:p-3 rounded-lg">
-                    <Users className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
-                  </div>
-                  <div className="ml-3 sm:ml-4 min-w-0 flex-1">
-                    <p className="text-xs sm:text-sm font-medium text-gray-600">Total Users</p>
-                    <p className="text-lg sm:text-2xl font-bold text-gray-900">{users.length}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200">
-                <div className="flex items-center">
-                  <div className="bg-green-500 p-2 sm:p-3 rounded-lg">
-                    <CheckCircle className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
-                  </div>
-                  <div className="ml-3 sm:ml-4 min-w-0 flex-1">
-                    <p className="text-xs sm:text-sm font-medium text-gray-600">Active Users</p>
-                    <p className="text-lg sm:text-2xl font-bold text-gray-900">{activeUsers.length}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200">
-                <div className="flex items-center">
                   <div className="bg-yellow-500 p-2 sm:p-3 rounded-lg">
                     <Clock className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
                   </div>
@@ -177,6 +153,30 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
                   <div className="ml-3 sm:ml-4 min-w-0 flex-1">
                     <p className="text-xs sm:text-sm font-medium text-gray-600">Law Firms</p>
                     <p className="text-lg sm:text-2xl font-bold text-gray-900">{firms.length}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200">
+                <div className="flex items-center">
+                  <div className="bg-blue-500 p-2 sm:p-3 rounded-lg">
+                    <Users className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                  </div>
+                  <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600">Total Users</p>
+                    <p className="text-lg sm:text-2xl font-bold text-gray-900">{users.length}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200">
+                <div className="flex items-center">
+                  <div className="bg-green-500 p-2 sm:p-3 rounded-lg">
+                    <UserCheck className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                  </div>
+                  <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                    <p className="text-xs sm:text-sm font-medium text-gray-600">Lawyers</p>
+                    <p className="text-lg sm:text-2xl font-bold text-gray-900">{lawyers.length}</p>
                   </div>
                 </div>
               </div>
