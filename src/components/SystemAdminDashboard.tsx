@@ -254,6 +254,16 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [newUserForm, setNewUserForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    role: '',
+    firmName: '',
+    autoApprove: false
+  });
+  const [showFirmDropdown, setShowFirmDropdown] = useState(false);
+  const [filteredFirms, setFilteredFirms] = useState<LawFirm[]>([]);
 
   const pendingUsers = users.filter(u => u.approvalStatus === 'pending');
   const lawyers = users.filter(u => u.role === 'lawyer' || u.role === 'firm-admin');
@@ -283,6 +293,41 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
     onUpdateUserRole(userId, updates.role || users.find(u => u.id === userId)?.role || 'client');
     // In a real app, this would be a more comprehensive update function
     console.log('Updating user:', userId, updates);
+  };
+
+  const handleFirmInputChange = (value: string) => {
+    setNewUserForm({ ...newUserForm, firmName: value });
+    
+    if (value.length >= 3) {
+      const filtered = firms.filter(firm => 
+        firm.name.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredFirms(filtered);
+      setShowFirmDropdown(true);
+    } else {
+      setShowFirmDropdown(false);
+      setFilteredFirms([]);
+    }
+  };
+
+  const handleFirmSelect = (firmName: string) => {
+    setNewUserForm({ ...newUserForm, firmName });
+    setShowFirmDropdown(false);
+    setFilteredFirms([]);
+  };
+
+  const handleAddUserModalClose = () => {
+    setShowAddUserModal(false);
+    setNewUserForm({
+      name: '',
+      email: '',
+      phone: '',
+      role: '',
+      firmName: '',
+      autoApprove: false
+    });
+    setShowFirmDropdown(false);
+    setFilteredFirms([]);
   };
 
   const getRoleColor = (role: string) => {
@@ -470,22 +515,86 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
         {activeTab === 'users' && (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="p-4 sm:p-6 border-b border-gray-200">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-                <div className="flex items-center justify-between w-full sm:w-auto">
+              <div className="space-y-4">
+                {/* Title and Add Button Row */}
+                <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-gray-900">User Management</h3>
                   <button
                     onClick={() => setShowAddUserModal(true)}
-                    className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex-shrink-0"
                     title="Add New User"
                   >
                     <Plus className="h-5 w-5" />
                   </button>
                 </div>
                 
-                {/* Filters */}
-                <div className="space-y-3">
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="relative flex-1 min-w-0">
+                {/* Search and Filters Row */}
+                <div className="space-y-4">
+                  {/* Search Bar */}
+                  <div className="relative">
+                    <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search users..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  
+                  {/* Filter Dropdowns */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <select
+                      value={roleFilter}
+                      onChange={(e) => setRoleFilter(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="all">All Roles</option>
+                      <option value="lawyer">Lawyers</option>
+                      <option value="firm-admin">Firm Admins</option>
+                      <option value="intern">Interns</option>
+                      <option value="client">Clients</option>
+                    </select>
+                    
+                    <select
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="all">All Status</option>
+                      <option value="approved">Approved</option>
+                      <option value="pending">Pending</option>
+                      <option value="rejected">Rejected</option>
+                      <option value="disabled">Disabled</option>
+                    </select>
+                    
+                    <select
+                      value={firmFilter}
+                      onChange={(e) => setFirmFilter(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="all">All Firms</option>
+                      <option value="">No Firm</option>
+                      {firms.map(firm => (
+                        <option key={firm.id} value={firm.id}>{firm.name}</option>
+                      ))}
+                    </select>
+                    
+                    <button
+                      onClick={() => {
+                        setSearchTerm('');
+                        setRoleFilter('all');
+                        setStatusFilter('all');
+                        setFirmFilter('all');
+                      }}
+                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
                       <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                       <input
                         type="text"
@@ -858,6 +967,8 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
                   </label>
                   <input
                     type="text"
+                    value={newUserForm.name}
+                    onChange={(e) => setNewUserForm({ ...newUserForm, name: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Enter user's full name"
                     required
@@ -870,6 +981,8 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
                   </label>
                   <input
                     type="email"
+                    value={newUserForm.email}
+                    onChange={(e) => setNewUserForm({ ...newUserForm, email: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="user@email.com"
                     required
@@ -882,6 +995,8 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
                   </label>
                   <input
                     type="tel"
+                    value={newUserForm.phone}
+                    onChange={(e) => setNewUserForm({ ...newUserForm, phone: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="+1 (555) 123-4567"
                   />
@@ -891,7 +1006,12 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Role *
                   </label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <select 
+                    value={newUserForm.role}
+                    onChange={(e) => setNewUserForm({ ...newUserForm, role: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  >
                     <option value="">Select role</option>
                     <option value="lawyer">Lawyer</option>
                     <option value="firm-admin">Firm Admin</option>
@@ -904,18 +1024,46 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Law Firm *
                   </label>
-                  <select 
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={newUserForm.firmName}
+                      onChange={(e) => handleFirmInputChange(e.target.value)}
+                      onFocus={() => {
+                        if (newUserForm.firmName.length >= 3) {
+                          setShowFirmDropdown(true);
+                        }
+                      }}
+                      onBlur={() => {
+                        // Delay hiding dropdown to allow selection
+                        setTimeout(() => setShowFirmDropdown(false), 200);
+                      }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Type to search existing firms or enter new firm name"
                     required
-                  >
-                    <option value="">Select law firm</option>
-                    {firms.map(firm => (
-                      <option key={firm.id} value={firm.id}>{firm.name}</option>
-                    ))}
-                    <option value="new-firm">+ Create New Law Firm</option>
-                  </select>
+                    />
+                    
+                    {/* Dropdown for firm suggestions */}
+                    {showFirmDropdown && filteredFirms.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                        {filteredFirms.map(firm => (
+                          <button
+                            key={firm.id}
+                            type="button"
+                            onClick={() => handleFirmSelect(firm.name)}
+                            className="w-full text-left px-4 py-2 hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                          >
+                            <div>
+                              <div className="font-medium">{firm.name}</div>
+                              <div className="text-xs text-gray-500">{firm.address}</div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Select an existing firm or choose "Create New Law Firm"
+                    Type at least 3 characters to see existing firms, or continue typing to create a new firm
                   </p>
                 </div>
 
@@ -923,6 +1071,8 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
                   <input
                     type="checkbox"
                     id="auto-approve"
+                    checked={newUserForm.autoApprove}
+                    onChange={(e) => setNewUserForm({ ...newUserForm, autoApprove: e.target.checked })}
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                   <label htmlFor="auto-approve" className="text-sm font-medium text-gray-700">
@@ -935,7 +1085,7 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
             <div className="flex space-x-3 p-6 border-t border-gray-200">
               <button
                 type="button"
-                onClick={() => setShowAddUserModal(false)}
+                onClick={handleAddUserModalClose}
                 className="flex-1 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Cancel
@@ -943,8 +1093,9 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  alert('Add User functionality will be implemented');
-                  setShowAddUserModal(false);
+                  console.log('Creating user:', newUserForm);
+                  alert(`User ${newUserForm.name} will be created for firm: ${newUserForm.firmName}`);
+                  handleAddUserModalClose();
                 }}
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
