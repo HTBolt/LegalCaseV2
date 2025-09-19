@@ -248,20 +248,6 @@ export const mockClients: Client[] = [
   },
   {
     id: '3',
-    name: 'Sarah Johnson',
-    email: 'sarah@example.com',
-    phone: '+1 (555) 345-6789',
-    address: '789 Residential St, Client City, CC 34567'
-  },
-  {
-    id: '4',
-    name: 'Robert Chen',
-    email: 'robert.chen@email.com',
-    phone: '+1 (555) 456-7890',
-    address: '321 Family Ave, Personal City, PC 45678'
-  },
-  {
-    id: '3',
     name: 'Maria Garcia',
     email: 'maria.garcia@email.com',
     phone: '+1 (555) 456-7890',
@@ -488,103 +474,6 @@ export const mockCases: Case[] = [
   },
   
   // David Martinez's cases
-  {
-    id: '4',
-    title: 'Personal Injury Claim - Car Accident',
-    clientId: '3',
-    client: {
-      id: '3',
-      name: 'Sarah Johnson',
-      email: 'sarah@example.com',
-      phone: '+1 (555) 345-6789',
-      address: '789 Residential St, Client City, CC 34567'
-    },
-    assignedLawyer: mockUsers[1], // Michael Chen
-    supportingInterns: [mockUsers[2]], // Sarah Davis
-    caseType: 'Personal Injury',
-    status: 'active',
-    priority: 'high',
-    nextHearingDate: new Date('2025-02-15'),
-    courtStage: 'Discovery Phase',
-    referredBy: 'Medical Provider',
-    judge: 'Hon. David Wilson',
-    opposingParty: 'QuickTransit Insurance Corp',
-    opposingCounsel: {
-      name: 'Jennifer Martinez',
-      firm: 'Insurance Defense Associates',
-      email: 'j.martinez@ida-law.com',
-      phone: '+1 (555) 777-8888'
-    },
-    createdAt: new Date('2024-10-15'),
-    updatedAt: new Date('2025-01-10'),
-    opposingCounselHistory: [],
-    judgeHistory: []
-  },
-  {
-    id: '5',
-    title: 'Family Law - Child Custody Dispute',
-    clientId: '4',
-    client: {
-      id: '4',
-      name: 'Robert Chen',
-      email: 'robert.chen@email.com',
-      phone: '+1 (555) 456-7890',
-      address: '321 Family Ave, Personal City, PC 45678'
-    },
-    assignedLawyer: mockUsers[6], // Jennifer Lopez
-    supportingInterns: [],
-    caseType: 'Family Law',
-    status: 'active',
-    priority: 'medium',
-    nextHearingDate: new Date('2025-03-20'),
-    courtStage: 'Mediation Phase',
-    referredBy: 'Referral Network',
-    judge: 'Hon. Sandra Miller',
-    opposingParty: 'Maria Chen',
-    opposingCounsel: {
-      name: 'David Thompson',
-      firm: 'Thompson Family Law',
-      email: 'd.thompson@tfl.com',
-      phone: '+1 (555) 888-9999'
-    },
-    createdAt: new Date('2024-11-01'),
-    updatedAt: new Date('2025-01-05'),
-    opposingCounselHistory: [],
-    judgeHistory: []
-  },
-  {
-    id: '6',
-    title: 'Employment Discrimination Case',
-    clientId: '3',
-    client: {
-      id: '3',
-      name: 'Sarah Johnson',
-      email: 'sarah@example.com',
-      phone: '+1 (555) 345-6789',
-      address: '789 Residential St, Client City, CC 34567'
-    },
-    assignedLawyer: mockUsers[4], // David Wilson
-    supportingInterns: [mockUsers[5]], // Emily Brown
-    caseType: 'Employment Law',
-    status: 'closed',
-    priority: 'medium',
-    courtStage: 'Settled',
-    referredBy: 'Word of Mouth',
-    judge: 'Hon. Margaret Davis',
-    opposingParty: 'TechCorp Industries',
-    opposingCounsel: {
-      name: 'Richard Adams',
-      firm: 'Corporate Defense LLC',
-      email: 'r.adams@cd-law.com',
-      phone: '+1 (555) 999-0000'
-    },
-    createdAt: new Date('2024-06-01'),
-    updatedAt: new Date('2024-12-15'),
-    closedAt: new Date('2024-12-15'),
-    outcome: 'settled',
-    opposingCounselHistory: [],
-    judgeHistory: []
-  },
   {
     id: '4',
     title: 'GlobalTech Merger & Acquisition',
