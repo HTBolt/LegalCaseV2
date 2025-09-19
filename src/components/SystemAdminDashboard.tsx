@@ -253,6 +253,7 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
   const [firmFilter, setFirmFilter] = useState<string>('all');
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
 
   const pendingUsers = users.filter(u => u.approvalStatus === 'pending');
   const lawyers = users.filter(u => u.role === 'lawyer' || u.role === 'firm-admin');
@@ -473,8 +474,8 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
                 <div className="flex items-center justify-between w-full sm:w-auto">
                   <h3 className="text-lg font-semibold text-gray-900">User Management</h3>
                   <button
-                    onClick={() => console.log('Add new user')}
-                    className="sm:hidden flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    onClick={() => setShowAddUserModal(true)}
+                    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     <Plus className="h-4 w-4" />
                     <span>Add User</span>
@@ -827,6 +828,125 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
         onApproveUser={onApproveUser}
         onRejectUser={onRejectUser}
       />
+      
+      {/* Add User Modal */}
+      {showAddUserModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Plus className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900">Add New User</h3>
+                </div>
+                <button
+                  onClick={() => setShowAddUserModal(false)}
+                  className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                >
+                  <XCircle className="h-5 w-5 text-gray-500" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6">
+              <form className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter user's full name"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="user@email.com"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="+1 (555) 123-4567"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Role *
+                  </label>
+                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">Select role</option>
+                    <option value="lawyer">Lawyer</option>
+                    <option value="firm-admin">Firm Admin</option>
+                    <option value="intern">Intern</option>
+                    <option value="client">Client</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Law Firm
+                  </label>
+                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">No firm assigned</option>
+                    {firms.map(firm => (
+                      <option key={firm.id} value={firm.id}>{firm.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    id="auto-approve"
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <label htmlFor="auto-approve" className="text-sm font-medium text-gray-700">
+                    Auto-approve user (skip approval process)
+                  </label>
+                </div>
+              </form>
+            </div>
+            
+            <div className="flex space-x-3 p-6 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={() => setShowAddUserModal(false)}
+                className="flex-1 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  alert('Add User functionality will be implemented');
+                  setShowAddUserModal(false);
+                }}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Add User
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
