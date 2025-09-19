@@ -158,3 +158,177 @@ const FirmManagement: React.FC<FirmManagementProps> = ({
                             Last active: {member.lastLoginAt.toLocaleDateString()}
                           </p>
                         )}
+                      </div>
+                    </div>
+                    
+                    {canManageUser(member) && (
+                      <div className="flex items-center space-x-2">
+                        <select
+                          value={member.role}
+                          onChange={(e) => onUpdateUserRole(member.id, e.target.value as UserType['role'])}
+                          className="text-xs border border-gray-300 rounded px-2 py-1"
+                        >
+                          <option value="lawyer">Lawyer</option>
+                          <option value="intern">Intern</option>
+                        </select>
+                        <button
+                          onClick={() => onRemoveUser(member.id)}
+                          className="p-1 text-red-600 hover:bg-red-50 rounded"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Pending Approvals */}
+        {activeSection === 'pending' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-medium text-gray-700">Pending Approval ({pendingApprovals.length})</h4>
+            </div>
+            
+            {pendingApprovals.length === 0 ? (
+              <div className="text-center py-8">
+                <Clock className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                <p className="text-gray-500">No pending approvals</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {pendingApprovals.map((user) => (
+                  <div key={user.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                        <AlertCircle className="h-4 w-4 text-yellow-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                        <p className="text-xs text-gray-500">{user.email}</p>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getRoleColor(user.role)}`}>
+                          {user.role}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => onApproveUser(user.id)}
+                        className="flex items-center space-x-1 px-2 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors"
+                      >
+                        <CheckCircle className="h-4 w-4" />
+                        <span>Approve</span>
+                      </button>
+                      <button
+                        onClick={() => onRejectUser(user.id)}
+                        className="flex items-center space-x-1 px-2 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors"
+                      >
+                        <XCircle className="h-4 w-4" />
+                        <span>Reject</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Invite User */}
+        {activeSection === 'invite' && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-medium text-gray-700">Invite New Member</h4>
+            </div>
+            
+            <form onSubmit={handleInviteSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={inviteData.email}
+                  onChange={(e) => setInviteData(prev => ({ ...prev, email: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="colleague@lawfirm.com"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Role
+                </label>
+                <select
+                  value={inviteData.role}
+                  onChange={(e) => setInviteData(prev => ({ ...prev, role: e.target.value as UserType['role'] }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="lawyer">Lawyer</option>
+                  <option value="intern">Intern</option>
+                </select>
+              </div>
+              
+              <button
+                type="submit"
+                className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              >
+                <Mail className="h-4 w-4" />
+                <span>Send Invitation</span>
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
+
+      {/* Transfer Admin Modal */}
+      {showTransferAdmin && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Transfer Admin Role</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Select a lawyer to transfer the admin role to. This action cannot be undone.
+            </p>
+            
+            <div className="space-y-2 mb-6">
+              {eligibleForAdmin.map((user) => (
+                <button
+                  key={user.id}
+                  onClick={() => {
+                    onTransferAdminRole(user.id);
+                    setShowTransferAdmin(false);
+                  }}
+                  className="w-full flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50"
+                >
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <UserCheck className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                    <p className="text-xs text-gray-500">{user.email}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+            
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowTransferAdmin(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default FirmManagement;
