@@ -39,6 +39,10 @@ const ClientCaseDetails: React.FC<ClientCaseDetailsProps> = ({
   });
   const [showMeetingForm, setShowMeetingForm] = useState(false);
 
+  // Debug log to check if opposingParty data exists
+  console.log('ClientCaseDetails - clientCase:', clientCase);
+  console.log('ClientCaseDetails - opposingParty:', clientCase.opposingParty);
+
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', { 
       weekday: 'long', 
