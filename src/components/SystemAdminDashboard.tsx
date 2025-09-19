@@ -423,7 +423,7 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               <div className="p-4 sm:p-6 border-b border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
-                  <div className="flex items-center justify-between w-full sm:w-auto sm:justify-start">
+              </div>
               <div className="p-4 sm:p-6">
                 <div className="space-y-4">
                   {pendingUsers.slice(0, 5).map((user) => (
@@ -494,7 +494,6 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
                         className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
-                    
                   </div>
                   
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -536,10 +535,7 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
                     
                     <button
                       onClick={() => {
-                        // TODO: Implement add user functionality
-                        alert('Add User functionality will be implemented');
-                      }}
-                      className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
+                        setSearchTerm('');
                         setRoleFilter('all');
                         setStatusFilter('all');
                         setFirmFilter('all');
