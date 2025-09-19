@@ -476,6 +476,12 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
                       <p className="mt-1 text-sm text-gray-900">{caseData.opposingParty}</p>
                     </div>
                   )}
+                  {caseData.opposingCounsel && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Opposing Party</label>
+                      <p className="mt-1 text-sm text-gray-900">{caseData.opposingCounsel.name}</p>
+                    </div>
+                  )}
                   {caseData.nextHearingDate && (
                     <div className="sm:col-span-2">
                       <label className="text-sm font-medium text-gray-500">Next Hearing</label>
