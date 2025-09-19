@@ -313,6 +313,108 @@ export const mockCases: Case[] = [
     billableHours: 145,
     totalRevenue: 72500,
     opposingCounselHistory: [
+  {
+    id: '2',
+    title: 'Anderson Employment Discrimination Case',
+    clientId: '2',
+    client: mockClients[1],
+    assignedLawyer: mockUsers[5], // Robert Garcia
+    supportingInterns: [mockUsers[6]], // Jennifer Martinez
+    caseType: 'Employment Law',
+    status: 'active',
+    priority: 'medium',
+    nextHearingDate: new Date('2025-03-10'),
+    courtStage: 'Mediation Phase',
+    referredBy: 'Bar Association',
+    judge: 'Hon. Michael Chen',
+    opposingParty: 'MegaCorp LLC',
+    opposingCounsel: {
+      name: 'Sandra Williams',
+      firm: 'Williams & Associates',
+      email: 'sandra.williams@williamslaw.com',
+      phone: '+1 (555) 246-8101'
+    },
+    createdAt: new Date('2024-08-20'),
+    updatedAt: new Date('2024-12-15'),
+    outcome: undefined,
+    billableHours: 89,
+    totalRevenue: 44500
+  },
+  {
+    id: '3',
+    title: 'Rodriguez Personal Injury Claim',
+    clientId: '3',
+    client: mockClients[2],
+    assignedLawyer: mockUsers[2], // Emily Davis
+    supportingInterns: [],
+    caseType: 'Personal Injury',
+    status: 'active',
+    priority: 'high',
+    nextHearingDate: new Date('2025-01-25'),
+    courtStage: 'Pre-trial',
+    referredBy: 'Referral Network',
+    judge: 'Hon. Lisa Thompson',
+    opposingParty: 'SafeDrive Insurance Co.',
+    opposingCounsel: {
+      name: 'David Kumar',
+      firm: 'Kumar Defense Group',
+      email: 'david.kumar@kumarlaw.com',
+      phone: '+1 (555) 369-2580'
+    },
+    createdAt: new Date('2024-09-10'),
+    updatedAt: new Date('2024-12-20'),
+    outcome: undefined,
+    billableHours: 67,
+    totalRevenue: 33500
+  },
+  {
+    id: '4',
+    title: 'Brown Contract Dispute - Resolved',
+    clientId: '1',
+    client: mockClients[0],
+    assignedLawyer: mockUsers[5], // Robert Garcia
+    supportingInterns: [],
+    caseType: 'Contract Law',
+    status: 'closed',
+    priority: 'medium',
+    nextHearingDate: undefined,
+    courtStage: 'Settlement',
+    referredBy: 'Existing Client',
+    opposingParty: 'BuildRight Construction',
+    opposingCounsel: {
+      name: 'Thomas Lee',
+      firm: 'Lee Construction Law',
+      email: 'thomas.lee@leelaw.com',
+      phone: '+1 (555) 147-2583'
+    },
+    createdAt: new Date('2024-03-01'),
+    updatedAt: new Date('2024-11-15'),
+    closedAt: new Date('2024-11-15'),
+    outcome: 'settled',
+    billableHours: 78,
+    totalRevenue: 39000
+  },
+  {
+    id: '5',
+    title: 'Anderson Family Law Matter',
+    clientId: '2',
+    client: mockClients[1],
+    assignedLawyer: mockUsers[2], // Emily Davis
+    supportingInterns: [mockUsers[3]], // David Wilson
+    caseType: 'Family Law',
+    status: 'closed',
+    priority: 'low',
+    nextHearingDate: undefined,
+    courtStage: 'Final Decree',
+    referredBy: 'Word of Mouth',
+    opposingParty: 'Sarah Anderson',
+    createdAt: new Date('2024-01-05'),
+    updatedAt: new Date('2024-10-30'),
+    closedAt: new Date('2024-10-30'),
+    outcome: 'won',
+    billableHours: 156,
+    totalRevenue: 78000
+  },
       {
         name: 'Robert Davis',
         firm: 'Davis & Associates',
