@@ -2,9 +2,224 @@ import React, { useState } from 'react';
 import { 
   Settings, Users, Building, CheckCircle, XCircle, Clock, 
   Plus, Edit, Trash2, Search, Filter, UserCheck, Shield,
-  AlertCircle, Eye, Mail, Phone
+  AlertCircle, Eye, Mail, Phone, Lock
 } from 'lucide-react';
 import { User, LawFirm } from '../types';
+
+interface EditUserModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  user: User | null;
+  firms: LawFirm[];
+  onUpdateUser: (userId: string, updates: Partial<User>) => void;
+  onApproveUser: (userId: string) => void;
+  onRejectUser: (userId: string) => void;
+}
+
+const EditUserModal: React.FC<EditUserModalProps> = ({
+  isOpen,
+  onClose,
+  user,
+  firms,
+  onUpdateUser,
+  onApproveUser,
+  onRejectUser
+}) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    isDisabled: false
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  React.useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name,
+        phone: (user as any).phone || '',
+        isDisabled: user.approvalStatus === 'disabled'
+      });
+    }
+  }, [user]);
+
+  if (!isOpen || !user) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const updates: Partial<User> = {
+        name: formData.name.trim(),
+        ...(formData.phone && { phone: formData.phone.trim() }),
+        approvalStatus: formData.isDisabled ? 'disabled' : user.approvalStatus === 'disabled' ? 'approved' : user.approvalStatus
+      };
+
+      onUpdateUser(user.id, updates);
+      onClose();
+    } catch (error) {
+      console.error('Error updating user:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResetPassword = () => {
+    // In a real app, this would trigger a password reset email
+    alert('Password reset email sent to user');
+  };
+
+  const userFirm = user.firmId ? firms.find(f => f.id === user.firmId) : null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Edit className="h-5 w-5 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Edit User</h3>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <XCircle className="h-5 w-5 text-gray-500" />
+            </button>
+          </div>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* User Info */}
+          <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+            <div className="flex items-center space-x-2 text-sm">
+              <Mail className="h-4 w-4 text-gray-500" />
+              <span className="font-medium">Email:</span>
+              <span>{user.email}</span>
+            </div>
+            <div className="flex items-center space-x-2 text-sm">
+              <UserCheck className="h-4 w-4 text-gray-500" />
+              <span className="font-medium">Role:</span>
+              <span className="capitalize">{user.role.replace('-', ' ')}</span>
+            </div>
+            {userFirm && (
+              <div className="flex items-center space-x-2 text-sm">
+                <Building className="h-4 w-4 text-gray-500" />
+                <span className="font-medium">Firm:</span>
+                <span>{userFirm.name}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Editable Fields */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="+1 (555) 123-4567"
+              />
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                id="disabled"
+                checked={formData.isDisabled}
+                onChange={(e) => setFormData({ ...formData, isDisabled: e.target.checked })}
+                className="rounded border-gray-300 text-red-600 focus:ring-red-500"
+              />
+              <label htmlFor="disabled" className="text-sm font-medium text-gray-700">
+                Disable user access
+              </label>
+            </div>
+          </div>
+
+          {/* Password Reset */}
+          <div className="border-t border-gray-200 pt-4">
+            <button
+              type="button"
+              onClick={handleResetPassword}
+              className="flex items-center space-x-2 px-4 py-2 bg-yellow-100 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-colors"
+            >
+              <Lock className="h-4 w-4" />
+              <span>Send Password Reset Email</span>
+            </button>
+          </div>
+
+          {/* Approval Actions */}
+          {user.approvalStatus === 'pending' && (
+            <div className="border-t border-gray-200 pt-4 space-y-3">
+              <p className="text-sm font-medium text-gray-700">User Approval</p>
+              <div className="flex space-x-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onApproveUser(user.id);
+                    onClose();
+                  }}
+                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  <CheckCircle className="h-4 w-4" />
+                  <span>Approve User</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onRejectUser(user.id);
+                    onClose();
+                  }}
+                  className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  <XCircle className="h-4 w-4" />
+                  <span>Reject User</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Form Actions */}
+          <div className="flex space-x-3 pt-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isSubmitting ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 interface SystemAdminDashboardProps {
   users: User[];
@@ -35,6 +250,9 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [firmFilter, setFirmFilter] = useState<string>('all');
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   const pendingUsers = users.filter(u => u.approvalStatus === 'pending');
   const lawyers = users.filter(u => u.role === 'lawyer' || u.role === 'firm-admin');
@@ -45,9 +263,26 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
     const matchesStatus = statusFilter === 'all' || user.approvalStatus === statusFilter;
+    const matchesFirm = firmFilter === 'all' || user.firmId === firmFilter;
     
-    return matchesSearch && matchesRole && matchesStatus && user.id !== currentUser.id;
+    return matchesSearch && matchesRole && matchesStatus && matchesFirm && user.id !== currentUser.id;
   });
+
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+    setShowEditModal(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setEditingUser(null);
+    setShowEditModal(false);
+  };
+
+  const handleUpdateUser = (userId: string, updates: Partial<User>) => {
+    onUpdateUserRole(userId, updates.role || users.find(u => u.id === userId)?.role || 'client');
+    // In a real app, this would be a more comprehensive update function
+    console.log('Updating user:', userId, updates);
+  };
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -74,6 +309,8 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'rejected':
         return 'bg-red-100 text-red-800 border-red-200';
+      case 'disabled':
+        return 'bg-gray-100 text-gray-800 border-gray-200';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -233,10 +470,19 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="p-4 sm:p-6 border-b border-gray-200">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-                <h3 className="text-lg font-semibold text-gray-900">User Management</h3>
+                <div className="flex items-center justify-between w-full sm:w-auto">
+                  <h3 className="text-lg font-semibold text-gray-900">User Management</h3>
+                  <button
+                    onClick={() => console.log('Add new user')}
+                    className="sm:hidden flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Add User</span>
+                  </button>
+                </div>
                 
                 {/* Filters */}
-                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
+                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 sm:items-center">
                   <div className="relative">
                     <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                     <input
@@ -269,7 +515,28 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
                     <option value="approved">Approved</option>
                     <option value="pending">Pending</option>
                     <option value="rejected">Rejected</option>
+                    <option value="disabled">Disabled</option>
                   </select>
+                  
+                  <select
+                    value={firmFilter}
+                    onChange={(e) => setFirmFilter(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">All Firms</option>
+                    <option value="">No Firm</option>
+                    {firms.map(firm => (
+                      <option key={firm.id} value={firm.id}>{firm.name}</option>
+                    ))}
+                  </select>
+                  
+                  <button
+                    onClick={() => console.log('Add new user')}
+                    className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Add User</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -533,6 +800,17 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
           </div>
         )}
       </div>
+      
+      {/* Edit User Modal */}
+      <EditUserModal
+        isOpen={showEditModal}
+        onClose={handleCloseEditModal}
+        user={editingUser}
+        firms={firms}
+        onUpdateUser={handleUpdateUser}
+        onApproveUser={onApproveUser}
+        onRejectUser={onRejectUser}
+      />
     </div>
   );
 };
