@@ -801,6 +801,7 @@ export const mockCases: Case[] = [
     referredBy: 'Referral Network',
     judge: 'Hon. Susan Miller',
     courtLevel: 'superior',
+    opposingParty: 'Maria Brown',
     outcome: 'won',
     createdAt: new Date('2024-03-10'),
     updatedAt: new Date('2024-09-15'),
