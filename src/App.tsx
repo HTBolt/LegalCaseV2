@@ -6,6 +6,7 @@ import Header from './components/Header';
 import Dashboard from './components/Dashboard';
 import FirmDashboard from './components/FirmDashboard';
 import ClientDashboard from './components/ClientDashboard';
+import ClientCaseDetails from './components/ClientCaseDetails';
 import CaseDetails from './components/CaseDetails';
 import { 
   mockUsers,
