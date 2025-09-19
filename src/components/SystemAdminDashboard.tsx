@@ -927,3 +927,79 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
                   <select 
                     value={newUserForm.role}
                     onChange={(e) => setNewUserForm({ ...newUserForm, role: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Select a role</option>
+                    <option value="lawyer">Lawyer</option>
+                    <option value="firm-admin">Firm Admin</option>
+                    <option value="intern">Intern</option>
+                    <option value="client">Client</option>
+                  </select>
+                </div>
+
+                <div className="relative">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Law Firm
+                  </label>
+                  <input
+                    type="text"
+                    value={newUserForm.firmName}
+                    onChange={(e) => handleFirmInputChange(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Type to search for existing firms..."
+                  />
+                  {showFirmDropdown && filteredFirms.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                      {filteredFirms.map((firm) => (
+                        <button
+                          key={firm.id}
+                          type="button"
+                          onClick={() => handleFirmSelect(firm.name)}
+                          className="w-full text-left px-3 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                        >
+                          {firm.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    id="autoApprove"
+                    checked={newUserForm.autoApprove}
+                    onChange={(e) => setNewUserForm({ ...newUserForm, autoApprove: e.target.checked })}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <label htmlFor="autoApprove" className="text-sm font-medium text-gray-700">
+                    Auto-approve user (skip approval process)
+                  </label>
+                </div>
+
+                <div className="flex space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={handleAddUserModalClose}
+                    className="flex-1 px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Add User
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default SystemAdminDashboard;
