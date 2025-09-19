@@ -327,45 +327,57 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({
                           )}
                         </div>
                         
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 text-sm text-gray-600 mb-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm text-gray-600 mb-3">
                           <div className="flex items-center space-x-1">
-                            <Scale className="h-3 w-3" />
+                            <span className="font-medium text-gray-700">Case Type:</span>
                             <span>{caseItem.caseType}</span>
                           </div>
                           <div className="flex items-center space-x-1">
-                            <User className="h-3 w-3" />
+                            <span className="font-medium text-gray-700">Lawyer:</span>
                             <span>{caseItem.assignedLawyer.name}</span>
                           </div>
+                          <div className="flex items-center space-x-1">
+                            <span className="font-medium text-gray-700">
+                              {caseItem.status === 'closed' ? 'Judgment Date:' : 'Next Hearing:'}
+                            </span>
+                            <span>
+                              {caseItem.status === 'closed' 
+                                ? (caseItem.closedAt ? formatDate(caseItem.closedAt) : 'N/A')
+                                : (caseItem.nextHearingDate ? formatDate(caseItem.nextHearingDate) : 'N/A')
+                              }
+                            </span>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <span className="font-medium text-gray-700">Status:</span>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(caseItem.status)}`}>
+                              {caseItem.status}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        {/* Additional case information */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-500 mb-3">
                           {firm && (
                             <div className="flex items-center space-x-1">
                               <Building className="h-3 w-3" />
-                              <span className="truncate">{firm.name}</span>
+                              <span className="truncate">Law Firm: {firm.name}</span>
+                            </div>
+                          )}
+                          {caseItem.opposingParty && (
+                            <div className="flex items-center space-x-1">
+                              <User className="h-3 w-3" />
+                              <span className="truncate">vs. {caseItem.opposingParty}</span>
                             </div>
                           )}
                         </div>
                         
-                        <div className="flex flex-wrap items-center gap-2 mb-3">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(caseItem.status)}`}>
-                            {caseItem.status}
-                          </span>
-                          {caseItem.opposingParty && (
-                            <span className="text-xs text-gray-500">
-                              vs. {caseItem.opposingParty}
-                            </span>
-                          )}
-                        </div>
-                        
-                        {caseItem.nextHearingDate && (
-                          <div className="flex items-center space-x-2 text-xs text-gray-600">
-                            <CalendarIcon className="h-3 w-3" />
-                            <span className="truncate">Next hearing: {formatDate(caseItem.nextHearingDate)}</span>
-                            {daysUntilHearing !== null && (
-                              <span className={`${isUrgent ? 'text-yellow-700 font-medium' : ''}`}>
-                                ({daysUntilHearing === 0 ? 'Today' : 
-                                  daysUntilHearing === 1 ? 'Tomorrow' : 
-                                  `${daysUntilHearing} days`})
-                              </span>
-                            )}
+                        {/* Urgency indicator for active cases */}
+                        {caseItem.status === 'active' && caseItem.nextHearingDate && daysUntilHearing !== null && (
+                          <div className={`text-xs font-medium ${isUrgent ? 'text-yellow-700' : 'text-gray-600'}`}>
+                            {daysUntilHearing === 0 ? 'Hearing Today!' : 
+                             daysUntilHearing === 1 ? 'Hearing Tomorrow!' : 
+                             daysUntilHearing <= 7 && daysUntilHearing > 0 ? `Hearing in ${daysUntilHearing} days` :
+                             null}
                           </div>
                         )}
                       </div>
