@@ -20,7 +20,7 @@ interface CaseDetailsProps {
   notes: Note[];
   billingEntries: BillingEntry[];
   caseTasks?: Task[];
-  onBack: () => void;
+  onBackToDashboard: () => void;
   onTaskCreate?: (taskData: Partial<any>) => void;
   onTaskUpdate?: (taskId: string, updates: Partial<Task>) => void;
   onTaskEdit?: (task: Task) => void;
@@ -43,7 +43,7 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
   documents, 
   notes, 
   billingEntries,
-  onBack,
+  onBackToDashboard,
   caseTasks = [],
   onTaskCreate,
   onTaskUpdate,
@@ -345,7 +345,7 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center py-3 sm:py-4">
             <button
-              onClick={onBack}
+              onClick={onBackToDashboard}
               className="mr-3 sm:mr-4 p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <ArrowLeft className="h-5 w-5 text-gray-600" />
