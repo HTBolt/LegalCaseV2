@@ -423,7 +423,7 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               <div className="p-4 sm:p-6 border-b border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
-              </div>
+                  <div className="flex items-center justify-between w-full sm:w-auto sm:justify-start">
               <div className="p-4 sm:p-6">
                 <div className="space-y-4">
                   {pendingUsers.slice(0, 5).map((user) => (
@@ -495,13 +495,6 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
                       />
                     </div>
                     
-                    <button
-                      onClick={() => console.log('Add new user')}
-                      className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
-                    >
-                      <Plus className="h-4 w-4" />
-                      <span>Add User</span>
-                    </button>
                   </div>
                   
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -543,7 +536,10 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
                     
                     <button
                       onClick={() => {
-                        setSearchTerm('');
+                        // TODO: Implement add user functionality
+                        alert('Add User functionality will be implemented');
+                      }}
+                      className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap"
                         setRoleFilter('all');
                         setStatusFilter('all');
                         setFirmFilter('all');
