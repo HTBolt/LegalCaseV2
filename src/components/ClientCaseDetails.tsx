@@ -201,7 +201,7 @@ const ClientCaseDetails: React.FC<ClientCaseDetailsProps> = ({
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                   <Scale className="h-5 w-5 mr-2" />
-                  Case Status
+                  Case Details
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -216,6 +216,12 @@ const ClientCaseDetails: React.FC<ClientCaseDetailsProps> = ({
                     <div>
                       <label className="text-sm font-medium text-gray-500">Assigned Judge</label>
                       <p className="mt-1 text-sm text-gray-900">{clientCase.judge}</p>
+                    </div>
+                  )}
+                  {clientCase.opposingParty && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Opposing Party</label>
+                      <p className="mt-1 text-sm text-gray-900">{clientCase.opposingParty}</p>
                     </div>
                   )}
                   <div>
