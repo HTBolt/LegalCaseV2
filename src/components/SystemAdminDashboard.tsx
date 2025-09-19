@@ -926,4 +926,4 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
                   </label>
                   <select 
                     value={newUserForm.role}
-                    onChange={(e) => setNewUserForm({ ...newUser
+                    onChange={(e) => setNewUserForm({ ...newUserForm, role: e.target.value })}
