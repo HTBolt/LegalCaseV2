@@ -1,48 +1,46 @@
 import React, { useState } from 'react';
 import { 
-  Calendar, Clock, FileText, User, Phone, Mail, MapPin, 
-  Scale, Building, AlertTriangle, CheckCircle, Plus,
-  MessageSquare, Download, Upload, Video, Send
+  Calendar, Clock, FileText, User, Scale, Building, AlertTriangle, 
+  CheckCircle, Search, Filter, DollarSign, Users, ChevronRight,
+  Eye, Calendar as CalendarIcon, MapPin
 } from 'lucide-react';
-import { Case, Task, Milestone, TimelineEvent, Document, ClientInvoice, MeetingRequest, User as UserType } from '../types';
+import { Case, Task, Milestone, ClientInvoice, MeetingRequest, User as UserType, LawFirm } from '../types';
 
 interface ClientDashboardProps {
-  clientCase: Case;
+  clientCases: Case[];
   clientTasks: Task[];
   milestones: Milestone[];
-  timelineEvents: TimelineEvent[];
-  preEngagementEvents: TimelineEvent[];
-  documents: Document[];
   invoices: ClientInvoice[];
   meetingRequests: MeetingRequest[];
   currentUser: UserType;
+  firms: LawFirm[];
+  onCaseSelect: (caseId: string) => void;
 }
 
 const ClientDashboard: React.FC<ClientDashboardProps> = ({ 
-  clientCase, 
+  clientCases, 
   clientTasks,
   milestones,
-  timelineEvents,
-  preEngagementEvents,
-  documents,
   invoices,
   meetingRequests,
-  currentUser
+  currentUser,
+  firms,
+  onCaseSelect
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'history' | 'documents' | 'invoices' | 'meetings'>('overview');
-  const [newMeetingRequest, setNewMeetingRequest] = useState({
-    requestedDate: '',
-    preferredTime: '',
-    purpose: ''
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filters, setFilters] = useState({
+    lawyerName: '',
+    firmName: '',
+    caseType: '',
+    opponentName: '',
+    caseStatus: 'active'
   });
-  const [showMeetingForm, setShowMeetingForm] = useState(false);
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+      month: 'short', 
+      day: 'numeric',
+      year: date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
     });
   };
 
@@ -50,7 +48,8 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 2,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
     }).format(amount);
   };
 
@@ -69,61 +68,69 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({
     }
   };
 
-  const getInvoiceStatusColor = (status: string) => {
-    switch (status) {
-      case 'paid':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'sent':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'overdue':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'disputed':
-        return 'bg-orange-100 text-orange-800 border-orange-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
+  const getDaysUntilHearing = (date: Date) => {
+    const today = new Date();
+    const hearing = new Date(date);
+    const diffTime = hearing.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
   };
 
-  const getMeetingStatusColor = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'declined':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'completed':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
+  // Calculate statistics
+  const openCases = clientCases.filter(c => c.status === 'active').length;
+  const pendingTasks = clientTasks.filter(t => t.status !== 'completed' && t.isClientVisible).length;
+  const upcomingMeetings = meetingRequests.filter(m => 
+    m.status === 'approved' && new Date(m.actualDate || m.requestedDate) >= new Date()
+  ).length;
+  const totalOutstanding = invoices
+    .filter(i => i.status !== 'paid')
+    .reduce((sum, inv) => sum + inv.totalAmount, 0);
+
+  // Get unique filter options
+  const uniqueLawyers = [...new Set(clientCases.map(c => c.assignedLawyer.name))];
+  const uniqueFirms = [...new Set(clientCases.map(c => {
+    const firm = firms.find(f => f.id === c.assignedLawyer.firmId);
+    return firm ? firm.name : 'Unknown Firm';
+  }))];
+  const uniqueCaseTypes = [...new Set(clientCases.map(c => c.caseType))];
+  const uniqueOpponents = [...new Set(clientCases.map(c => c.opposingParty).filter(Boolean))];
+
+  // Filter and search cases
+  const filteredCases = clientCases.filter(caseItem => {
+    const matchesSearch = searchTerm === '' || 
+      caseItem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      caseItem.caseType.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      caseItem.assignedLawyer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (caseItem.opposingParty && caseItem.opposingParty.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesLawyer = filters.lawyerName === '' || caseItem.assignedLawyer.name === filters.lawyerName;
+    const matchesFirm = filters.firmName === '' || 
+      firms.find(f => f.id === caseItem.assignedLawyer.firmId)?.name === filters.firmName;
+    const matchesCaseType = filters.caseType === '' || caseItem.caseType === filters.caseType;
+    const matchesOpponent = filters.opponentName === '' || caseItem.opposingParty === filters.opponentName;
+    const matchesStatus = filters.caseStatus === '' || caseItem.status === filters.caseStatus;
+    
+    return matchesSearch && matchesLawyer && matchesFirm && matchesCaseType && matchesOpponent && matchesStatus;
+  });
+
+  // Sort cases by next hearing date (closest first)
+  const sortedCases = [...filteredCases].sort((a, b) => {
+    if (!a.nextHearingDate && !b.nextHearingDate) return 0;
+    if (!a.nextHearingDate) return 1;
+    if (!b.nextHearingDate) return -1;
+    return new Date(a.nextHearingDate).getTime() - new Date(b.nextHearingDate).getTime();
+  });
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setFilters({
+      lawyerName: '',
+      firmName: '',
+      caseType: '',
+      opponentName: '',
+      caseStatus: 'active'
+    });
   };
-
-  const handleMeetingRequest = () => {
-    // In a real app, this would submit to an API
-    console.log('Meeting request submitted:', newMeetingRequest);
-    setNewMeetingRequest({ requestedDate: '', preferredTime: '', purpose: '' });
-    setShowMeetingForm(false);
-  };
-
-  const upcomingMilestones = milestones
-    .filter(m => new Date(m.date) >= new Date() && m.status === 'upcoming')
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .slice(0, 3);
-
-  const pendingInvoices = invoices.filter(i => i.status !== 'paid');
-  const totalOutstanding = pendingInvoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
-
-  const tabs = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'timeline', label: 'Timeline' },
-    { id: 'history', label: 'History' },
-    { id: 'documents', label: 'Documents' },
-    { id: 'invoices', label: 'Invoices' },
-    { id: 'meetings', label: 'Meetings' }
-  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -131,528 +138,246 @@ const ClientDashboard: React.FC<ClientDashboardProps> = ({
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{clientCase.title}</h1>
-                <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-gray-600">
-                  <span>Case #{clientCase.id}</span>
-                  <span>•</span>
-                  <span>{clientCase.caseType}</span>
-                  <span>•</span>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(clientCase.status)}`}>
-                    {clientCase.status}
-                  </span>
-                </div>
-              </div>
-              
-              {clientCase.nextHearingDate && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <div className="flex items-center space-x-2 text-blue-800">
-                    <Calendar className="h-4 w-4" />
-                    <div>
-                      <p className="text-xs font-medium">Next Hearing</p>
-                      <p className="text-sm">{formatDate(clientCase.nextHearingDate)}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            {/* Mobile-optimized tabs */}
-            <div className="mt-4 overflow-x-auto">
-              <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg min-w-max">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
-                    className={`px-3 sm:px-4 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
-                      activeTab === tab.id 
-                        ? 'bg-white text-blue-600 shadow-sm' 
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">My Cases</h1>
+              <p className="text-gray-600 text-sm sm:text-base">Welcome back, {currentUser.name}</p>
             </div>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-        {activeTab === 'overview' && (
-          <div className="space-y-6 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-8">
-            {/* Main Content */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Case Status */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Scale className="h-5 w-5 mr-2" />
-                  Case Status
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Current Stage</label>
-                    <p className="mt-1 text-sm text-gray-900">{clientCase.courtStage}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Case Type</label>
-                    <p className="mt-1 text-sm text-gray-900">{clientCase.caseType}</p>
-                  </div>
-                  {clientCase.judge && (
-                    <div>
-                      <label className="text-sm font-medium text-gray-500">Assigned Judge</label>
-                      <p className="mt-1 text-sm text-gray-900">{clientCase.judge}</p>
-                    </div>
-                  )}
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Case Started</label>
-                    <p className="mt-1 text-sm text-gray-900">{clientCase.createdAt.toLocaleDateString()}</p>
-                  </div>
-                </div>
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200">
+            <div className="flex items-center">
+              <div className="bg-blue-500 p-2 sm:p-3 rounded-lg">
+                <FileText className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
               </div>
-
-              {/* Your Tasks */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <CheckCircle className="h-5 w-5 mr-2" />
-                  Your Action Items
-                </h3>
-                {clientTasks.length === 0 ? (
-                  <p className="text-gray-500 text-center py-4">No action items at this time</p>
-                ) : (
-                  <div className="space-y-3">
-                    {clientTasks.map((task) => (
-                      <div key={task.id} className="p-3 border border-gray-200 rounded-lg">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <h4 className="text-sm font-medium text-gray-900">{task.title}</h4>
-                            <p className="text-sm text-gray-600 mt-1">{task.description}</p>
-                            <div className="flex items-center space-x-2 mt-2 text-xs text-gray-500">
-                              <Clock className="h-3 w-3" />
-                              <span>Due: {task.dueDate.toLocaleDateString()}</span>
-                            </div>
-                          </div>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            task.priority === 'high' ? 'bg-red-100 text-red-800' :
-                            task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-green-100 text-green-800'
-                          }`}>
-                            {task.priority}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Open Cases</p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-900">{openCases}</p>
               </div>
-
-              {/* Opposing Counsel */}
-              {clientCase.opposingCounsel && (
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <Building className="h-5 w-5 mr-2" />
-                    Opposing Counsel
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-gray-500">Attorney</label>
-                      <p className="mt-1 text-sm text-gray-900">{clientCase.opposingCounsel.name}</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-500">Law Firm</label>
-                      <p className="mt-1 text-sm text-gray-900">{clientCase.opposingCounsel.firm}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Sidebar */}
-            <div className="space-y-6">
-              {/* Your Attorney */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <User className="h-5 w-5 mr-2" />
-                  Your Attorney
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                      <User className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{clientCase.assignedLawyer.name}</p>
-                      <p className="text-xs text-gray-500">Lead Attorney</p>
-                    </div>
-                  </div>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center space-x-2 text-gray-600">
-                      <Mail className="h-4 w-4" />
-                      <span className="truncate">{clientCase.assignedLawyer.email}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-gray-600">
-                      <Phone className="h-4 w-4" />
-                      <span>+1 (555) 123-4567</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Upcoming Events */}
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Calendar className="h-5 w-5 mr-2" />
-                  Upcoming Events
-                </h3>
-                {upcomingMilestones.length === 0 ? (
-                  <p className="text-gray-500 text-center py-4">No upcoming events</p>
-                ) : (
-                  <div className="space-y-3">
-                    {upcomingMilestones.map((milestone) => (
-                      <div key={milestone.id} className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                        <h4 className="text-sm font-medium text-blue-900">{milestone.title}</h4>
-                        <p className="text-xs text-blue-700 mt-1">{formatDate(milestone.date)}</p>
-                        {milestone.location && (
-                          <div className="flex items-center space-x-1 mt-1 text-xs text-blue-600">
-                            <MapPin className="h-3 w-3" />
-                            <span className="truncate">{milestone.location}</span>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Outstanding Invoices */}
-              {pendingInvoices.length > 0 && (
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <AlertTriangle className="h-5 w-5 mr-2 text-yellow-600" />
-                    Outstanding Balance
-                  </h3>
-                  <div className="text-center">
-                    <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalOutstanding)}</p>
-                    <p className="text-sm text-gray-600">{pendingInvoices.length} unpaid invoice{pendingInvoices.length > 1 ? 's' : ''}</p>
-                    <button className="mt-3 w-full bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">
-                      View Invoices
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
-        )}
 
-        {activeTab === 'timeline' && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="p-4 sm:p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Case Timeline</h3>
-              <p className="text-sm text-gray-600 mt-1">Legal events since case began</p>
-            </div>
-            <div className="p-4 sm:p-6">
-              {timelineEvents.length === 0 ? (
-                <div className="text-center py-8">
-                  <Clock className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-500">No timeline events recorded</p>
-                </div>
-              ) : (
-                <div className="flow-root">
-                  <ul className="-mb-8">
-                    {timelineEvents.map((event, index) => (
-                      <li key={event.id}>
-                        <div className="relative pb-8">
-                          {index !== timelineEvents.length - 1 && (
-                            <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" />
-                          )}
-                          <div className="relative flex space-x-3">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 border-2 border-blue-300">
-                              <Scale className="h-4 w-4 text-blue-600" />
-                            </div>
-                            <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
-                              <div className="min-w-0 flex-1">
-                                <p className="text-sm font-medium text-gray-900">{event.title}</p>
-                                <p className="text-sm text-gray-600">{event.description}</p>
-                              </div>
-                              <div className="whitespace-nowrap text-right text-sm text-gray-500">
-                                {event.date.toLocaleDateString()}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200">
+            <div className="flex items-center">
+              <div className="bg-yellow-500 p-2 sm:p-3 rounded-lg">
+                <CheckCircle className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+              </div>
+              <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Pending Tasks</p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-900">{pendingTasks}</p>
+              </div>
             </div>
           </div>
-        )}
 
-        {activeTab === 'history' && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="p-4 sm:p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Case History</h3>
-              <p className="text-sm text-gray-600 mt-1">Events before legal representation began</p>
-            </div>
-            <div className="p-4 sm:p-6">
-              {preEngagementEvents.length === 0 ? (
-                <div className="text-center py-8">
-                  <Clock className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                  <p className="text-gray-500">No historical events recorded</p>
-                </div>
-              ) : (
-                <div className="flow-root">
-                  <ul className="-mb-8">
-                    {preEngagementEvents.map((event, index) => (
-                      <li key={event.id}>
-                        <div className="relative pb-8">
-                          {index !== preEngagementEvents.length - 1 && (
-                            <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" />
-                          )}
-                          <div className="relative flex space-x-3">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 border-2 border-gray-300">
-                              <User className="h-4 w-4 text-gray-600" />
-                            </div>
-                            <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
-                              <div className="min-w-0 flex-1">
-                                <p className="text-sm font-medium text-gray-900">{event.title}</p>
-                                <p className="text-sm text-gray-600">{event.description}</p>
-                              </div>
-                              <div className="whitespace-nowrap text-right text-sm text-gray-500">
-                                {event.date.toLocaleDateString()}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200">
+            <div className="flex items-center">
+              <div className="bg-green-500 p-2 sm:p-3 rounded-lg">
+                <Users className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+              </div>
+              <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Upcoming Meetings</p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-900">{upcomingMeetings}</p>
+              </div>
             </div>
           </div>
-        )}
 
-        {activeTab === 'documents' && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="p-4 sm:p-6 border-b border-gray-200">
+          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200">
+            <div className="flex items-center">
+              <div className="bg-red-500 p-2 sm:p-3 rounded-lg">
+                <DollarSign className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+              </div>
+              <div className="ml-3 sm:ml-4 min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Outstanding</p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-900">{formatCurrency(totalOutstanding)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Cases List */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="p-4 sm:p-6 border-b border-gray-200">
+            <div className="flex flex-col space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Case Documents</h3>
-                  <p className="text-sm text-gray-600 mt-1">{documents.length} document{documents.length !== 1 ? 's' : ''} available</p>
+                <h3 className="text-lg font-semibold text-gray-900">Your Legal Cases</h3>
+                <span className="text-sm text-gray-500">{sortedCases.length} case{sortedCases.length !== 1 ? 's' : ''} found</span>
+              </div>
+
+              {/* Search Bar */}
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search className="h-4 w-4 text-gray-400" />
                 </div>
-                <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Document
+                <input
+                  type="text"
+                  placeholder="Search cases by title, type, lawyer, or opponent..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              {/* Filters */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                <select 
+                  value={filters.lawyerName}
+                  onChange={(e) => setFilters({...filters, lawyerName: e.target.value})}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                >
+                  <option value="">All Lawyers</option>
+                  {uniqueLawyers.map(lawyer => (
+                    <option key={lawyer} value={lawyer}>{lawyer}</option>
+                  ))}
+                </select>
+
+                <select 
+                  value={filters.firmName}
+                  onChange={(e) => setFilters({...filters, firmName: e.target.value})}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                >
+                  <option value="">All Firms</option>
+                  {uniqueFirms.map(firm => (
+                    <option key={firm} value={firm}>{firm}</option>
+                  ))}
+                </select>
+
+                <select 
+                  value={filters.caseType}
+                  onChange={(e) => setFilters({...filters, caseType: e.target.value})}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                >
+                  <option value="">All Case Types</option>
+                  {uniqueCaseTypes.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+
+                <select 
+                  value={filters.opponentName}
+                  onChange={(e) => setFilters({...filters, opponentName: e.target.value})}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                >
+                  <option value="">All Opponents</option>
+                  {uniqueOpponents.map(opponent => (
+                    <option key={opponent} value={opponent}>{opponent}</option>
+                  ))}
+                </select>
+
+                <select 
+                  value={filters.caseStatus}
+                  onChange={(e) => setFilters({...filters, caseStatus: e.target.value})}
+                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                >
+                  <option value="">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="pending">Pending</option>
+                  <option value="closed">Closed</option>
+                  <option value="on-hold">On Hold</option>
+                </select>
+
+                <button
+                  onClick={clearFilters}
+                  className="px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                >
+                  Clear Filters
                 </button>
               </div>
             </div>
-            <div className="divide-y divide-gray-200">
-              {documents.map((document) => (
-                <div key={document.id} className="p-4 sm:p-6 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-3 min-w-0 flex-1">
-                      <div className="flex-shrink-0">
-                        <FileText className="h-5 w-5 text-blue-600" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-gray-900 truncate">{document.name}</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Uploaded on {document.uploadedAt.toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                    <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors ml-3">
-                      <Download className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
-        )}
 
-        {activeTab === 'invoices' && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="p-4 sm:p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Invoices</h3>
-              <p className="text-sm text-gray-600 mt-1">{invoices.length} invoice{invoices.length !== 1 ? 's' : ''} total</p>
+          {/* Cases List */}
+          {sortedCases.length === 0 ? (
+            <div className="text-center py-12">
+              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+              <p className="text-gray-500">No cases found matching your criteria</p>
+              <button
+                onClick={clearFilters}
+                className="mt-2 text-blue-600 hover:text-blue-700 text-sm"
+              >
+                Clear all filters
+              </button>
             </div>
+          ) : (
             <div className="divide-y divide-gray-200">
-              {invoices.map((invoice) => (
-                <div key={invoice.id} className="p-4 sm:p-6 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-2">
-                        <h4 className="text-sm font-medium text-gray-900">{invoice.invoiceNumber}</h4>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border self-start ${getInvoiceStatusColor(invoice.status)}`}>
-                          {invoice.status}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-600 mb-3">{invoice.description}</p>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
-                        <div>
-                          <span className="font-medium text-gray-700">Date:</span>
-                          <p className="text-gray-600">{invoice.date.toLocaleDateString()}</p>
-                        </div>
-                        <div>
-                          <span className="font-medium text-gray-700">Due Date:</span>
-                          <p className="text-gray-600">{invoice.dueDate.toLocaleDateString()}</p>
-                        </div>
-                        <div>
-                          <span className="font-medium text-gray-700">Amount:</span>
-                          <p className="text-gray-900 font-semibold">{formatCurrency(invoice.totalAmount)}</p>
-                        </div>
-                      </div>
-                      {invoice.status === 'paid' && invoice.paidDate && (
-                        <div className="mt-3 p-3 bg-green-50 rounded-lg">
-                          <div className="flex items-center space-x-2 text-sm text-green-800">
-                            <CheckCircle className="h-4 w-4" />
-                            <span>Paid on {invoice.paidDate.toLocaleDateString()}</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center space-x-2 ml-3">
-                      <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                        <Download className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'meetings' && (
-          <div className="space-y-6">
-            {/* Request New Meeting */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="p-4 sm:p-6 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-900">Request Meeting</h3>
-                  <button
-                    onClick={() => setShowMeetingForm(!showMeetingForm)}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+              {sortedCases.map((caseItem) => {
+                const daysUntilHearing = caseItem.nextHearingDate ? getDaysUntilHearing(caseItem.nextHearingDate) : null;
+                const isUrgent = daysUntilHearing !== null && daysUntilHearing <= 7 && daysUntilHearing >= 0;
+                const firm = firms.find(f => f.id === caseItem.assignedLawyer.firmId);
+                
+                return (
+                  <div
+                    key={caseItem.id}
+                    onClick={() => onCaseSelect(caseItem.id)}
+                    className={`p-4 sm:p-6 cursor-pointer hover:bg-gray-50 transition-colors ${
+                      isUrgent ? 'bg-yellow-50 border-l-4 border-yellow-400' : ''
+                    }`}
                   >
-                    <Plus className="h-4 w-4 mr-2" />
-                    New Request
-                  </button>
-                </div>
-              </div>
-              
-              {showMeetingForm && (
-                <div className="p-4 sm:p-6 border-b border-gray-200 bg-gray-50">
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Date</label>
-                        <input
-                          type="date"
-                          value={newMeetingRequest.requestedDate}
-                          onChange={(e) => setNewMeetingRequest({...newMeetingRequest, requestedDate: e.target.value})}
-                          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Time</label>
-                        <select
-                          value={newMeetingRequest.preferredTime}
-                          onChange={(e) => setNewMeetingRequest({...newMeetingRequest, preferredTime: e.target.value})}
-                          className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        >
-                          <option value="">Select time</option>
-                          <option value="9:00 AM">9:00 AM</option>
-                          <option value="10:00 AM">10:00 AM</option>
-                          <option value="11:00 AM">11:00 AM</option>
-                          <option value="2:00 PM">2:00 PM</option>
-                          <option value="3:00 PM">3:00 PM</option>
-                          <option value="4:00 PM">4:00 PM</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Purpose of Meeting</label>
-                      <textarea
-                        value={newMeetingRequest.purpose}
-                        onChange={(e) => setNewMeetingRequest({...newMeetingRequest, purpose: e.target.value})}
-                        rows={3}
-                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                        placeholder="Please describe what you'd like to discuss..."
-                      />
-                    </div>
-                    <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
-                      <button
-                        onClick={() => setShowMeetingForm(false)}
-                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handleMeetingRequest}
-                        disabled={!newMeetingRequest.requestedDate || !newMeetingRequest.preferredTime || !newMeetingRequest.purpose}
-                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      >
-                        <Send className="h-4 w-4 mr-2 inline" />
-                        Send Request
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Meeting Requests History */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="p-4 sm:p-6 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">Meeting History</h3>
-                <p className="text-sm text-gray-600 mt-1">{meetingRequests.length} meeting request{meetingRequests.length !== 1 ? 's' : ''}</p>
-              </div>
-              <div className="divide-y divide-gray-200">
-                {meetingRequests.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Video className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-500">No meeting requests yet</p>
-                  </div>
-                ) : (
-                  meetingRequests.map((request) => (
-                    <div key={request.id} className="p-4 sm:p-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-2">
-                            <h4 className="text-sm font-medium text-gray-900">
-                              Meeting Request - {request.requestedDate.toLocaleDateString()}
-                            </h4>
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border self-start ${getMeetingStatusColor(request.status)}`}>
-                              {request.status}
-                            </span>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-3 mb-2">
+                          <h4 className="text-sm font-medium text-gray-900 truncate flex-1">
+                            {caseItem.title}
+                          </h4>
+                          {isUrgent && (
+                            <AlertTriangle className="h-4 w-4 text-yellow-500 flex-shrink-0" />
+                          )}
+                        </div>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 text-sm text-gray-600 mb-3">
+                          <div className="flex items-center space-x-1">
+                            <Scale className="h-3 w-3" />
+                            <span>{caseItem.caseType}</span>
                           </div>
-                          <p className="text-sm text-gray-600 mb-2">{request.purpose}</p>
-                          <div className="text-xs text-gray-500">
-                            <p>Requested: {request.preferredTime} on {request.requestedDate.toLocaleDateString()}</p>
-                            <p>Submitted: {request.createdAt.toLocaleDateString()}</p>
-                            {request.actualDate && (
-                              <p>Scheduled: {request.actualDate.toLocaleDateString()}</p>
-                            )}
+                          <div className="flex items-center space-x-1">
+                            <User className="h-3 w-3" />
+                            <span>{caseItem.assignedLawyer.name}</span>
                           </div>
-                          {request.notes && (
-                            <div className="mt-3 p-3 bg-blue-50 rounded-lg">
-                              <p className="text-sm text-blue-800">{request.notes}</p>
+                          {firm && (
+                            <div className="flex items-center space-x-1">
+                              <Building className="h-3 w-3" />
+                              <span className="truncate">{firm.name}</span>
                             </div>
                           )}
                         </div>
+                        
+                        <div className="flex flex-wrap items-center gap-2 mb-3">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(caseItem.status)}`}>
+                            {caseItem.status}
+                          </span>
+                          {caseItem.opposingParty && (
+                            <span className="text-xs text-gray-500">
+                              vs. {caseItem.opposingParty}
+                            </span>
+                          )}
+                        </div>
+                        
+                        {caseItem.nextHearingDate && (
+                          <div className="flex items-center space-x-2 text-xs text-gray-600">
+                            <CalendarIcon className="h-3 w-3" />
+                            <span className="truncate">Next hearing: {formatDate(caseItem.nextHearingDate)}</span>
+                            {daysUntilHearing !== null && (
+                              <span className={`${isUrgent ? 'text-yellow-700 font-medium' : ''}`}>
+                                ({daysUntilHearing === 0 ? 'Today' : 
+                                  daysUntilHearing === 1 ? 'Tomorrow' : 
+                                  `${daysUntilHearing} days`})
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
+                      
+                      <ChevronRight className="h-5 w-5 text-gray-400 flex-shrink-0 ml-2" />
                     </div>
-                  ))
-                )}
-              </div>
+                  </div>
+                );
+              })}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

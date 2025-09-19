@@ -38,7 +38,7 @@ function App() {
   const [users, setUsers] = useState(mockUsers);
   const [firms, setFirms] = useState(mockLawFirms);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [currentView, setCurrentView] = useState<'dashboard' | 'case-details' | 'firm-dashboard' | 'firm-management'>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'case-details' | 'firm-dashboard' | 'firm-management' | 'client-case-details'>('dashboard');
   const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
   const [tasks, setTasks] = useState(mockTasks);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -131,16 +131,20 @@ function App() {
   };
 
   const handleViewChange = (view: string) => {
-    setCurrentView(view as any);
+    setCurrentView(view as 'dashboard' | 'case-details' | 'firm-dashboard' | 'firm-management' | 'client-case-details');
     // Reset case selection when changing views
-    if (view !== 'case-details') {
+    if (view !== 'case-details' && view !== 'client-case-details') {
       setSelectedCaseId(null);
     }
   };
 
   const handleCaseSelect = (caseId: string) => {
     setSelectedCaseId(caseId);
-    setCurrentView('case-details');
+    if (currentUser?.role === 'client') {
+      setCurrentView('client-case-details');
+    } else {
+      setCurrentView('case-details');
+    }
   };
 
   const handleBackToDashboard = () => {
@@ -499,7 +503,7 @@ function App() {
         // Clients see only their own case
         const clientCases = cases.filter(c => c.client.email === currentUser.email);
         const clientTasks = tasks.filter(t => 
-          t.assignedTo.id === currentUser.id && t.isClientVisible
+          clientCases.some(c => c.id === t.caseId) && t.isClientVisible
         );
         const clientMilestones = mockMilestones.filter(m => 
           clientCases.some(c => c.id === m.caseId)
@@ -573,14 +577,20 @@ function App() {
   
   // Check if user's approval status is still pending
   const isApproved = currentUser.approvalStatus === 'approved';
-  // Client-specific data
-  const clientCase = currentUser.role === 'client' ? filteredCases[0] : null;
-  const clientInvoices = currentUser.role === 'client' && clientCase ? 
-    mockClientInvoices.filter(i => i.caseId === clientCase.id) : [];
-  const clientMeetingRequests = currentUser.role === 'client' && clientCase ? 
-    mockMeetingRequests.filter(m => m.caseId === clientCase.id) : [];
-  const clientDocuments = currentUser.role === 'client' && clientCase ? 
-    documents.filter(d => d.caseId === clientCase.id && d.isClientVisible) : [];
+  
+  // Client-specific data - now for multiple cases
+  const clientInvoices = currentUser.role === 'client' ? 
+    mockClientInvoices.filter(i => filteredCases.some(c => c.id === i.caseId)) : [];
+  const clientMeetingRequests = currentUser.role === 'client' ? 
+    mockMeetingRequests.filter(m => filteredCases.some(c => c.id === m.caseId)) : [];
+  
+  // For selected case details
+  const selectedCaseInvoices = selectedCase ? 
+    mockClientInvoices.filter(i => i.caseId === selectedCase.id) : [];
+  const selectedCaseMeetingRequests = selectedCase ? 
+    mockMeetingRequests.filter(m => m.caseId === selectedCase.id) : [];
+  const selectedCaseDocuments = selectedCase ? 
+    documents.filter(d => d.caseId === selectedCase.id && d.isClientVisible) : [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -604,17 +614,32 @@ function App() {
       )}
       
       {/* Client Dashboard */}
-      {currentUser.role === 'client' && clientCase && isApproved && (
+      {currentUser.role === 'client' && isApproved && currentView === 'dashboard' && (
         <ClientDashboard
-          clientCase={clientCase}
+          clientCases={filteredCases}
           currentUser={currentUser}
           clientTasks={filteredTasks}
           milestones={milestones}
-          timelineEvents={caseTimelineEvents}
-          preEngagementEvents={casePreEngagementEvents}
-          documents={clientDocuments}
           invoices={clientInvoices}
           meetingRequests={clientMeetingRequests}
+          firms={firms}
+          onCaseSelect={handleCaseSelect}
+        />
+      )}
+      
+      {/* Client Case Details */}
+      {currentUser.role === 'client' && isApproved && currentView === 'client-case-details' && selectedCase && (
+        <ClientCaseDetails
+          clientCase={selectedCase}
+          currentUser={currentUser}
+          clientTasks={caseTasks}
+          milestones={milestones.filter(m => m.caseId === selectedCase.id)}
+          timelineEvents={caseTimelineEvents}
+          preEngagementEvents={casePreEngagementEvents}
+          documents={selectedCaseDocuments}
+          invoices={selectedCaseInvoices}
+          meetingRequests={selectedCaseMeetingRequests}
+          onBackToClientDashboard={handleBackToDashboard}
         />
       )}
       
