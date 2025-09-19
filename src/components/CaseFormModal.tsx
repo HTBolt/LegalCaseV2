@@ -69,6 +69,7 @@ const CaseFormModal: React.FC<CaseFormModalProps> = ({
         nextHearingDate: editingCase.nextHearingDate ? 
           editingCase.nextHearingDate.toISOString().split('T')[0] : '',
         judge: editingCase.judge || '',
+        opposingParty: editingCase.opposingParty || '',
         opposingCounselName: editingCase.opposingCounsel?.name || '',
         opposingCounselFirm: editingCase.opposingCounsel?.firm || '',
         opposingCounselEmail: editingCase.opposingCounsel?.email || '',
@@ -92,6 +93,7 @@ const CaseFormModal: React.FC<CaseFormModalProps> = ({
         courtStage: '',
         nextHearingDate: '',
         judge: '',
+        opposingParty: '',
         opposingCounselName: '',
         opposingCounselFirm: '',
         opposingCounselEmail: '',
@@ -231,6 +233,7 @@ const CaseFormModal: React.FC<CaseFormModalProps> = ({
         nextHearingDate: formData.nextHearingDate ? 
           new Date(formData.nextHearingDate) : undefined,
         judge: formData.judge.trim() || undefined,
+        opposingParty: formData.opposingParty.trim() || undefined,
         opposingCounsel: (formData.opposingCounselName.trim() || 
                          formData.opposingCounselFirm.trim() ||
                          formData.opposingCounselEmail.trim() ||
@@ -568,6 +571,21 @@ const CaseFormModal: React.FC<CaseFormModalProps> = ({
                     className="form-input"
                     placeholder="e.g., Hon. Patricia Williams"
                   />
+                </div>
+
+                {/* Opposing Party */}
+                <div className="form-group">
+                  <label className="form-label">Opposing Party</label>
+                  <input
+                    type="text"
+                    value={formData.opposingParty}
+                    onChange={(e) => setFormData({ ...formData, opposingParty: e.target.value })}
+                    className="form-input"
+                    placeholder="e.g., ABC Corporation, John Smith"
+                  />
+                  <p className="form-help">
+                    The party your client is in legal dispute with
+                  </p>
                 </div>
 
                 {/* Opposing Counsel */}

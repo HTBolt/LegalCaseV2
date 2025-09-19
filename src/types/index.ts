@@ -61,6 +61,7 @@ export interface Case {
   courtStage: string;
   referredBy: string;
   judge?: string;
+  opposingParty?: string;
   opposingCounsel?: {
     name: string;
     firm: string;

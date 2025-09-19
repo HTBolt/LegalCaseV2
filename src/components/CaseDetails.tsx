@@ -470,6 +470,12 @@ const CaseDetails: React.FC<CaseDetailsProps> = ({
                       {caseData.priority}
                     </span>
                   </div>
+                  {caseData.opposingParty && (
+                    <div>
+                      <label className="text-sm font-medium text-gray-500">Opposing Party</label>
+                      <p className="mt-1 text-sm text-gray-900">{caseData.opposingParty}</p>
+                    </div>
+                  )}
                   {caseData.opposingCounsel && (
                     <div>
                       <label className="text-sm font-medium text-gray-500">Opposing Party</label>
