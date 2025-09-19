@@ -314,10 +314,12 @@ const ClientCaseDetails: React.FC<ClientCaseDetailsProps> = ({
                       <Mail className="h-4 w-4" />
                       <span className="truncate">{clientCase.assignedLawyer.email}</span>
                     </div>
-                    <div className="flex items-center space-x-2 text-gray-600">
-                      <Phone className="h-4 w-4" />
-                      <span>+1 (555) 123-4567</span>
-                    </div>
+                    {clientCase.assignedLawyer.phone && (
+                      <div className="flex items-center space-x-2 text-gray-600">
+                        <Phone className="h-4 w-4" />
+                        <span>{clientCase.assignedLawyer.phone}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

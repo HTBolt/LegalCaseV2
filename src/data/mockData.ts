@@ -47,6 +47,15 @@ export const mockLawFirms: LawFirm[] = [
 // For backward compatibility
 export const mockLawFirm: LawFirm = mockLawFirms[0];
 
+// System configuration
+export const systemConfig = {
+  appName: 'LegalCase Pro',
+  appSubtitle: 'Case Management System',
+  supportEmail: 'support@legalcasepro.com',
+  supportPhone: '+1 (555) 900-HELP',
+  version: '2.1.0'
+};
+
 export const mockUsers: User[] = [
   // System Admin
   {

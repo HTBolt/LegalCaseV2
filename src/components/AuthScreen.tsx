@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Scale, User, Building, ArrowLeft, Eye, EyeOff, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { User as UserType, LawFirm, SignupData } from '../types';
+import { systemConfig } from '../data/mockData';
 
 interface AuthScreenProps {
   onLogin: (user: UserType) => void;
@@ -226,7 +227,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({
             <Scale className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
           </div>
           <h2 className="mt-4 text-2xl sm:text-3xl font-bold text-gray-900">
-            Legal Case Management
+            {systemConfig.appName}
           </h2>
           <p className="mt-2 text-sm text-gray-600">
             {currentScreen === 'login' && 'Sign in to your account'}
@@ -290,7 +291,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({
                       required
                       value={loginData.password}
                       onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                      className="appearance-none relative block w-full pr-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
+                      className="appearance-none relative block w-full pl-10 pr-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
                       placeholder="Enter your password"
                     />
                     <button

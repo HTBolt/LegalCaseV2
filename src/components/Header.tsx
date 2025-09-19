@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Scale, LogOut, User, Bell, Settings, Building, Menu, X, UserCheck } from 'lucide-react';
 import { User as UserType } from '../types';
+import { systemConfig } from '../data/mockData';
 
 interface HeaderProps {
   currentUser: UserType;
@@ -65,8 +66,8 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout }) => {
               <Scale className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">LegalCase Pro</h1>
-              <p className="text-xs text-gray-500 hidden sm:block">Case Management System</p>
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">{systemConfig.appName}</h1>
+              <p className="text-xs text-gray-500 hidden sm:block">{systemConfig.appSubtitle}</p>
             </div>
           </div>
 

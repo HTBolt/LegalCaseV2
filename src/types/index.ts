@@ -5,6 +5,7 @@ export interface User {
   role: 'system-admin' | 'lawyer' | 'firm-admin' | 'intern' | 'client';
   firmId?: string;
   avatar?: string;
+  phone?: string;
   approvalStatus?: 'pending' | 'approved' | 'rejected';
   associatedLawyerIds?: string[]; // For client users
   invitedBy?: string; // ID of lawyer who invited the client

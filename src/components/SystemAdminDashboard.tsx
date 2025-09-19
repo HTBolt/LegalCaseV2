@@ -5,6 +5,7 @@ import {
   AlertCircle, Eye, Mail, Phone, Lock
 } from 'lucide-react';
 import { User, LawFirm } from '../types';
+import { systemConfig } from '../data/mockData';
 
 interface EditUserModalProps {
   isOpen: boolean;
