@@ -247,6 +247,20 @@ export const mockClients: Client[] = [
     address: '456 Residential St, Los Angeles, CA 90001'
   },
   {
+  {
+    id: '3',
+    name: 'Sarah Johnson',
+    email: 'sarah@example.com',
+    phone: '+1 (555) 345-6789',
+    address: '789 Residential St, Client City, CC 34567'
+  },
+  {
+    id: '4',
+    name: 'Robert Chen',
+    email: 'robert.chen@email.com',
+    phone: '+1 (555) 456-7890',
+    address: '321 Family Ave, Personal City, PC 45678'
+  }
     id: '3',
     name: 'Maria Garcia',
     email: 'maria.garcia@email.com',

@@ -574,13 +574,13 @@ function App() {
   // Check if user's approval status is still pending
   const isApproved = currentUser.approvalStatus === 'approved';
   // Client-specific data
-  const clientCase = currentUser.role === 'client' ? filteredCases[0] : null;
-  const clientInvoices = currentUser.role === 'client' && clientCase ? 
-    mockClientInvoices.filter(i => i.caseId === clientCase.id) : [];
-  const clientMeetingRequests = currentUser.role === 'client' && clientCase ? 
-    mockMeetingRequests.filter(m => m.caseId === clientCase.id) : [];
-  const clientDocuments = currentUser.role === 'client' && clientCase ? 
-    documents.filter(d => d.caseId === clientCase.id && d.isClientVisible) : [];
+  const clientCases = currentUser.role === 'client' ? filteredCases : [];
+  const clientInvoices = currentUser.role === 'client' ? 
+    mockClientInvoices.filter(i => clientCases.some(c => c.id === i.caseId)) : [];
+  const clientMeetingRequests = currentUser.role === 'client' ? 
+    mockMeetingRequests.filter(m => clientCases.some(c => c.id === m.caseId)) : [];
+  const clientDocuments = currentUser.role === 'client' ? 
+    documents.filter(d => clientCases.some(c => c.id === d.caseId) && d.isClientVisible) : [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -604,9 +604,9 @@ function App() {
       )}
       
       {/* Client Dashboard */}
-      {currentUser.role === 'client' && clientCase && isApproved && (
+      {currentUser.role === 'client' && isApproved && (
         <ClientDashboard
-          clientCase={clientCase}
+          clientCases={clientCases}
           currentUser={currentUser}
           clientTasks={filteredTasks}
           milestones={milestones}
@@ -615,6 +615,7 @@ function App() {
           documents={clientDocuments}
           invoices={clientInvoices}
           meetingRequests={clientMeetingRequests}
+          onCaseSelect={handleCaseSelect}
         />
       )}
       
