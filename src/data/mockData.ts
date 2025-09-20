@@ -411,7 +411,7 @@ export const mockCases: Case[] = [
     id: '14',
     title: 'Metropolitan Housing Rights Case',
     clientId: '3',
-    client: mockClients[4],
+    client: mockClients[2],
     assignedLawyer: mockUsers[4], // Jennifer Walsh
     supportingInterns: [mockUsers[2]], // Emily Rodriguez
     caseType: 'Real Estate Law',
