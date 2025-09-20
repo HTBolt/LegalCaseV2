@@ -56,6 +56,7 @@ export const systemConfig = {
   version: '2.1.0'
 };
 
+// Lawyers have only one role value, it needs to be an array with two values lawyer & Firmadmin. The combination will determine what information is visible to the user.
 export const mockUsers: User[] = [
   // System Admin
   {
@@ -203,7 +204,9 @@ export const mockUsers: User[] = [
     approvalStatus: 'pending',
     createdAt: new Date('2025-01-12')
   },
+  
   // Client users
+  // associatedLawyerIds needs to be an array 
   {
     id: 'client-1',
     name: 'John Smith',
@@ -246,6 +249,7 @@ mockLawFirms[0].pendingApprovals = ['pending-lawyer-1'];
 mockLawFirms[1].pendingApprovals = ['pending-intern-1'];
 
 // Sync mockClients to Client users 
+// standerdise the fields for all records - done
 export const mockClients: Client[] = [
   {
     id: '1',
@@ -261,6 +265,7 @@ export const mockClients: Client[] = [
     email: 'john.smith@email.com',
     phone: '+1 (555) 987-6543',
     address: '456 Residential St, Los Angeles, CA 90001'
+	company: 'TechCorp Industries'
   },
   {
     id: '3',
@@ -268,6 +273,7 @@ export const mockClients: Client[] = [
     email: 'maria.garcia@email.com',
     phone: '+1 (555) 456-7890',
     address: '789 Oak Street, Chicago, IL 60601'
+	company: 'TechCorp Industries'
   },
   {
     id: '4',
@@ -283,6 +289,7 @@ export const mockClients: Client[] = [
     email: 'jennifer.brown@email.com',
     phone: '+1 (555) 345-6789',
     address: '321 Maple Ave, Boston, MA 02101'
+	company: 'TechCorp Industries'
   },
   {
     id: '6',
@@ -290,6 +297,7 @@ export const mockClients: Client[] = [
     email: 'robert.wilson@email.com',
     phone: '+1 (555) 567-8901',
     address: '654 Pine St, Seattle, WA 98101'
+	company: 'TechCorp Industries'
   },
   {
     id: '7',
@@ -301,6 +309,9 @@ export const mockClients: Client[] = [
   }
 ];
 
+// ClientId field seems redundant, mockClients controls the client name displayed and which login the case is visible from
+// assignedLawyer is based on the sequence number of the lawyer in the data and not the lawyer id - needs fixing
+// ensure all cases has the same set of fields along with data 
 export const mockCases: Case[] = [
   // Sarah Johnson's cases
   {
