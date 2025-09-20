@@ -69,6 +69,16 @@ export const mockUsers: User[] = [
   },
   // Johnson & Associates Legal Group
   {
+    id: '4',
+    name: 'Robert Johnson', 
+    email: 'robert.johnson@johnsonlegal.com',
+    role: 'firm-admin',
+    firmId: '1',
+    approvalStatus: 'approved',
+    createdAt: new Date('2020-01-15'),
+    lastLoginAt: new Date('2025-01-14')
+  },
+  {
     id: '1',
     name: 'Sarah Johnson',
     email: 'sarah.johnson@johnsonlegal.com',
@@ -76,6 +86,16 @@ export const mockUsers: User[] = [
     firmId: '1',
     approvalStatus: 'approved',
     createdAt: new Date('2020-02-01'),
+    lastLoginAt: new Date('2025-01-14')
+  },
+  {
+    id: '9',
+    name: 'Jennifer Walsh',
+    email: 'jennifer.walsh@johnsonlegal.com',
+    role: 'lawyer',
+    firmId: '1',
+    approvalStatus: 'approved',
+    createdAt: new Date('2021-05-01'),
     lastLoginAt: new Date('2025-01-14')
   },
   {
@@ -98,46 +118,18 @@ export const mockUsers: User[] = [
     createdAt: new Date('2023-09-01'),
     lastLoginAt: new Date('2025-01-13')
   },
-  {
-    id: '4',
-    name: 'Robert Johnson', 
-    email: 'robert.johnson@johnsonlegal.com',
-    role: 'firm-admin',
-    firmId: '1',
-    approvalStatus: 'approved',
-    createdAt: new Date('2020-01-15'),
-    lastLoginAt: new Date('2025-01-14')
-  },
-  {
-    id: '9',
-    name: 'Jennifer Walsh',
-    email: 'jennifer.walsh@johnsonlegal.com',
-    role: 'lawyer',
-    firmId: '1',
-    approvalStatus: 'approved',
-    createdAt: new Date('2021-05-01'),
-    lastLoginAt: new Date('2025-01-14')
-  },
+
+
   // Martinez & Partners LLP
   {
     id: '5',
     name: 'David Martinez',
     email: 'david.martinez@martinezpartners.com',
-    role: 'lawyer', // This user will be treated as both lawyer and firm-admin
+    role: 'firm-admin', // This user will be treated as both lawyer and firm-admin
     firmId: '2',
     approvalStatus: 'approved',
     createdAt: new Date('2020-06-01'),
     lastLoginAt: new Date('2025-01-12')
-  },
-  {
-    id: '7',
-    name: 'James Wilson',
-    email: 'james.wilson@martinezpartners.com',
-    role: 'intern',
-    firmId: '2',
-    approvalStatus: 'approved',
-    createdAt: new Date('2024-01-15'),
-    lastLoginAt: new Date('2025-01-10')
   },
   {
     id: '10',
@@ -149,7 +141,28 @@ export const mockUsers: User[] = [
     createdAt: new Date('2022-03-01'),
     lastLoginAt: new Date('2025-01-13')
   },
+  {
+    id: '7',
+    name: 'James Wilson',
+    email: 'james.wilson@martinezpartners.com',
+    role: 'intern',
+    firmId: '2',
+    approvalStatus: 'approved',
+    createdAt: new Date('2024-01-15'),
+    lastLoginAt: new Date('2025-01-10')
+  },
+
   // Thompson Legal Services
+  {
+    id: '11',
+    name: 'Patricia Thompson',
+    email: 'patricia.thompson@thompsonlegal.com',
+    role: 'firm-admin',
+    firmId: '3',
+    approvalStatus: 'approved',
+    createdAt: new Date('2021-03-15'),
+    lastLoginAt: new Date('2025-01-12')
+  },
   {
     id: '6',
     name: 'Lisa Thompson',
@@ -170,23 +183,14 @@ export const mockUsers: User[] = [
     createdAt: new Date('2024-06-01'),
     lastLoginAt: new Date('2025-01-09')
   },
-  {
-    id: '11',
-    name: 'Patricia Thompson',
-    email: 'patricia.thompson@thompsonlegal.com',
-    role: 'firm-admin',
-    firmId: '3',
-    approvalStatus: 'approved',
-    createdAt: new Date('2021-03-15'),
-    lastLoginAt: new Date('2025-01-12')
-  },
+
   // Pending Approvals - Examples
   {
     id: 'pending-lawyer-1',
     name: 'Jennifer Smith',
     email: 'jennifer.smith@email.com',
     role: 'lawyer',
-    firmId: '1',
+    firmId: '2',
     approvalStatus: 'pending',
     createdAt: new Date('2025-01-10')
   },
@@ -235,10 +239,13 @@ export const mockUsers: User[] = [
   }
 ];
 
+
+// Needs review
 // Update pending approvals in firms
 mockLawFirms[0].pendingApprovals = ['pending-lawyer-1'];
 mockLawFirms[1].pendingApprovals = ['pending-intern-1'];
 
+// Sync mockClients to Client users 
 export const mockClients: Client[] = [
   {
     id: '1',
@@ -301,7 +308,7 @@ export const mockCases: Case[] = [
     title: 'TechCorp vs. DataSystems Patent Dispute',
     clientId: '1',
     client: mockClients[0],
-    assignedLawyer: mockUsers[0],
+    assignedLawyer: mockUsers[1],
     supportingInterns: [mockUsers[1]],
     caseType: 'Intellectual Property',
     status: 'active',
@@ -403,7 +410,7 @@ export const mockCases: Case[] = [
   {
     id: '14',
     title: 'Metropolitan Housing Rights Case',
-    clientId: '5',
+    clientId: '3',
     client: mockClients[4],
     assignedLawyer: mockUsers[4], // Jennifer Walsh
     supportingInterns: [mockUsers[2]], // Emily Rodriguez
@@ -446,7 +453,7 @@ export const mockCases: Case[] = [
     title: 'Garcia Employment Discrimination',
     clientId: '3',
     client: mockClients[2],
-    assignedLawyer: mockUsers[0],
+    assignedLawyer: mockUsers[1],
     supportingInterns: [mockUsers[1], mockUsers[2]],
     caseType: 'Employment Law',
     status: 'active',
@@ -671,7 +678,7 @@ export const mockCases: Case[] = [
     title: 'Anderson Contract Dispute',
     clientId: '1',
     client: mockClients[0],
-    assignedLawyer: mockUsers[0], // Sarah Johnson
+    assignedLawyer: mockUsers[1], // Sarah Johnson
     supportingInterns: [mockUsers[1]],
     caseType: 'Contract Law',
     status: 'closed',
@@ -823,8 +830,8 @@ export const mockTasks: Task[] = [
     title: 'File Motion for Summary Judgment',
     description: 'Prepare and file motion for summary judgment with supporting briefs',
     caseId: '1',
-    assignedTo: mockUsers[0],
-    assignedBy: mockUsers[0],
+    assignedTo: mockUsers[1],
+    assignedBy: mockUsers[1],
     dueDate: new Date('2025-06-29'),
     priority: 'high',
     status: 'in-progress',
@@ -838,7 +845,7 @@ export const mockTasks: Task[] = [
     description: 'Research similar patent dispute cases and precedents',
     caseId: '1',
     assignedTo: mockUsers[1],
-    assignedBy: mockUsers[0],
+    assignedBy: mockUsers[1],
     dueDate: new Date('2025-07-03'),
     priority: 'medium',
     status: 'pending',
@@ -851,8 +858,8 @@ export const mockTasks: Task[] = [
     title: 'Prepare Witness Statements',
     description: 'Interview and prepare witness statements for the case',
     caseId: '2',
-    assignedTo: mockUsers[0],
-    assignedBy: mockUsers[0],
+    assignedTo: mockUsers[1],
+    assignedBy: mockUsers[1],
     dueDate: new Date('2025-07-05'),
     priority: 'high',
     status: 'pending',
@@ -866,7 +873,7 @@ export const mockTasks: Task[] = [
     description: 'Analyze employment contract terms and conditions',
     caseId: '3',
     assignedTo: mockUsers[2],
-    assignedBy: mockUsers[0],
+    assignedBy: mockUsers[1],
     dueDate: new Date('2025-07-09'),
     priority: 'medium',
     status: 'in-progress',
@@ -879,8 +886,8 @@ export const mockTasks: Task[] = [
     title: 'Prepare Mediation Brief',
     description: 'Prepare comprehensive brief for upcoming mediation session',
     caseId: '3',
-    assignedTo: mockUsers[0],
-    assignedBy: mockUsers[0],
+    assignedTo: mockUsers[1],
+    assignedBy: mockUsers[1],
     dueDate: new Date('2025-07-20'),
     priority: 'high',
     status: 'pending',
@@ -940,7 +947,7 @@ export const mockTasks: Task[] = [
     description: 'Please provide all medical records related to your injury, including recent treatment reports',
     caseId: '2',
     assignedTo: mockUsers[8], // Client user
-    assignedBy: mockUsers[0], // Sarah Johnson
+    assignedBy: mockUsers[1], // Sarah Johnson
     dueDate: new Date('2025-07-02'),
     priority: 'high',
     status: 'pending',
@@ -954,7 +961,7 @@ export const mockTasks: Task[] = [
     description: 'Please review the settlement proposal from the insurance company and provide your feedback',
     caseId: '2',
     assignedTo: mockUsers[8], // Client user
-    assignedBy: mockUsers[0], // Sarah Johnson
+    assignedBy: mockUsers[1], // Sarah Johnson
     dueDate: new Date('2025-07-08'),
     priority: 'medium',
     status: 'pending',
@@ -1497,7 +1504,7 @@ export const mockDocuments: Document[] = [
     name: 'Initial Complaint.pdf',
     type: 'application/pdf',
     size: 245760,
-    uploadedBy: mockUsers[0],
+    uploadedBy: mockUsers[1],
     uploadedAt: new Date('2024-08-15'),
     url: '#',
     category: 'pleading',
@@ -1521,7 +1528,7 @@ export const mockDocuments: Document[] = [
     name: 'Medical Records.pdf',
     type: 'application/pdf',
     size: 1024000,
-    uploadedBy: mockUsers[0],
+    uploadedBy: mockUsers[1],
     uploadedAt: new Date('2024-09-05'),
     url: '#',
     category: 'evidence',
@@ -1545,7 +1552,7 @@ export const mockDocuments: Document[] = [
     name: 'Accident Report.pdf',
     type: 'application/pdf',
     size: 324000,
-    uploadedBy: mockUsers[0],
+    uploadedBy: mockUsers[1],
     uploadedAt: new Date('2024-09-10'),
     url: '#',
     category: 'evidence',
@@ -1557,7 +1564,7 @@ export const mockDocuments: Document[] = [
     name: 'Insurance Correspondence.pdf',
     type: 'application/pdf',
     size: 128000,
-    uploadedBy: mockUsers[0],
+    uploadedBy: mockUsers[1],
     uploadedAt: new Date('2024-10-15'),
     url: '#',
     category: 'correspondence',
@@ -1570,7 +1577,7 @@ export const mockNotes: Note[] = [
     id: '1',
     caseId: '1',
     content: 'Client confirmed they have additional patent documentation that could strengthen our position. Need to schedule meeting to review.',
-    author: mockUsers[0],
+    author: mockUsers[1],
     createdAt: new Date('2025-01-08'),
     updatedAt: new Date('2025-01-08'),
     isPrivate: false
@@ -1588,7 +1595,7 @@ export const mockNotes: Note[] = [
     id: '3',
     caseId: '2',
     content: 'Medical expert confirms long-term impact of injuries. This strengthens our damages claim significantly.',
-    author: mockUsers[0],
+    author: mockUsers[1],
     createdAt: new Date('2025-01-07'),
     updatedAt: new Date('2025-01-07'),
     isPrivate: true
@@ -1597,7 +1604,7 @@ export const mockNotes: Note[] = [
     id: '4',
     caseId: '3',
     content: 'Client provided additional witnesses who can testify to discriminatory behavior. Need to interview them.',
-    author: mockUsers[0],
+    author: mockUsers[1],
     createdAt: new Date('2025-01-09'),
     updatedAt: new Date('2025-01-09'),
     isPrivate: false
@@ -2018,7 +2025,7 @@ export const mockBillingEntries: BillingEntry[] = [
 export const mockLawyerPerformance: LawyerPerformance[] = [
   {
     lawyerId: '1',
-    lawyer: mockUsers[0], // Sarah Johnson
+    lawyer: mockUsers[1], // Sarah Johnson
     totalCases: 4,
     activeCases: 3,
     closedCases: 1,
