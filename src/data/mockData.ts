@@ -264,7 +264,7 @@ export const mockClients: Client[] = [
     name: 'John Smith',
     email: 'john.smith@email.com',
     phone: '+1 (555) 987-6543',
-    address: '456 Residential St, Los Angeles, CA 90001'
+    address: '456 Residential St, Los Angeles, CA 90001',
 	company: 'TechCorp Industries'
   },
   {
@@ -272,7 +272,7 @@ export const mockClients: Client[] = [
     name: 'Maria Garcia',
     email: 'maria.garcia@email.com',
     phone: '+1 (555) 456-7890',
-    address: '789 Oak Street, Chicago, IL 60601'
+    address: '789 Oak Street, Chicago, IL 60601',
 	company: 'TechCorp Industries'
   },
   {
@@ -288,7 +288,7 @@ export const mockClients: Client[] = [
     name: 'Jennifer Brown',
     email: 'jennifer.brown@email.com',
     phone: '+1 (555) 345-6789',
-    address: '321 Maple Ave, Boston, MA 02101'
+    address: '321 Maple Ave, Boston, MA 02101',
 	company: 'TechCorp Industries'
   },
   {
@@ -296,7 +296,7 @@ export const mockClients: Client[] = [
     name: 'Robert Wilson',
     email: 'robert.wilson@email.com',
     phone: '+1 (555) 567-8901',
-    address: '654 Pine St, Seattle, WA 98101'
+    address: '654 Pine St, Seattle, WA 98101',
 	company: 'TechCorp Industries'
   },
   {
