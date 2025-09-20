@@ -343,7 +343,7 @@ export const mockCases: Case[] = [
     title: 'Smith Personal Injury Claim',
     clientId: '2',
     client: mockClients[1],
-    assignedLawyer: mockUsers[0],
+    assignedLawyer: mockUsers[1],
     supportingInterns: [mockUsers[2]],
     caseType: 'Personal Injury',
     status: 'active',
