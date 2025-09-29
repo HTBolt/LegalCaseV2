@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Scale, LogOut, User, Bell, Settings, Building, Menu, X, UserCheck } from 'lucide-react';
-import { User as UserType, hasRole, getPrimaryRole, getRoleDisplayName } from '../types';
+import { User as UserType } from '../types';
 import { systemConfig } from '../data/mockData';
 
 interface HeaderProps {
@@ -10,8 +10,6 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ currentUser, onLogout }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
-  const primaryRole = getPrimaryRole(currentUser);
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -41,6 +39,23 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout }) => {
     }
   };
 
+  const getRoleDisplayName = (role: string) => {
+    switch (role) {
+      case 'firm-admin':
+        return 'Firm Admin';
+      case 'lawyer':
+        return 'Lawyer';
+      case 'intern':
+        return 'Intern';
+      case 'admin':
+        return 'Admin';
+      case 'client':
+        return 'Client';
+      default:
+        return role;
+    }
+  };
+
   return (
     <header className="bg-white shadow-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -59,7 +74,7 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout }) => {
           {/* Desktop User Info and Actions */}
           <div className="hidden md:flex items-center space-x-3">
             {/* Notifications - Hide for clients */}
-            {!hasRole(currentUser, 'client') || currentUser.roles.length > 1 && (
+            {currentUser.role !== 'client' && (
               <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
                 <Bell className="h-5 w-5" />
               </button>
@@ -74,12 +89,12 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout }) => {
             <div className="flex items-center space-x-3 pl-3 border-l border-gray-200">
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                  {getRoleIcon(primaryRole)}
+                  {getRoleIcon(currentUser.role)}
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-gray-900">{currentUser.name}</p>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getRoleColor(primaryRole)}`}>
-                    {getRoleDisplayName(currentUser.roles)}
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getRoleColor(currentUser.role)}`}>
+                    {getRoleDisplayName(currentUser.role)}
                   </span>
                 </div>
               </div>
@@ -117,19 +132,19 @@ const Header: React.FC<HeaderProps> = ({ currentUser, onLogout }) => {
               {/* User Info */}
               <div className="flex items-center space-x-3 px-2 py-2">
                 <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                  {getRoleIcon(primaryRole)}
+                  {getRoleIcon(currentUser.role)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 truncate">{currentUser.name}</p>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getRoleColor(primaryRole)}`}>
-                    {getRoleDisplayName(currentUser.roles)}
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getRoleColor(currentUser.role)}`}>
+                    {getRoleDisplayName(currentUser.role)}
                   </span>
                 </div>
               </div>
 
               {/* Mobile Actions */}
-              <div className={`grid ${hasRole(currentUser, 'client') && currentUser.roles.length === 1 ? 'grid-cols-2' : 'grid-cols-3'} gap-2 px-2`}>
-                {(!hasRole(currentUser, 'client') || currentUser.roles.length > 1) && (
+              <div className={`grid ${currentUser.role === 'client' ? 'grid-cols-2' : 'grid-cols-3'} gap-2 px-2`}>
+                {currentUser.role !== 'client' && (
                   <button className="flex flex-col items-center p-3 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
                     <Bell className="h-5 w-5 mb-1" />
                     <span className="text-xs">Notifications</span>

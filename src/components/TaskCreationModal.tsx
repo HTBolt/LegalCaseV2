@@ -3,7 +3,7 @@ import {
   X, Calendar, Clock, User, FileText, AlertTriangle, 
   Scale, CheckSquare, Upload, Link, Plus, Trash2
 } from 'lucide-react';
-import { User as UserType, Case, Task, hasRole, hasAnyRole } from '../types';
+import { User as UserType, Case, Task } from '../types';
 import '../styles/common.css';
 
 interface TaskCreationModalProps {
@@ -131,57 +131,47 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   const getAssignableUsers = () => {
     const assignableUsers = [currentUser]; // Can always assign to self
     
-    if (hasRole(currentUser, 'system-admin') || hasRole(currentUser, 'firm-admin')) {
-      // System admins and firm admins can assign to everyone
-      return users;
+    switch (currentUser.role) {
+      case 'firm-admin':
+        // Firm admin can assign to everyone
+        return users;
+      case 'lawyer':
+        // Lawyers can assign to themselves, their interns, and clients
+        return users.filter(user => 
+          user.id === currentUser.id || 
+          user.role === 'intern' || 
+          user.role === 'client'
+        );
+      case 'intern':
+        // Interns can assign to themselves and clients
+        return users.filter(user => 
+          user.id === currentUser.id || 
+          user.role === 'client'
+        );
+      case 'client':
+        // Clients can only assign to themselves
+        return [currentUser];
+      default:
+        return assignableUsers;
     }
-    
-    if (hasRole(currentUser, 'lawyer')) {
-      // Lawyers can assign to themselves, their interns, and clients
-      return users.filter(user => 
-        user.id === currentUser.id || 
-        hasRole(user, 'intern') || 
-        hasRole(user, 'client')
-      );
-    }
-    
-    if (hasRole(currentUser, 'intern')) {
-      // Interns can assign to themselves and clients
-      return users.filter(user => 
-        user.id === currentUser.id || 
-        hasRole(user, 'client')
-      );
-    }
-    
-    if (hasRole(currentUser, 'client')) {
-      // Clients can only assign to themselves
-      return [currentUser];
-    }
-    
-    return assignableUsers;
   };
 
   // Get cases accessible to current user
   const getAccessibleCases = () => {
-    if (hasRole(currentUser, 'system-admin') || hasRole(currentUser, 'firm-admin')) {
-      return cases;
+    switch (currentUser.role) {
+      case 'firm-admin':
+        return cases;
+      case 'lawyer':
+        return cases.filter(c => c.assignedLawyer.id === currentUser.id);
+      case 'intern':
+        return cases.filter(c => 
+          c.supportingInterns.some(intern => intern.id === currentUser.id)
+        );
+      case 'client':
+        return cases.filter(c => c.client.email === currentUser.email);
+      default:
+        return [];
     }
-    
-    if (hasRole(currentUser, 'lawyer')) {
-      return cases.filter(c => c.assignedLawyer.id === currentUser.id);
-    }
-    
-    if (hasRole(currentUser, 'intern')) {
-      return cases.filter(c => 
-        c.supportingInterns.some(intern => intern.id === currentUser.id)
-      );
-    }
-    
-    if (hasRole(currentUser, 'client')) {
-      return cases.filter(c => c.client.email === currentUser.email);
-    }
-    
-    return [];
   };
 
   const assignableUsers = getAssignableUsers();
