@@ -389,7 +389,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   currentUser={currentUser}
                 />
               </div>
-              {!hasRole(currentUser, 'intern') || currentUser.roles.length > 1 && (
+              {(!hasRole(currentUser, 'intern') || currentUser.roles.length > 1) && (
                 <div id="team-tasks-section">
                   <TaskList 
                     tasks={otherTasks.slice(0, 10)}
@@ -476,7 +476,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             currentUser={currentUser}
           />
         )}
-       {!hasRole(currentUser, 'intern') || currentUser.roles.length > 1 && (
+
         {activeTab === 'firm-management' && isFirmAdmin && (
           <FirmManagement
             currentFirm={firmInfo}
@@ -490,7 +490,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             onTransferAdminRole={onTransferAdminRole!}
           />
         )}
-       {hasRole(currentUser, 'intern') && currentUser.roles.length === 1 && (
+      </div>
       
       {/* Task Creation Modal */}
       <TaskCreationModal
