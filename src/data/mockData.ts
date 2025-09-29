@@ -223,7 +223,7 @@ export const mockUsers: User[] = [
     name: 'Maria Garcia',
     email: 'maria.garcia@email.com',
     role: 'client',
-    associatedLawyerIds: ['1'], // Associated with Sarah Johnson
+    associatedLawyerIds: ['1', '2'], 
     invitedBy: '1',
     approvalStatus: 'approved',
     createdAt: new Date('2024-09-15'),
