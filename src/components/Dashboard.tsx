@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, Users, FileText, AlertTriangle, CheckCircle, UserCheck, BarChart3, Building } from 'lucide-react';
-import { Case, Task, Milestone, User } from '../types';
+import { Case, Task, Milestone, User, hasRole, hasAnyRole, getPrimaryRole } from '../types';
 import CalendarView from './CalendarView';
 import TaskList from './TaskList';
 import CaseList from './CaseList';
@@ -255,13 +255,23 @@ const Dashboard: React.FC<DashboardProps> = ({
   const tabs = getTabsForRole();
 
   const getDashboardTitle = () => {
-    switch (currentUser.role) {
+    const roles = currentUser.roles;
+    
+    if (roles.length > 1) {
+      return 'Dashboard';
+    }
+    
+    switch (roles[0]) {
       case 'lawyer':
         return 'Lawyer Dashboard';
       case 'intern':
         return 'Intern Dashboard';
-      case 'admin':
-        return 'Admin Dashboard';
+      case 'system-admin':
+        return 'System Admin Dashboard';
+      case 'firm-admin':
+        return 'Firm Admin Dashboard';
+      case 'client':
+        return 'Client Dashboard';
       default:
         return 'Dashboard';
     }
@@ -278,7 +288,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             </div>
             <div className="flex items-center space-x-3">
               {/* Create Case Button - Only for lawyers and firm admins */}
-              {(currentUser.role === 'lawyer' || currentUser.role === 'firm-admin') && onCaseCreate && (
+              {(hasRole(currentUser, 'lawyer') || hasRole(currentUser, 'firm-admin')) && onCaseCreate && (
                 <button
                   onClick={onNewCaseClick}
                   className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
@@ -379,7 +389,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   currentUser={currentUser}
                 />
               </div>
-              {currentUser.role !== 'intern' && (
+              {!hasRole(currentUser, 'intern') || currentUser.roles.length > 1 && (
                 <div id="team-tasks-section">
                   <TaskList 
                     tasks={otherTasks.slice(0, 10)}
@@ -392,7 +402,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   />
                 </div>
               )}
-              {currentUser.role === 'intern' && (
+              {hasRole(currentUser, 'intern') && currentUser.roles.length === 1 && (
                 <TaskList 
                   tasks={activeTasks.filter(t => t.assignedBy.id !== currentUser.id).slice(0, 10)}
                   title="All Case Tasks"
@@ -466,7 +476,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             currentUser={currentUser}
           />
         )}
-
+       {!hasRole(currentUser, 'intern') || currentUser.roles.length > 1 && (
         {activeTab === 'firm-management' && isFirmAdmin && (
           <FirmManagement
             currentFirm={firmInfo}
@@ -480,7 +490,7 @@ const Dashboard: React.FC<DashboardProps> = ({
             onTransferAdminRole={onTransferAdminRole!}
           />
         )}
-      </div>
+       {hasRole(currentUser, 'intern') && currentUser.roles.length === 1 && (
       
       {/* Task Creation Modal */}
       <TaskCreationModal

@@ -25,7 +25,7 @@ import {
   mockMeetingRequests,
   mockClients
 } from './data/mockData';
-import { User, Task, Case, TimelineEvent, Document, BillingEntry, LawFirm, SignupData, AuthState } from './types';
+import { User, Task, Case, TimelineEvent, Document, BillingEntry, LawFirm, SignupData, AuthState, hasRole, hasAnyRole, getPrimaryRole } from './types';
 import CaseFormModal from './components/CaseFormModal';
 import { Clock } from 'lucide-react';
 
@@ -98,7 +98,7 @@ function App() {
       id: newUserId,
       name: signupData.name,
       email: signupData.email,
-      role: signupData.role === 'lawyer' && signupData.newFirmName ? 'firm-admin' : signupData.role,
+      roles: signupData.role === 'lawyer' && signupData.newFirmName ? ['firm-admin', 'lawyer'] : [signupData.role],
       firmId: newFirmId,
       approvalStatus: signupData.role === 'lawyer' && signupData.newFirmName ? 'approved' : 'pending',
       createdAt: new Date()
@@ -342,11 +342,13 @@ function App() {
   };
 
   const handleUpdateUserRole = (userId: string, newRole: User['role']) => {
+    // Note: This function signature needs to be updated to handle multiple roles
+    // For now, we'll convert single role to array
     setUsers(prev => prev.map(user => 
-      user.id === userId ? { ...user, role: newRole } : user
+      user.id === userId ? { ...user, roles: [newRole] } : user
     ));
     
-    // If promoting to firm-admin, update firm's adminId
+    // If adding firm-admin role, update firm's adminId
     if (newRole === 'firm-admin') {
       const user = users.find(u => u.id === userId);
       if (user && user.firmId) {
@@ -472,8 +474,18 @@ function App() {
   const getFilteredData = () => {
     if (!currentUser) return { cases: [], tasks: [], milestones: [] };
 
-    switch (currentUser.role) {
-      case 'lawyer':
+    const primaryRole = getPrimaryRole(currentUser);
+    
+    // If user has multiple roles, give them the broadest access
+    if (hasRole(currentUser, 'system-admin')) {
+      return { cases: cases, tasks: tasks, milestones: mockMilestones };
+    }
+    
+    if (hasRole(currentUser, 'firm-admin')) {
+      return { cases: cases, tasks: tasks, milestones: mockMilestones };
+    }
+    
+    if (hasRole(currentUser, 'lawyer')) {
         // Lawyers see all cases they're assigned to
         const lawyerCases = cases.filter(c => c.assignedLawyer && c.assignedLawyer.id === currentUser.id);
         const lawyerTasks = tasks.filter(t => 
@@ -485,8 +497,9 @@ function App() {
           lawyerCases.some(c => c.id === m.caseId)
         );
         return { cases: lawyerCases, tasks: lawyerTasks, milestones: lawyerMilestones };
+    }
 
-      case 'intern':
+    if (hasRole(currentUser, 'intern')) {
         // Interns see cases they're supporting and their assigned tasks
         const internCases = cases.filter(c => 
           c.supportingInterns.some(intern => intern.id === currentUser.id)
@@ -499,8 +512,9 @@ function App() {
           internCases.some(c => c.id === m.caseId)
         );
         return { cases: internCases, tasks: internTasks, milestones: internMilestones };
+    }
 
-      case 'client':
+    if (hasRole(currentUser, 'client')) {
         // Clients see only their own case
         const clientCases = cases.filter(c => c.client.email === currentUser.email);
         const clientTasks = tasks.filter(t => 
@@ -510,15 +524,9 @@ function App() {
           clientCases.some(c => c.id === m.caseId)
         );
         return { cases: clientCases, tasks: clientTasks, milestones: clientMilestones };
-
-      case 'admin':
-      case 'firm-admin':
-        // Admins and firm admins see everything
-        return { cases: cases, tasks: tasks, milestones: mockMilestones };
-
-      default:
-        return { cases: [], tasks: [], milestones: [] };
     }
+
+    return { cases: [], tasks: [], milestones: [] };
   };
 
   // If not logged in, show login form
@@ -540,7 +548,7 @@ function App() {
   console.log('=== APP: Rendering with showTaskModal:', showTaskModal, 'editingTask:', editingTask?.id);
 
   // System Admin Dashboard
-  if (currentUser.role === 'system-admin') {
+  if (hasRole(currentUser, 'system-admin')) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header currentUser={currentUser} onLogout={handleLogout} />
@@ -573,16 +581,16 @@ function App() {
   const currentFirm = currentUser.firmId ? firms.find(f => f.id === currentUser.firmId) : null;
   
   // Check if current user has firm admin privileges
-  const isFirmAdmin = currentUser.role === 'firm-admin' || 
+  const isFirmAdmin = hasRole(currentUser, 'firm-admin') || 
     (currentFirm && currentFirm.adminId === currentUser.id);
   
   // Check if user's approval status is still pending
   const isApproved = currentUser.approvalStatus === 'approved';
   
   // Client-specific data - now for multiple cases
-  const clientInvoices = currentUser.role === 'client' ? 
+  const clientInvoices = hasRole(currentUser, 'client') ? 
     mockClientInvoices.filter(i => filteredCases.some(c => c.id === i.caseId)) : [];
-  const clientMeetingRequests = currentUser.role === 'client' ? 
+  const clientMeetingRequests = hasRole(currentUser, 'client') ? 
     mockMeetingRequests.filter(m => filteredCases.some(c => c.id === m.caseId)) : [];
   
   // For selected case details
@@ -615,7 +623,7 @@ function App() {
       )}
       
       {/* Client Dashboard */}
-      {currentUser.role === 'client' && isApproved && currentView === 'dashboard' && (
+      {hasRole(currentUser, 'client') && currentUser.roles.length === 1 && isApproved && currentView === 'dashboard' && (
         <ClientDashboard
           clientCases={filteredCases}
           currentUser={currentUser}
@@ -629,7 +637,7 @@ function App() {
       )}
       
       {/* Client Case Details */}
-      {currentUser.role === 'client' && isApproved && currentView === 'client-case-details' && selectedCase && (
+      {hasRole(currentUser, 'client') && currentUser.roles.length === 1 && isApproved && currentView === 'client-case-details' && selectedCase && (
         <ClientCaseDetails
           clientCase={selectedCase}
           currentUser={currentUser}
@@ -678,7 +686,7 @@ function App() {
       )}
       
       {/* Regular User Dashboard */}
-      {currentView === 'dashboard' && currentUser.role !== 'client' && !isFirmAdmin && isApproved && (
+      {currentView === 'dashboard' && (!hasRole(currentUser, 'client') || currentUser.roles.length > 1) && !isFirmAdmin && isApproved && (
         <Dashboard
           cases={filteredCases}
           tasks={filteredTasks}
@@ -713,7 +721,7 @@ function App() {
               <div className="text-left space-y-1 text-sm text-yellow-700">
                 <p><strong>Name:</strong> {currentUser.name}</p>
                 <p><strong>Email:</strong> {currentUser.email}</p>
-                <p><strong>Role:</strong> {currentUser.role}</p>
+                <p><strong>Roles:</strong> {currentUser.roles.join(', ')}</p>
                 {currentUser.firmId && (
                   <p><strong>Firm:</strong> {firms.find(f => f.id === currentUser.firmId)?.name}</p>
                 )}
@@ -724,7 +732,7 @@ function App() {
       )}
       
       {/* Case Details */}
-      {currentView === 'case-details' && selectedCase && currentUser.role !== 'client' && isApproved && (
+      {currentView === 'case-details' && selectedCase && (!hasRole(currentUser, 'client') || currentUser.roles.length > 1) && isApproved && (
         <CaseDetails
           caseData={selectedCase}
           timelineEvents={caseTimelineEvents}
