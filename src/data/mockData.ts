@@ -1,77 +1,63 @@
-import { User, Client, Case, Task, Milestone, TimelineEvent, Document, Note, LawFirm, LawyerPerformance, BillingEntry, ClientInvoice, MeetingRequest } from '../types';
+// Mock data for Legal Case Management Application
 
-export const mockLawFirms: LawFirm[] = [
-  {
-    id: '1',
-    name: 'Johnson & Associates Legal Group',
-    address: '123 Legal Plaza, Suite 500, New York, NY 10001',
-    phone: '+1 (555) 123-4567',
-    email: 'info@johnsonlegal.com',
-    website: 'www.johnsonlegal.com',
-    foundedYear: 1995,
-    adminId: '4', // Robert Johnson
-    members: ['1', '2', '3', '4', '9'], // Sarah, Michael, Emily, Robert, Jennifer
-    pendingApprovals: [],
-    createdAt: new Date('2020-01-01'),
-    updatedAt: new Date('2025-01-01')
-  },
-  {
-    id: '2',
-    name: 'Martinez & Partners LLP',
-    address: '456 Corporate Drive, Suite 200, Los Angeles, CA 90210',
-    phone: '+1 (555) 987-6543',
-    email: 'contact@martinezpartners.com',
-    website: 'www.martinezpartners.com',
-    foundedYear: 2010,
-    adminId: '5', // David Martinez
-    members: ['5', '7', '10'], // David Martinez, James Wilson, Mark Rodriguez
-    pendingApprovals: [],
-    createdAt: new Date('2020-06-01'),
-    updatedAt: new Date('2024-12-01')
-  },
-  {
-    id: '3',
-    name: 'Thompson Legal Services',
-    address: '789 Business Blvd, Suite 300, Chicago, IL 60601',
-    phone: '+1 (555) 456-7890',
-    email: 'info@thompsonlegal.com',
-    foundedYear: 2015,
-    adminId: '11', // Patricia Thompson (pure admin)
-    members: ['6', '8', '11'], // Lisa Thompson (lawyer), Amanda Davis, Patricia Thompson
-    pendingApprovals: [],
-    createdAt: new Date('2021-03-15'),
-    updatedAt: new Date('2024-11-15')
-  }
-];
+export interface SystemConfig {
+  appName: string;
+  appSubtitle: string;
+  version: string;
+}
 
-// For backward compatibility
-export const mockLawFirm: LawFirm = mockLawFirms[0];
-
-// System configuration
-export const systemConfig = {
+export const systemConfig: SystemConfig = {
   appName: 'LegalCase Pro',
-  appSubtitle: 'Case Management System',
-  supportEmail: 'support@legalcasepro.com',
-  supportPhone: '+1 (555) 900-HELP',
-  version: '2.1.0'
+  appSubtitle: 'Professional Case Management System',
+  version: '1.0.0'
 };
 
-// Lawyers have only one role value, it needs to be an array with two values lawyer & Firmadmin. The combination will determine what information is visible to the user.
+import { 
+  User, 
+  Case, 
+  Task, 
+  Milestone, 
+  TimelineEvent, 
+  Document, 
+  Note, 
+  BillingEntry,
+  ClientInvoice,
+  MeetingRequest,
+  LawFirm,
+  LawyerPerformance,
+  Client
+} from '../types';
+
+// Helper function to find user by ID
+const findUserById = (users: User[], id: string): User => {
+  const user = users.find(u => u.id === id);
+  if (!user) {
+    throw new Error(`User with ID ${id} not found`);
+  }
+  return user;
+};
+
+// Helper function to find users by IDs
+const findUsersByIds = (users: User[], ids: string[]): User[] => {
+  return ids.map(id => findUserById(users, id));
+};
+
+// Mock Users
 export const mockUsers: User[] = [
   // System Admin
   {
-    id: 'system-admin-1',
-    name: 'System Administrator',
-    email: 'admin@legalcasepro.com',
+    id: '1',
+    name: 'John Admin',
+    email: 'admin@legalcase.com',
     role: 'system-admin',
     approvalStatus: 'approved',
     createdAt: new Date('2020-01-01'),
-    lastLoginAt: new Date('2025-01-13')
+    lastLoginAt: new Date('2025-01-14')
   },
-  // Johnson & Associates Legal Group
+  // Firm Admin & Lawyer
   {
-    id: '4',
-    name: 'Robert Johnson', 
+    id: '2',
+    name: 'Robert Johnson',
     email: 'robert.johnson@johnsonlegal.com',
     role: 'firm-admin',
     firmId: '1',
@@ -79,917 +65,329 @@ export const mockUsers: User[] = [
     createdAt: new Date('2020-01-15'),
     lastLoginAt: new Date('2025-01-14')
   },
-  {
-    id: '1',
-    name: 'Sarah Johnson',
-    email: 'sarah.johnson@johnsonlegal.com',
-    role: 'lawyer',
-    firmId: '1',
-    approvalStatus: 'approved',
-    createdAt: new Date('2020-02-01'),
-    lastLoginAt: new Date('2025-01-14')
-  },
-  {
-    id: '9',
-    name: 'Jennifer Walsh',
-    email: 'jennifer.walsh@johnsonlegal.com',
-    role: 'lawyer',
-    firmId: '1',
-    approvalStatus: 'approved',
-    createdAt: new Date('2021-05-01'),
-    lastLoginAt: new Date('2025-01-14')
-  },
-  {
-    id: '2',
-    name: 'Michael Chen',
-    email: 'michael.chen@johnsonlegal.com',
-    role: 'intern',
-    firmId: '1',
-    approvalStatus: 'approved',
-    createdAt: new Date('2023-09-01'),
-    lastLoginAt: new Date('2025-01-14')
-  },
+  // Lawyers
   {
     id: '3',
-    name: 'Emily Rodriguez',
-    email: 'emily.rodriguez@johnsonlegal.com',
-    role: 'intern',
+    name: 'Sarah Wilson',
+    email: 'sarah.wilson@johnsonlegal.com',
+    role: 'lawyer',
     firmId: '1',
     approvalStatus: 'approved',
-    createdAt: new Date('2023-09-01'),
-    lastLoginAt: new Date('2025-01-13')
-  },
-
-
-  // Martinez & Partners LLP
-  {
-    id: '5',
-    name: 'David Martinez',
-    email: 'david.martinez@martinezpartners.com',
-    role: 'firm-admin', // This user will be treated as both lawyer and firm-admin
-    firmId: '2',
-    approvalStatus: 'approved',
-    createdAt: new Date('2020-06-01'),
-    lastLoginAt: new Date('2025-01-12')
+    createdAt: new Date('2021-03-10'),
+    lastLoginAt: new Date('2025-01-14')
   },
   {
-    id: '10',
-    name: 'Mark Rodriguez',
-    email: 'mark.rodriguez@martinezpartners.com',
+    id: '4',
+    name: 'Michael Brown',
+    email: 'michael.brown@smithlaw.com',
     role: 'lawyer',
     firmId: '2',
     approvalStatus: 'approved',
-    createdAt: new Date('2022-03-01'),
+    createdAt: new Date('2021-06-15'),
     lastLoginAt: new Date('2025-01-13')
+  },
+  {
+    id: '5',
+    name: 'Emily Davis',
+    email: 'emily.davis@johnsonlegal.com',
+    role: 'lawyer',
+    firmId: '1',
+    approvalStatus: 'approved',
+    createdAt: new Date('2022-01-20'),
+    lastLoginAt: new Date('2025-01-14')
+  },
+  // Interns
+  {
+    id: '6',
+    name: 'David Martinez',
+    email: 'david.martinez@johnsonlegal.com',
+    role: 'intern',
+    firmId: '1',
+    approvalStatus: 'approved',
+    createdAt: new Date('2024-09-01'),
+    lastLoginAt: new Date('2025-01-14')
   },
   {
     id: '7',
-    name: 'James Wilson',
-    email: 'james.wilson@martinezpartners.com',
+    name: 'Jessica Garcia',
+    email: 'jessica.garcia@smithlaw.com',
     role: 'intern',
     firmId: '2',
     approvalStatus: 'approved',
-    createdAt: new Date('2024-01-15'),
-    lastLoginAt: new Date('2025-01-10')
-  },
-
-  // Thompson Legal Services
-  {
-    id: '11',
-    name: 'Patricia Thompson',
-    email: 'patricia.thompson@thompsonlegal.com',
-    role: 'firm-admin',
-    firmId: '3',
-    approvalStatus: 'approved',
-    createdAt: new Date('2021-03-15'),
-    lastLoginAt: new Date('2025-01-12')
-  },
-  {
-    id: '6',
-    name: 'Lisa Thompson',
-    email: 'lisa.thompson@thompsonlegal.com',
-    role: 'lawyer',
-    firmId: '3',
-    approvalStatus: 'approved',
-    createdAt: new Date('2021-03-15'),
-    lastLoginAt: new Date('2025-01-11')
+    createdAt: new Date('2024-09-01'),
+    lastLoginAt: new Date('2025-01-13')
   },
   {
     id: '8',
-    name: 'Amanda Davis',
-    email: 'amanda.davis@thompsonlegal.com',
+    name: 'Alex Thompson',
+    email: 'alex.thompson@johnsonlegal.com',
     role: 'intern',
-    firmId: '3',
+    firmId: '1',
     approvalStatus: 'approved',
-    createdAt: new Date('2024-06-01'),
-    lastLoginAt: new Date('2025-01-09')
+    createdAt: new Date('2024-08-15'),
+    lastLoginAt: new Date('2025-01-14')
   },
-
-  // Pending Approvals - Examples
+  // Clients
   {
-    id: 'pending-lawyer-1',
-    name: 'Jennifer Smith',
-    email: 'jennifer.smith@email.com',
+    id: '9',
+    name: 'James Miller',
+    email: 'james.miller@email.com',
+    role: 'client',
+    approvalStatus: 'approved',
+    createdAt: new Date('2024-02-15'),
+    lastLoginAt: new Date('2025-01-14')
+  },
+  {
+    id: '10',
+    name: 'Linda Anderson',
+    email: 'linda.anderson@email.com',
+    role: 'client',
+    approvalStatus: 'approved',
+    createdAt: new Date('2024-03-20'),
+    lastLoginAt: new Date('2025-01-13')
+  },
+  {
+    id: '11',
+    name: 'Chris Taylor',
+    email: 'chris.taylor@email.com',
+    role: 'client',
+    approvalStatus: 'approved',
+    createdAt: new Date('2024-04-10'),
+    lastLoginAt: new Date('2025-01-14')
+  },
+  // Pending Users
+  {
+    id: '12',
+    name: 'Amanda White',
+    email: 'amanda.white@email.com',
     role: 'lawyer',
-    firmId: '2',
+    firmId: '1',
     approvalStatus: 'pending',
     createdAt: new Date('2025-01-10')
   },
   {
-    id: 'pending-intern-1',
-    name: 'Alex Johnson',
-    email: 'alex.johnson@student.edu',
+    id: '13',
+    name: 'Mark Johnson',
+    email: 'mark.johnson@email.com',
     role: 'intern',
     firmId: '2',
     approvalStatus: 'pending',
     createdAt: new Date('2025-01-12')
-  },
-  
-  // Client users
-  // associatedLawyerIds needs to be an array 
-  {
-    id: 'client-1',
-    name: 'John Smith',
-    email: 'john.smith@email.com',
-    role: 'client',
-    associatedLawyerIds: ['1'], // Associated with Sarah Johnson
-    invitedBy: '1',
-    approvalStatus: 'approved',
-    createdAt: new Date('2024-08-01'),
-    lastLoginAt: new Date('2025-01-14')
-  },
-  {
-    id: 'client-2',
-    name: 'Maria Garcia',
-    email: 'maria.garcia@email.com',
-    role: 'client',
-    associatedLawyerIds: ['1', '2'], 
-    invitedBy: '1',
-    approvalStatus: 'approved',
-    createdAt: new Date('2024-09-15'),
-    lastLoginAt: new Date('2025-01-13')
-  },
-  {
-    id: 'client-3',
-    name: 'Robert Wilson',
-    email: 'robert.wilson@email.com',
-    role: 'client',
-    associatedLawyerIds: ['6'], // Associated with Lisa Thompson
-    invitedBy: '6',
-    approvalStatus: 'approved',
-    createdAt: new Date('2024-10-01'),
-    lastLoginAt: new Date('2025-01-12')
   }
 ];
 
+// Mock Law Firms
+export const mockLawFirms: LawFirm[] = [
+  {
+    id: '1',
+    name: 'Johnson Legal Associates',
+    address: '123 Legal Street, Downtown, NY 10001',
+    phone: '+1 (555) 123-4567',
+    email: 'info@johnsonlegal.com',
+    website: 'www.johnsonlegal.com',
+    foundedYear: 1995,
+    adminId: '2', // Robert Johnson
+    members: ['2', '3', '5', '6', '8'], // Robert, Sarah, Emily, David, Alex
+    pendingApprovals: ['12'], // Amanda White pending
+    createdAt: new Date('2020-01-15'),
+    updatedAt: new Date('2025-01-14')
+  },
+  {
+    id: '2',
+    name: 'Smith & Associates Law Firm',
+    address: '456 Justice Ave, Legal District, NY 10002',
+    phone: '+1 (555) 987-6543',
+    email: 'contact@smithlaw.com',
+    website: 'www.smithlaw.com',
+    foundedYear: 2001,
+    adminId: '4', // Michael Brown (serves as both lawyer and admin)
+    members: ['4', '7'], // Michael, Jessica
+    pendingApprovals: ['13'], // Mark Johnson pending
+    createdAt: new Date('2021-01-01'),
+    updatedAt: new Date('2025-01-13')
+  }
+];
 
-// Needs review
-// Update pending approvals in firms
-mockLawFirms[0].pendingApprovals = ['pending-lawyer-1'];
-mockLawFirms[1].pendingApprovals = ['pending-intern-1'];
-
-// Sync mockClients to Client users 
-// standerdise the fields for all records - done
+// Mock Clients
 export const mockClients: Client[] = [
   {
     id: '1',
-    name: 'TechCorp Industries',
-    email: 'legal@techcorp.com',
-    phone: '+1 (555) 123-4567',
-    address: '123 Business Ave, New York, NY 10001',
-    company: 'TechCorp Industries'
+    name: 'James Miller',
+    email: 'james.miller@email.com',
+    phone: '+1 (555) 111-2222',
+    address: '789 Client St, Residential, NY 10003',
+    company: 'Miller Industries'
   },
   {
     id: '2',
-    name: 'John Smith',
-    email: 'john.smith@email.com',
-    phone: '+1 (555) 987-6543',
-    address: '456 Residential St, Los Angeles, CA 90001',
-	company: 'TechCorp Industries'
+    name: 'Linda Anderson',
+    email: 'linda.anderson@email.com',
+    phone: '+1 (555) 333-4444',
+    address: '321 Anderson Ave, Suburb, NY 10004'
   },
   {
     id: '3',
-    name: 'Maria Garcia',
-    email: 'maria.garcia@email.com',
-    phone: '+1 (555) 456-7890',
-    address: '789 Oak Street, Chicago, IL 60601',
-	company: 'TechCorp Industries'
+    name: 'Chris Taylor',
+    email: 'chris.taylor@email.com',
+    phone: '+1 (555) 555-6666',
+    address: '654 Taylor Rd, Uptown, NY 10005',
+    company: 'Taylor Tech Solutions'
   },
   {
     id: '4',
-    name: 'GlobalTech Solutions',
-    email: 'legal@globaltech.com',
-    phone: '+1 (555) 234-5678',
-    address: '456 Corporate Blvd, San Francisco, CA 94105',
-    company: 'GlobalTech Solutions'
+    name: 'Patricia Wilson',
+    email: 'patricia.wilson@email.com',
+    phone: '+1 (555) 777-8888',
+    address: '987 Wilson Way, Downtown, NY 10006'
   },
   {
     id: '5',
-    name: 'Jennifer Brown',
-    email: 'jennifer.brown@email.com',
-    phone: '+1 (555) 345-6789',
-    address: '321 Maple Ave, Boston, MA 02101',
-	company: 'TechCorp Industries'
-  },
-  {
-    id: '6',
-    name: 'Robert Wilson',
-    email: 'robert.wilson@email.com',
-    phone: '+1 (555) 567-8901',
-    address: '654 Pine St, Seattle, WA 98101',
-	company: 'TechCorp Industries'
-  },
-  {
-    id: '7',
-    name: 'MedCorp Healthcare',
-    email: 'legal@medcorp.com',
-    phone: '+1 (555) 678-9012',
-    address: '789 Health Plaza, Miami, FL 33101',
-    company: 'MedCorp Healthcare'
+    name: 'Daniel Moore',
+    email: 'daniel.moore@email.com',
+    phone: '+1 (555) 999-0000',
+    address: '147 Moore Manor, Estate, NY 10007',
+    company: 'Moore Enterprises'
   }
 ];
 
-// ClientId field seems redundant, mockClients controls the client name displayed and which login the case is visible from
-// assignedLawyer is based on the sequence number of the lawyer in the data and not the lawyer id - needs fixing
-// ensure all cases has the same set of fields along with data 
+// Now create cases with proper ID-based assignments
 export const mockCases: Case[] = [
-  // Sarah Johnson's cases
   {
     id: '1',
-    title: 'TechCorp vs. DataSystems Patent Dispute',
+    title: 'Miller Industries Patent Dispute',
     clientId: '1',
-    client: mockClients[0],
-    assignedLawyer: mockUsers[1],
-    supportingInterns: [mockUsers[1]],
+    client: mockClients.find(c => c.id === '1')!,
+    assignedLawyer: findUserById(mockUsers, '2'), // Robert Johnson
+    supportingInterns: findUsersByIds(mockUsers, ['6', '8']), // David Martinez, Alex Thompson
     caseType: 'Intellectual Property',
     status: 'active',
     priority: 'high',
-    nextHearingDate: new Date('2025-07-03'),
+    nextHearingDate: new Date('2025-01-25'),
     courtStage: 'Discovery Phase',
     referredBy: 'Existing Client',
     judge: 'Hon. Patricia Williams',
-    opposingParty: 'InnovateLab Technologies Inc.',
-    courtLevel: 'district',
+    opposingParty: 'TechCorp Solutions',
     opposingCounsel: {
-      name: 'Robert Davis',
-      firm: 'Davis & Associates',
-      email: 'rdavis@davislaw.com',
+      name: 'Amanda Richardson',
+      firm: 'Richardson & Partners',
+      email: 'a.richardson@richardsonlaw.com',
       phone: '+1 (555) 234-5678'
     },
-    createdAt: new Date('2024-08-15'),
-    updatedAt: new Date('2025-01-10'),
-    billableHours: 145,
-    totalRevenue: 72500,
-    opposingCounselHistory: [
-      {
-        name: 'Robert Davis',
-        firm: 'Davis & Associates',
-        email: 'rdavis@davislaw.com',
-        phone: '+1 (555) 234-5678',
-        date: new Date('2024-08-15')
-      }
-    ],
-    judgeHistory: [
-      {
-        name: 'Hon. Patricia Williams',
-        date: new Date('2024-08-15')
-      }
-    ]
+    createdAt: new Date('2024-10-15'),
+    updatedAt: new Date('2025-01-14'),
+    billableHours: 85,
+    totalRevenue: 42500,
+    courtLevel: 'district',
+    opposingCounselHistory: [],
+    judgeHistory: []
   },
   {
     id: '2',
-    title: 'Smith Personal Injury Claim',
+    title: 'Anderson Personal Injury Case',
     clientId: '2',
-    client: mockClients[1],
-    assignedLawyer: mockUsers[1],
-    supportingInterns: [mockUsers[2]],
+    client: mockClients.find(c => c.id === '2')!,
+    assignedLawyer: findUserById(mockUsers, '3'), // Sarah Wilson
+    supportingInterns: findUsersByIds(mockUsers, ['6']), // David Martinez
     caseType: 'Personal Injury',
     status: 'active',
     priority: 'medium',
-    nextHearingDate: new Date('2025-07-09'),
+    nextHearingDate: new Date('2025-02-10'),
     courtStage: 'Pre-trial Motions',
-    referredBy: 'Referral Network',
-    judge: 'Hon. Mark Thompson',
-    opposingParty: 'ABC Insurance Company',
+    referredBy: 'Bar Association',
+    judge: 'Hon. Michael Chen',
+    opposingParty: 'Metro Insurance Co.',
     opposingCounsel: {
-      name: 'Lisa Martinez',
-      firm: 'Martinez Legal Group',
-      email: 'lmartinez@martinezlaw.com',
+      name: 'Thomas Bradley',
+      firm: 'Bradley Insurance Defense',
+      email: 't.bradley@bradleylaw.com',
       phone: '+1 (555) 345-6789'
     },
-    createdAt: new Date('2024-09-01'),
-    updatedAt: new Date('2025-01-08'),
-    billableHours: 89,
-    totalRevenue: 44500,
-    opposingCounselHistory: [
-      {
-        name: 'Lisa Martinez',
-        firm: 'Martinez Legal Group',
-        email: 'lmartinez@martinezlaw.com',
-        phone: '+1 (555) 345-6789',
-        date: new Date('2024-09-01')
-      }
-    ],
-    judgeHistory: [
-      {
-        name: 'Hon. Mark Thompson',
-        date: new Date('2024-09-01')
-      }
-    ]
-  },
-  // Jennifer Walsh's cases (Lawyer at Johnson & Associates)
-  {
-    id: '13',
-    title: 'Downtown Development Contract Review',
-    clientId: '1',
-    client: mockClients[0],
-    assignedLawyer: mockUsers[4], // Jennifer Walsh (id: '9' in the array)
-    supportingInterns: [mockUsers[1]], // Michael Chen
-    caseType: 'Contract Law',
-    status: 'active',
-    priority: 'medium',
-    nextHearingDate: new Date('2025-07-25'),
-    courtStage: 'Contract Review',
-    referredBy: 'Existing Client',
-    createdAt: new Date('2024-11-15'),
-    updatedAt: new Date('2025-01-12'),
-    billableHours: 34,
-    totalRevenue: 17000,
+    createdAt: new Date('2024-09-20'),
+    updatedAt: new Date('2025-01-13'),
+    billableHours: 65,
+    totalRevenue: 32500,
+    courtLevel: 'superior',
     opposingCounselHistory: [],
     judgeHistory: []
   },
   {
-    id: '14',
-    title: 'Metropolitan Housing Rights Case',
+    id: '3',
+    title: 'Taylor Tech Employment Discrimination',
     clientId: '3',
-    client: mockClients[2],
-    assignedLawyer: mockUsers[4], // Jennifer Walsh
-    supportingInterns: [mockUsers[2]], // Emily Rodriguez
-    caseType: 'Real Estate Law',
-    status: 'active',
-    priority: 'high',
-    nextHearingDate: new Date('2025-07-30'),
-    courtStage: 'Preliminary Hearings',
-    referredBy: 'Bar Association',
-    judge: 'Hon. Rebecca Martinez',
-    courtLevel: 'district',
-    opposingCounsel: {
-      name: 'Christopher Lee',
-      firm: 'Lee & Associates',
-      email: 'clee@leelaw.com',
-      phone: '+1 (555) 678-9012'
-    },
-    createdAt: new Date('2024-12-01'),
-    updatedAt: new Date('2025-01-13'),
-    billableHours: 56,
-    totalRevenue: 28000,
-    opposingCounselHistory: [
-      {
-        name: 'Christopher Lee',
-        firm: 'Lee & Associates', 
-        email: 'clee@leelaw.com',
-        phone: '+1 (555) 678-9012',
-        date: new Date('2024-12-01')
-      }
-    ],
-    judgeHistory: [
-      {
-        name: 'Hon. Rebecca Martinez',
-        date: new Date('2024-12-01')
-      }
-    ]
-  },
-  {
-    id: '3', 
-    title: 'Garcia Employment Discrimination',
-    clientId: '3',
-    client: mockClients[2],
-    assignedLawyer: mockUsers[1],
-    supportingInterns: [mockUsers[1], mockUsers[2]],
+    client: mockClients.find(c => c.id === '3')!,
+    assignedLawyer: findUserById(mockUsers, '5'), // Emily Davis
+    supportingInterns: findUsersByIds(mockUsers, ['8']), // Alex Thompson
     caseType: 'Employment Law',
     status: 'active',
     priority: 'high',
-    nextHearingDate: new Date('2025-07-20'),
-    courtStage: 'Mediation',
-    referredBy: 'Bar Association',
-    judge: 'Hon. Jennifer Lee',
+    nextHearingDate: new Date('2025-01-30'),
+    courtStage: 'Initial Filing',
+    referredBy: 'Online Search',
+    judge: 'Hon. Jennifer Lopez',
+    opposingParty: 'TechStart Inc.',
+    createdAt: new Date('2024-12-01'),
+    updatedAt: new Date('2025-01-14'),
+    billableHours: 45,
+    totalRevenue: 22500,
     courtLevel: 'district',
-    opposingCounsel: {
-      name: 'Thomas Wilson',
-      firm: 'Corporate Defense LLC',
-      email: 'twilson@corpdefense.com',
-      phone: '+1 (555) 567-8901'
-    },
-    createdAt: new Date('2024-10-01'),
-    updatedAt: new Date('2025-01-09'),
-    billableHours: 67,
-    totalRevenue: 33500,
-    opposingCounselHistory: [
-      {
-        name: 'Thomas Wilson',
-        firm: 'Corporate Defense LLC',
-        email: 'twilson@corpdefense.com',
-        phone: '+1 (555) 567-8901',
-        date: new Date('2024-10-01')
-      }
-    ],
-    judgeHistory: [
-      {
-        name: 'Hon. Jennifer Lee',
-        date: new Date('2024-10-01')
-      }
-    ]
+    opposingCounselHistory: [],
+    judgeHistory: []
   },
-  
-  // David Martinez's cases
   {
     id: '4',
-    title: 'GlobalTech Merger & Acquisition',
+    title: 'Wilson Estate Planning',
     clientId: '4',
-    client: mockClients[3],
-    assignedLawyer: mockUsers[4], // David Martinez
-    supportingInterns: [mockUsers[6]],
-    caseType: 'Corporate Law',
-    status: 'active',
-    priority: 'high',
-    nextHearingDate: new Date('2025-07-15'),
-    courtStage: 'Due Diligence',
-    referredBy: 'Existing Client',
-    judge: 'Hon. Michael Brown',
-    courtLevel: 'superior',
-    opposingCounsel: {
-      name: 'Sarah Mitchell',
-      firm: 'Mitchell & Partners',
-      email: 'smitchell@mitchelllaw.com',
-      phone: '+1 (555) 789-0123'
-    },
-    createdAt: new Date('2024-11-01'),
-    updatedAt: new Date('2025-01-12'),
-    billableHours: 98,
-    totalRevenue: 98000,
-    opposingCounselHistory: [
-      {
-        name: 'Sarah Mitchell',
-        firm: 'Mitchell & Partners',
-        email: 'smitchell@mitchelllaw.com',
-        phone: '+1 (555) 789-0123',
-        date: new Date('2024-11-01')
-      }
-    ],
-    judgeHistory: [
-      {
-        name: 'Hon. Michael Brown',
-        date: new Date('2024-11-01')
-      }
-    ]
-  },
-  // Mark Rodriguez's cases (Lawyer at Martinez & Partners)
-  {
-    id: '15',
-    title: 'Tech Startup IP Portfolio Review',
-    clientId: '4',
-    client: mockClients[3],
-    assignedLawyer: mockUsers[9], // Mark Rodriguez (id: '10' but will be index 9)
-    supportingInterns: [mockUsers[6]], // James Wilson
-    caseType: 'Intellectual Property',
-    status: 'active',
-    priority: 'medium',
-    nextHearingDate: new Date('2025-08-05'),
-    courtStage: 'Portfolio Analysis',
-    referredBy: 'Existing Client',
-    createdAt: new Date('2024-12-15'),
-    updatedAt: new Date('2025-01-14'),
-    billableHours: 28,
-    totalRevenue: 14000,
-    opposingCounselHistory: [],
-    judgeHistory: []
-  },
-  {
-    id: '16',
-    title: 'Employment Contract Negotiation',
-    clientId: '5',
-    client: mockClients[4],
-    assignedLawyer: mockUsers[9], // Mark Rodriguez
-    supportingInterns: [],
-    caseType: 'Employment Law',
+    client: mockClients.find(c => c.id === '4')!,
+    assignedLawyer: findUserById(mockUsers, '4'), // Michael Brown (from Smith & Associates)
+    supportingInterns: findUsersByIds(mockUsers, ['7']), // Jessica Garcia
+    caseType: 'Estate Planning',
     status: 'active',
     priority: 'low',
-    nextHearingDate: new Date('2025-08-10'),
-    courtStage: 'Contract Finalization',
+    nextHearingDate: new Date('2025-02-15'),
+    courtStage: 'Document Preparation',
     referredBy: 'Referral Network',
-    createdAt: new Date('2025-01-05'),
-    opposingParty: 'Global Manufacturing Corp',
-    updatedAt: new Date('2025-01-14'),
-    billableHours: 15,
-    totalRevenue: 7500,
+    createdAt: new Date('2024-11-10'),
+    updatedAt: new Date('2025-01-12'),
+    billableHours: 25,
+    totalRevenue: 12500,
+    courtLevel: 'district',
     opposingCounselHistory: [],
     judgeHistory: []
   },
   {
     id: '5',
-    title: 'Brown Family Custody Case',
+    title: 'Moore Enterprises Contract Dispute',
     clientId: '5',
-    client: mockClients[4],
-    assignedLawyer: mockUsers[4], // David Martinez
-    supportingInterns: [mockUsers[6]], // James Wilson (corrected index)
-    caseType: 'Family Law',
-    status: 'active',
-    priority: 'medium',
-    nextHearingDate: new Date('2025-07-12'),
-    courtStage: 'Custody Evaluation',
-    referredBy: 'Referral Network',
-    judge: 'Hon. Susan Davis',
-    courtLevel: 'district',
-    createdAt: new Date('2024-12-01'),
-    updatedAt: new Date('2025-01-11'),
-    billableHours: 45,
-    totalRevenue: 22500,
-    opposingCounselHistory: [],
-    judgeHistory: [
-      {
-        name: 'Hon. Susan Davis',
-        date: new Date('2024-12-01')
-      }
-    ]
-  },
-  
-  // Lisa Thompson's cases
-  {
-    id: '6',
-    title: 'Wilson Real Estate Dispute',
-    clientId: '6',
-    client: mockClients[5],
-    assignedLawyer: mockUsers[5], // Lisa Thompson
-    supportingInterns: [mockUsers[7]], // Amanda Davis (id: '8' but index 7)
-    caseType: 'Real Estate Law',
-    status: 'active',
-    priority: 'medium',
-    nextHearingDate: new Date('2025-07-08'),
-    courtStage: 'Discovery',
-    referredBy: 'Bar Association',
-    judge: 'Hon. Robert Garcia',
-    courtLevel: 'district',
-    opposingCounsel: {
-      name: 'Kevin Johnson',
-      firm: 'Johnson Real Estate Law',
-      email: 'kjohnson@johnsonrelaw.com',
-      phone: '+1 (555) 890-1234'
-    },
-    createdAt: new Date('2024-10-15'),
-    updatedAt: new Date('2025-01-13'),
-    billableHours: 67,
-    totalRevenue: 33500,
-    opposingCounselHistory: [
-      {
-        name: 'Kevin Johnson',
-        firm: 'Johnson Real Estate Law',
-        email: 'kjohnson@johnsonrelaw.com',
-        phone: '+1 (555) 890-1234',
-        date: new Date('2024-10-15')
-      }
-    ],
-    judgeHistory: [
-      {
-        name: 'Hon. Robert Garcia',
-        date: new Date('2024-10-15')
-      }
-    ]
-  },
-  {
-    id: '7',
-    title: 'MedCorp Regulatory Compliance',
-    clientId: '7',
-    client: mockClients[6],
-    assignedLawyer: mockUsers[5], // Lisa Thompson
-    supportingInterns: [mockUsers[7]], // Amanda Davis
-    caseType: 'Healthcare Law',
-    status: 'active',
-    priority: 'high',
-    nextHearingDate: new Date('2025-07-18'),
-    courtStage: 'Regulatory Review',
-    referredBy: 'Existing Client',
-    judge: 'Hon. Amanda Wilson',
-    courtLevel: 'appellate',
-    createdAt: new Date('2024-09-15'),
-    updatedAt: new Date('2025-01-14'),
-    billableHours: 123,
-    totalRevenue: 61500,
-    opposingCounselHistory: [],
-    judgeHistory: [
-      {
-        name: 'Hon. Amanda Wilson',
-        date: new Date('2024-09-15')
-      }
-    ]
-  },
-  
-  // Closed cases for analytics - distributed among lawyers
-  {
-    id: '8', 
-    title: 'Anderson Contract Dispute',
-    clientId: '1',
-    client: mockClients[0],
-    assignedLawyer: mockUsers[1], // Sarah Johnson
-    supportingInterns: [mockUsers[1]],
+    client: mockClients.find(c => c.id === '5')!,
+    assignedLawyer: findUserById(mockUsers, '2'), // Robert Johnson
+    supportingInterns: findUsersByIds(mockUsers, ['6']), // David Martinez
     caseType: 'Contract Law',
     status: 'closed',
     priority: 'medium',
-    courtStage: 'Settled',
+    courtStage: 'Settlement',
     referredBy: 'Existing Client',
-    judge: 'Hon. David Brown',
-    courtLevel: 'district',
     outcome: 'settled',
-    createdAt: new Date('2024-05-15'),
-    updatedAt: new Date('2024-11-20'),
-    closedAt: new Date('2024-11-20'),
-    billableHours: 78,
-    totalRevenue: 39000,
-    opposingCounselHistory: [],
-    judgeHistory: [
-      {
-        name: 'Hon. David Brown',
-        date: new Date('2024-05-15')
-      }
-    ]
-  },
-  {
-    id: '9',
-    title: 'Thompson Family Law Case',
-    clientId: '2',
-    client: mockClients[1],
-    assignedLawyer: mockUsers[4], // Jennifer Walsh
-    supportingInterns: [],
-    caseType: 'Family Law',
-    opposingParty: 'Michael Thompson',
-    priority: 'low',
-    courtStage: 'Final Judgment',
-    referredBy: 'Referral Network',
-    judge: 'Hon. Susan Miller',
+    closedAt: new Date('2024-12-20'),
+    createdAt: new Date('2024-08-15'),
+    updatedAt: new Date('2024-12-20'),
+    billableHours: 95,
+    totalRevenue: 47500,
     courtLevel: 'superior',
-    outcome: 'won',
-    createdAt: new Date('2024-03-10'),
-    updatedAt: new Date('2024-09-15'),
-    closedAt: new Date('2024-09-15'),
-    billableHours: 45,
-    totalRevenue: 22500,
-    opposingCounselHistory: [],
-    judgeHistory: [
-      {
-        name: 'Hon. Susan Miller',
-        date: new Date('2024-03-10')
-      }
-    ]
-  },
-  {
-    id: '10',
-    title: 'Corporate Merger Review',
-    clientId: '4',
-    client: mockClients[3],
-    assignedLawyer: mockUsers[4], // David Martinez
-    supportingInterns: [mockUsers[6]], // James Wilson
-    caseType: 'Corporate Law',
-    status: 'closed',
-    priority: 'high',
-    courtStage: 'Completed',
-    referredBy: 'Existing Client',
-    outcome: 'won',
-    createdAt: new Date('2024-01-05'),
-    updatedAt: new Date('2024-06-30'),
-    closedAt: new Date('2024-06-30'),
-    billableHours: 156,
-    totalRevenue: 156000,
-    opposingCounselHistory: [],
-    judgeHistory: []
-  },
-  {
-    id: '11',
-    title: 'IP Licensing Agreement Review',
-    clientId: '7',
-    client: mockClients[6],
-    assignedLawyer: mockUsers[9], // Mark Rodriguez
-    supportingInterns: [mockUsers[6]], // James Wilson
-    caseType: 'Intellectual Property',
-    status: 'closed',
-    priority: 'medium',
-    courtStage: 'Agreement Finalized',
-    referredBy: 'Existing Client',
-    outcome: 'won',
-    createdAt: new Date('2024-02-01'),
-    updatedAt: new Date('2024-08-15'),
-    closedAt: new Date('2024-08-15'),
-    billableHours: 89,
-    totalRevenue: 89000,
-    opposingCounselHistory: [],
-    judgeHistory: []
-  },
-  {
-    id: '12',
-    title: 'Property Development Dispute',
-    clientId: '6',
-    client: mockClients[5],
-    assignedLawyer: mockUsers[5], // Lisa Thompson
-    supportingInterns: [mockUsers[7]], // Amanda Davis
-    caseType: 'Real Estate Law',
-    status: 'closed',
-    priority: 'high',
-    courtStage: 'Settlement Reached',
-    referredBy: 'Bar Association',
-    judge: 'Hon. Patricia Lee',
-    courtLevel: 'superior',
-    outcome: 'settled',
-    createdAt: new Date('2024-04-01'),
-    updatedAt: new Date('2024-10-30'),
-    closedAt: new Date('2024-10-30'),
-    billableHours: 112,
-    totalRevenue: 56000,
-    opposingCounselHistory: [],
-    judgeHistory: [
-      {
-        name: 'Hon. Patricia Lee',
-        date: new Date('2024-04-01')
-      }
-    ]
-  },
-  // Additional closed case for new lawyers
-  {
-    id: '17',
-    title: 'Commercial Lease Dispute Resolution',
-    clientId: '6',
-    client: mockClients[5],
-    assignedLawyer: mockUsers[4], // Jennifer Walsh
-    supportingInterns: [mockUsers[1]], // Michael Chen
-    caseType: 'Contract Law',
-    status: 'closed',
-    priority: 'medium',
-    courtStage: 'Settlement Reached',
-    referredBy: 'Bar Association',
-    outcome: 'settled',
-    createdAt: new Date('2024-07-01'),
-    updatedAt: new Date('2024-12-15'),
-    closedAt: new Date('2024-12-15'),
-    billableHours: 67,
-    totalRevenue: 33500,
     opposingCounselHistory: [],
     judgeHistory: []
   }
 ];
 
+// Mock Tasks with ID-based assignments
 export const mockTasks: Task[] = [
-  // Sarah Johnson's tasks
   {
     id: '1',
-    title: 'File Motion for Summary Judgment',
-    description: 'Prepare and file motion for summary judgment with supporting briefs',
+    title: 'Prepare Discovery Documents',
+    description: 'Compile and review all discovery documents for the Miller patent case. Focus on prior art search and patent claim analysis.',
     caseId: '1',
-    assignedTo: mockUsers[1],
-    assignedBy: mockUsers[1],
-    dueDate: new Date('2025-06-29'),
-    priority: 'high',
-    status: 'in-progress',
-    type: 'filing',
-    createdAt: new Date('2025-01-05'),
-    isClientVisible: false
-  },
-  {
-    id: '2',
-    title: 'Research Patent Precedents',
-    description: 'Research similar patent dispute cases and precedents',
-    caseId: '1',
-    assignedTo: mockUsers[1],
-    assignedBy: mockUsers[1],
-    dueDate: new Date('2025-07-03'),
-    priority: 'medium',
-    status: 'pending',
-    type: 'research',
-    createdAt: new Date('2025-01-03'),
-    isClientVisible: false
-  },
-  {
-    id: '3',
-    title: 'Prepare Witness Statements',
-    description: 'Interview and prepare witness statements for the case',
-    caseId: '2',
-    assignedTo: mockUsers[1],
-    assignedBy: mockUsers[1],
-    dueDate: new Date('2025-07-05'),
-    priority: 'high',
-    status: 'pending',
-    type: 'document',
-    createdAt: new Date('2025-01-06'),
-    isClientVisible: false
-  },
-  {
-    id: '4',
-    title: 'Draft Employment Contract Analysis',
-    description: 'Analyze employment contract terms and conditions',
-    caseId: '3',
-    assignedTo: mockUsers[2],
-    assignedBy: mockUsers[1],
-    dueDate: new Date('2025-07-09'),
-    priority: 'medium',
-    status: 'in-progress',
-    type: 'research',
-    createdAt: new Date('2025-01-07'),
-    isClientVisible: false
-  },
-  {
-    id: '5',
-    title: 'Prepare Mediation Brief',
-    description: 'Prepare comprehensive brief for upcoming mediation session',
-    caseId: '3',
-    assignedTo: mockUsers[1],
-    assignedBy: mockUsers[1],
-    dueDate: new Date('2025-07-20'),
-    priority: 'high',
-    status: 'pending',
-    type: 'document',
-    createdAt: new Date('2025-01-08'),
-    isClientVisible: false
-  },
-  
-  // Jennifer Walsh's tasks (Lawyer at Johnson & Associates)
-  {
-    id: '13',
-    title: 'Contract Terms Review',
-    description: 'Review and analyze contract terms for development project',
-    caseId: '13',
-    assignedTo: mockUsers[4], // Jennifer Walsh
-    assignedBy: mockUsers[4],
-    dueDate: new Date('2025-07-25'),
-    priority: 'medium',
-    status: 'in-progress',
-    type: 'document',
-    createdAt: new Date('2025-01-12'),
-    isClientVisible: false
-  },
-  {
-    id: '14',
-    title: 'Housing Rights Research',
-    description: 'Research tenant rights and housing regulations',
-    caseId: '14',
-    assignedTo: mockUsers[2], // Emily Rodriguez
-    assignedBy: mockUsers[4], // Jennifer Walsh
-    dueDate: new Date('2025-07-28'),
-    priority: 'high',
-    status: 'pending',
-    type: 'research',
-    createdAt: new Date('2025-01-13'),
-    isClientVisible: false
-  },
-  {
-    id: '15',
-    title: 'Tenant Interview Preparation',
-    description: 'Prepare questions and schedule tenant interviews',
-    caseId: '14',
-    assignedTo: mockUsers[4], // Jennifer Walsh
-    assignedBy: mockUsers[4],
-    dueDate: new Date('2025-07-30'),
-    priority: 'medium',
-    status: 'pending',
-    type: 'meeting',
-    createdAt: new Date('2025-01-14'),
-    isClientVisible: false
-  },
-
-  // Client-visible tasks for John Smith (Case 2)
-  {
-    id: 'client-1', 
-    title: 'Provide Medical Records',
-    description: 'Please provide all medical records related to your injury, including recent treatment reports',
-    caseId: '2',
-    assignedTo: mockUsers[8], // Client user
-    assignedBy: mockUsers[1], // Sarah Johnson
-    dueDate: new Date('2025-07-02'),
-    priority: 'high',
-    status: 'pending',
-    type: 'document',
-    createdAt: new Date('2025-01-15'),
-    isClientVisible: true
-  },
-  {
-    id: 'client-2',
-    title: 'Review Settlement Proposal',
-    description: 'Please review the settlement proposal from the insurance company and provide your feedback',
-    caseId: '2',
-    assignedTo: mockUsers[8], // Client user
-    assignedBy: mockUsers[1], // Sarah Johnson
-    dueDate: new Date('2025-07-08'),
-    priority: 'medium',
-    status: 'pending',
-    type: 'other',
-    createdAt: new Date('2025-01-18'),
-    isClientVisible: true
-  },
-  
-  // David Martinez's tasks
-  {
-    id: '6',
-    title: 'Review Merger Documents',
-    description: 'Comprehensive review of all merger and acquisition documents',
-    caseId: '4',
-    assignedTo: mockUsers[4],
-    assignedBy: mockUsers[4],
-    dueDate: new Date('2025-07-15'),
+    assignedTo: findUserById(mockUsers, '6'), // David Martinez
+    assignedBy: findUserById(mockUsers, '2'), // Robert Johnson
+    dueDate: new Date('2025-01-20'),
     priority: 'high',
     status: 'in-progress',
     type: 'document',
@@ -997,1069 +395,534 @@ export const mockTasks: Task[] = [
     isClientVisible: false
   },
   {
-    id: '7',
-    title: 'Due Diligence Research',
-    description: 'Conduct thorough due diligence research on target company',
-    caseId: '4',
-    assignedTo: mockUsers[6],
-    assignedBy: mockUsers[4],
-    dueDate: new Date('2025-07-12'),
+    id: '2',
+    title: 'Court Filing Deadline',
+    description: 'Submit motion for summary judgment in Anderson personal injury case. All supporting documents must be included.',
+    caseId: '2',
+    assignedTo: findUserById(mockUsers, '3'), // Sarah Wilson
+    assignedBy: findUserById(mockUsers, '3'), // Sarah Wilson (self-assigned)
+    dueDate: new Date('2025-01-18'),
     priority: 'high',
     status: 'pending',
-    type: 'research',
-    createdAt: new Date('2025-01-09'),
-    isClientVisible: false
-  },
-  {
-    id: '8',
-    title: 'Custody Evaluation Preparation',
-    description: 'Prepare documentation for child custody evaluation',
-    caseId: '5',
-    assignedTo: mockUsers[6], // James Wilson (corrected index)
-    assignedBy: mockUsers[4],
-    dueDate: new Date('2025-07-10'),
-    priority: 'medium',
-    status: 'in-progress',
-    type: 'document',
-    createdAt: new Date('2025-01-11'),
-    isClientVisible: false
-  },
-  
-  // Mark Rodriguez's tasks (Lawyer at Martinez & Partners)
-  {
-    id: '16',
-    title: 'IP Portfolio Documentation',
-    description: 'Document and organize intellectual property portfolio for startup',
-    caseId: '15',
-    assignedTo: mockUsers[9], // Mark Rodriguez
-    assignedBy: mockUsers[9],
-    dueDate: new Date('2025-08-05'),
-    priority: 'medium',
-    status: 'in-progress',
-    type: 'document',
-    createdAt: new Date('2025-01-15'),
-    isClientVisible: false
-  },
-  {
-    id: '17',
-    title: 'Patent Search Analysis',
-    description: 'Conduct comprehensive patent search for potential conflicts',
-    caseId: '15',
-    assignedTo: mockUsers[6], // James Wilson
-    assignedBy: mockUsers[9], // Mark Rodriguez
-    dueDate: new Date('2025-08-02'),
-    priority: 'high',
-    status: 'pending',
-    type: 'research',
-    createdAt: new Date('2025-01-16'),
-    isClientVisible: false
-  },
-  {
-    id: '18',
-    title: 'Employment Contract Drafting',
-    description: 'Draft employment contract with IP assignment clauses',
-    caseId: '16',
-    assignedTo: mockUsers[9], // Mark Rodriguez
-    assignedBy: mockUsers[9],
-    dueDate: new Date('2025-08-08'),
-    priority: 'low',
-    status: 'pending',
-    type: 'document',
-    createdAt: new Date('2025-01-17'),
-    isClientVisible: false
-  },
-
-  // Lisa Thompson's tasks
-  {
-    id: '9',
-    title: 'Property Title Research',
-    description: 'Research property title history and potential issues',
-    caseId: '6',
-    assignedTo: mockUsers[7], // Amanda Davis (corrected index)
-    assignedBy: mockUsers[5],
-    dueDate: new Date('2025-07-08'),
-    priority: 'medium',
-    status: 'pending',
-    type: 'research',
+    type: 'filing',
     createdAt: new Date('2025-01-12'),
     isClientVisible: false
   },
   {
-    id: '10',
-    title: 'Regulatory Compliance Review',
-    description: 'Review healthcare regulations and compliance requirements',
-    caseId: '7',
-    assignedTo: mockUsers[5],
-    assignedBy: mockUsers[5],
-    dueDate: new Date('2025-07-18'),
-    priority: 'high',
+    id: '3',
+    title: 'Client Meeting Preparation',
+    description: 'Prepare agenda and supporting materials for client meeting regarding employment discrimination case strategy.',
+    caseId: '3',
+    assignedTo: findUserById(mockUsers, '8'), // Alex Thompson
+    assignedBy: findUserById(mockUsers, '5'), // Emily Davis
+    dueDate: new Date('2025-01-22'),
+    priority: 'medium',
+    status: 'pending',
+    type: 'meeting',
+    createdAt: new Date('2025-01-14'),
+    isClientVisible: true
+  },
+  {
+    id: '4',
+    title: 'Legal Research - Employment Law',
+    description: 'Research recent precedents in employment discrimination cases similar to Taylor Tech case. Focus on constructive discharge claims.',
+    caseId: '3',
+    assignedTo: findUserById(mockUsers, '8'), // Alex Thompson
+    assignedBy: findUserById(mockUsers, '5'), // Emily Davis
+    dueDate: new Date('2025-01-25'),
+    priority: 'medium',
     status: 'in-progress',
     type: 'research',
+    createdAt: new Date('2025-01-11'),
+    isClientVisible: false
+  },
+  {
+    id: '5',
+    title: 'Estate Document Review',
+    description: 'Review and finalize will documents for Wilson estate planning case. Ensure all beneficiary information is accurate.',
+    caseId: '4',
+    assignedTo: findUserById(mockUsers, '7'), // Jessica Garcia
+    assignedBy: findUserById(mockUsers, '4'), // Michael Brown
+    dueDate: new Date('2025-01-28'),
+    priority: 'low',
+    status: 'pending',
+    type: 'document',
     createdAt: new Date('2025-01-13'),
     isClientVisible: false
   },
   {
-    id: '11',
-    title: 'FDA Documentation Preparation',
-    description: 'Prepare all required FDA documentation and submissions',
-    caseId: '7',
-    assignedTo: mockUsers[7], // Amanda Davis (corrected index)
-    assignedBy: mockUsers[5],
-    dueDate: new Date('2025-07-16'),
-    priority: 'high',
-    status: 'pending',
-    type: 'filing',
-    createdAt: new Date('2025-01-14'),
-    isClientVisible: false
-  },
-  // Additional tasks for comprehensive data
-  {
-    id: '19',
-    title: 'Healthcare Compliance Audit',
-    description: 'Conduct comprehensive compliance audit for MedCorp',
-    caseId: '7',
-    assignedTo: mockUsers[5], // Lisa Thompson
-    assignedBy: mockUsers[5],
-    dueDate: new Date('2025-07-22'),
+    id: '6',
+    title: 'Patent Prior Art Analysis',
+    description: 'Analyze prior art references to strengthen patent validity arguments in Miller Industries case.',
+    caseId: '1',
+    assignedTo: findUserById(mockUsers, '8'), // Alex Thompson
+    assignedBy: findUserById(mockUsers, '2'), // Robert Johnson
+    dueDate: new Date('2025-01-24'),
     priority: 'high',
     status: 'pending',
     type: 'research',
-    createdAt: new Date('2025-01-18'),
+    createdAt: new Date('2025-01-10'),
     isClientVisible: false
-  },
-  {
-    id: '20',
-    title: 'Real Estate Documentation Review',
-    description: 'Review all property documentation for Wilson case',
-    caseId: '6',
-    assignedTo: mockUsers[5], // Lisa Thompson
-    assignedBy: mockUsers[5],
-    dueDate: new Date('2025-07-06'),
-    priority: 'medium',
-    status: 'in-progress',
-    type: 'document',
-    createdAt: new Date('2025-01-19'),
-    isClientVisible: false
-  }
-];
-
-export const mockMilestones: Milestone[] = [
-  {
-    id: '1',
-    title: 'Summary Judgment Hearing',
-    description: 'Court hearing for motion for summary judgment',
-    caseId: '1',
-    date: new Date('2025-07-03'),
-    type: 'court-appearance',
-    status: 'upcoming',
-    location: 'Courtroom 3A, District Court'
-  },
-  {
-    id: '2',
-    title: 'Discovery Deadline',
-    description: 'Final deadline for discovery submissions',
-    caseId: '1',
-    date: new Date('2025-06-29'),
-    type: 'filing-deadline',
-    status: 'upcoming'
-  },
-  {
-    id: '3',
-    title: 'Mediation Session',
-    description: 'Court-ordered mediation session',
-    caseId: '2',
-    date: new Date('2025-07-09'),
-    type: 'meeting',
-    status: 'upcoming',
-    location: 'Mediation Center, Downtown'
-  },
-  {
-    id: '4',
-    title: 'Employment Mediation',
-    description: 'Mediation session for employment discrimination case',
-    caseId: '3',
-    date: new Date('2025-07-20'),
-    type: 'meeting',
-    status: 'upcoming',
-    location: 'Labor Relations Board'
-  },
-  {
-    id: '5',
-    title: 'Expert Witness Deposition',
-    description: 'Deposition of technical expert witness',
-    caseId: '1',
-    date: new Date('2025-07-05'),
-    type: 'meeting',
-    status: 'upcoming',
-    location: 'Law Office Conference Room'
-  },
-  {
-    id: '6',
-    title: 'Medical Records Filing',
-    description: 'Deadline to file medical records and reports',
-    caseId: '2',
-    date: new Date('2025-07-05'),
-    type: 'document-deadline',
-    status: 'upcoming'
   },
   {
     id: '7',
-    title: 'Pre-trial Conference',
-    description: 'Pre-trial conference with judge',
+    title: 'Update Client on Case Progress',
+    description: 'Prepare weekly case update for Anderson personal injury case. Include settlement negotiation progress.',
     caseId: '2',
-    date: new Date('2025-07-09'),
-    type: 'court-appearance',
-    status: 'upcoming',
-    location: 'Courtroom 5B, Superior Court'
+    assignedTo: findUserById(mockUsers, '3'), // Sarah Wilson
+    assignedBy: findUserById(mockUsers, '3'), // Sarah Wilson (self-assigned)
+    dueDate: new Date('2025-01-17'),
+    priority: 'medium',
+    status: 'completed',
+    type: 'other',
+    createdAt: new Date('2025-01-09'),
+    isClientVisible: true
   },
   {
     id: '8',
-    title: 'EEOC Response Deadline',
-    description: 'Deadline to respond to EEOC findings',
+    title: 'Deposition Preparation',
+    description: 'Prepare questions and strategy for opposing party deposition in Taylor Tech employment case.',
     caseId: '3',
-    date: new Date('2025-06-29'),
-    type: 'filing-deadline',
-    status: 'upcoming'
-  },
-  {
-    id: '9',
-    title: 'Client Meeting',
-    description: 'Strategy meeting with TechCorp executives',
-    caseId: '1',
-    date: new Date('2025-07-03'),
-    type: 'meeting',
-    status: 'upcoming',
-    location: 'TechCorp Headquarters'
-  },
-  {
-    id: '10',
-    title: 'Settlement Conference',
-    description: 'Court-ordered settlement conference',
-    caseId: '3',
-    date: new Date('2025-07-20'),
-    type: 'court-appearance',
-    status: 'upcoming',
-    location: 'Courtroom 2C, Federal Court'
-  },
-  
-  // Jennifer Walsh's case milestones
-  {
-    id: '15',
-    title: 'Contract Review Meeting',
-    description: 'Final contract review meeting with development team',
-    caseId: '13',
-    date: new Date('2025-07-25'),
-    type: 'meeting',
-    status: 'upcoming',
-    location: 'TechCorp Conference Room'
-  },
-  {
-    id: '16',
-    title: 'Housing Rights Hearing',
-    description: 'Preliminary hearing for housing rights case',
-    caseId: '14',
-    date: new Date('2025-07-30'),
-    type: 'court-appearance',
-    status: 'upcoming',
-    location: 'Housing Court, Courtroom 1A'
-  },
-
-  // David Martinez's case milestones (Lawyer + Firm Admin)
-  {
-    id: '11',
-    title: 'Merger Closing Meeting',
-    description: 'Final closing meeting for merger transaction',
-    caseId: '4',
-    date: new Date('2025-07-15'),
-    type: 'meeting',
-    status: 'upcoming',
-    location: 'GlobalTech Headquarters'
-  },
-  {
-    id: '12',
-    title: 'Custody Hearing',
-    description: 'Child custody hearing',
-    caseId: '5',
-    date: new Date('2025-07-12'),
-    type: 'court-appearance',
-    status: 'upcoming',
-    location: 'Family Court, Courtroom 2A'
-  },
-
-  // Mark Rodriguez's case milestones
-  {
-    id: '17',
-    title: 'IP Portfolio Review Meeting',
-    description: 'Review intellectual property portfolio with startup executives',
-    caseId: '15',
-    date: new Date('2025-08-05'),
-    type: 'meeting',
-    status: 'upcoming',
-    location: 'Startup Headquarters'
-  },
-  {
-    id: '18',
-    title: 'Employment Contract Finalization',
-    description: 'Finalize employment contract terms',
-    caseId: '16',
-    date: new Date('2025-08-10'),
-    type: 'meeting',
-    status: 'upcoming',
-    location: 'Martinez & Partners Office'
-  },
-
-  // Lisa Thompson's case milestones
-  {
-    id: '13',
-    title: 'Property Inspection',
-    description: 'Court-ordered property inspection',
-    caseId: '6',
-    date: new Date('2025-07-08'),
-    type: 'meeting',
-    status: 'upcoming',
-    location: '654 Pine St, Seattle, WA'
-  },
-  {
-    id: '14',
-    title: 'FDA Compliance Review',
-    description: 'FDA regulatory compliance review meeting',
-    caseId: '7',
-    date: new Date('2025-07-18'),
-    type: 'meeting',
-    status: 'upcoming',
-    location: 'FDA Regional Office'
+    assignedTo: findUserById(mockUsers, '5'), // Emily Davis
+    assignedBy: findUserById(mockUsers, '5'), // Emily Davis (self-assigned)
+    dueDate: new Date('2025-01-29'),
+    priority: 'high',
+    status: 'in-progress',
+    type: 'other',
+    createdAt: new Date('2025-01-08'),
+    isClientVisible: false
   }
 ];
 
+// Mock Milestones
+export const mockMilestones: Milestone[] = [
+  {
+    id: '1',
+    title: 'Patent Hearing - Miller Industries',
+    description: 'Court hearing for patent validity in Miller Industries case',
+    caseId: '1',
+    date: new Date('2025-01-25'),
+    type: 'court-appearance',
+    status: 'upcoming',
+    location: 'Federal Court, Room 302'
+  },
+  {
+    id: '2',
+    title: 'Settlement Conference - Anderson Case',
+    description: 'Mediation conference for personal injury settlement',
+    caseId: '2',
+    date: new Date('2025-02-10'),
+    type: 'meeting',
+    status: 'upcoming',
+    location: 'Mediation Center, Suite 150'
+  },
+  {
+    id: '3',
+    title: 'Employment Discrimination Hearing',
+    description: 'Initial hearing for Taylor Tech employment discrimination case',
+    caseId: '3',
+    date: new Date('2025-01-30'),
+    type: 'court-appearance',
+    status: 'upcoming',
+    location: 'District Court, Room 201'
+  },
+  {
+    id: '4',
+    title: 'Estate Planning Meeting',
+    description: 'Final review meeting for Wilson estate documents',
+    caseId: '4',
+    date: new Date('2025-02-15'),
+    type: 'meeting',
+    status: 'upcoming',
+    location: 'Office Conference Room'
+  }
+];
+
+// Mock Timeline Events
 export const mockTimelineEvents: TimelineEvent[] = [
-  // Post-engagement events (after lawyer was hired)
   {
     id: '1',
     caseId: '1',
     title: 'Case Filed',
-    description: 'Initial complaint filed with the court',
-    date: new Date('2024-08-15'),
+    description: 'Initial patent dispute case filed against TechCorp Solutions',
+    date: new Date('2024-10-15'),
     type: 'case-event',
     category: 'Filing'
   },
   {
     id: '2',
     caseId: '1',
-    title: 'Defendant Response',
-    description: 'Defendant filed answer to complaint',
-    date: new Date('2024-09-15'),
+    title: 'Discovery Phase Began',
+    description: 'Started discovery phase including document requests and depositions',
+    date: new Date('2024-11-01'),
     type: 'case-event',
-    category: 'Filing'
+    category: 'Discovery'
   },
   {
     id: '3',
-    caseId: '1',
-    title: 'Discovery Commenced',
-    description: 'Discovery phase officially began',
-    date: new Date('2024-10-01'),
+    caseId: '2',
+    title: 'Personal Injury Claim Filed',
+    description: 'Filed personal injury claim against Metro Insurance Co.',
+    date: new Date('2024-09-20'),
     type: 'case-event',
-    category: 'Procedural'
+    category: 'Filing'
   },
   {
     id: '4',
     caseId: '2',
-    title: 'Personal Injury Claim Filed',
-    description: 'Filed personal injury claim with insurance company',
-    date: new Date('2024-09-01'),
+    title: 'Medical Records Obtained',
+    description: 'Successfully obtained all relevant medical records for injury claim',
+    date: new Date('2024-10-15'),
     type: 'case-event',
-    category: 'Filing'
+    category: 'Discovery'
   },
   {
     id: '5',
     caseId: '3',
-    title: 'EEOC Complaint Filed',
-    description: 'Filed discrimination complaint with EEOC',
-    date: new Date('2024-10-01'),
+    title: 'Employment Discrimination Complaint',
+    description: 'Filed EEOC complaint for employment discrimination',
+    date: new Date('2024-12-01'),
     type: 'case-event',
     category: 'Filing'
   }
 ];
 
-// Pre-engagement timeline events (client's history before hiring lawyer)
+// Mock Pre-engagement Events
 export const mockPreEngagementEvents: TimelineEvent[] = [
-  // TechCorp case pre-engagement events
   {
-    id: 'pre-1',
+    id: '6',
     caseId: '1',
     title: 'Patent Application Filed',
-    description: 'TechCorp filed original patent application for the disputed technology',
+    description: 'Client originally filed patent application with USPTO',
     date: new Date('2022-03-15'),
     type: 'client-event',
-    category: 'Patent Filing',
-    url: 'https://drive.google.com/file/d/example-patent-application'
+    category: 'Patent Filing'
   },
   {
-    id: 'pre-2',
+    id: '7',
     caseId: '1',
     title: 'Patent Granted',
-    description: 'USPTO granted patent to TechCorp after examination',
-    date: new Date('2023-01-20'),
+    description: 'USPTO granted patent to Miller Industries',
+    date: new Date('2023-08-20'),
     type: 'client-event',
-    category: 'Patent Grant',
-    url: 'https://drive.google.com/file/d/example-patent-grant'
+    category: 'Patent Grant'
   },
   {
-    id: 'pre-3',
-    caseId: '1',
-    title: 'Infringement Discovered',
-    description: 'TechCorp discovered DataSystems was using patented technology without license',
-    date: new Date('2024-05-10'),
-    type: 'client-event',
-    category: 'Discovery'
-  },
-  {
-    id: 'pre-4',
-    caseId: '1',
-    title: 'Cease and Desist Sent',
-    description: 'TechCorp sent cease and desist letter to DataSystems',
-    date: new Date('2024-06-01'),
-    type: 'client-event',
-    category: 'Correspondence'
-  },
-  {
-    id: 'pre-5',
-    caseId: '1',
-    title: 'Settlement Negotiations Failed',
-    description: 'DataSystems rejected settlement offer and disputed patent validity',
-    date: new Date('2024-07-15'),
-    type: 'client-event',
-    category: 'Negotiation'
-  },
-  
-  // Personal injury case pre-engagement events
-  {
-    id: 'pre-6',
+    id: '8',
     caseId: '2',
-    title: 'Accident Occurred',
-    description: 'Motor vehicle accident at intersection of Main St and Oak Ave',
-    date: new Date('2024-06-15'),
-    type: 'client-event',
-    category: 'Incident'
-  },
-  {
-    id: 'pre-7',
-    caseId: '2',
-    title: 'Emergency Medical Treatment',
-    description: 'Client transported to hospital and treated for injuries',
-    date: new Date('2024-06-15'),
-    type: 'client-event',
-    category: 'Medical'
-  },
-  {
-    id: 'pre-8',
-    caseId: '2',
-    title: 'Insurance Claim Filed',
-    description: 'Client filed claim with opposing party\'s insurance company',
-    date: new Date('2024-06-20'),
-    type: 'client-event',
-    category: 'Insurance'
-  },
-  {
-    id: 'pre-9',
-    caseId: '2',
-    title: 'Settlement Offer Received',
-    description: 'Insurance company offered inadequate settlement amount',
-    date: new Date('2024-08-10'),
-    type: 'client-event',
-    category: 'Settlement'
-  },
-  
-  // Employment discrimination case pre-engagement events
-  {
-    id: 'pre-10',
-    caseId: '3',
-    title: 'Discriminatory Treatment Began',
-    description: 'Client experienced workplace discrimination based on gender',
-    date: new Date('2024-01-15'),
+    title: 'Workplace Incident',
+    description: 'Original workplace accident that led to personal injury claim',
+    date: new Date('2024-06-10'),
     type: 'client-event',
     category: 'Workplace Incident'
   },
   {
-    id: 'pre-11',
+    id: '9',
     caseId: '3',
-    title: 'HR Complaint Filed',
-    description: 'Client filed formal complaint with Human Resources department',
-    date: new Date('2024-03-01'),
+    title: 'Internal Complaint Filed',
+    description: 'Client filed internal HR complaint before legal action',
+    date: new Date('2024-09-15'),
     type: 'client-event',
     category: 'Internal Complaint'
-  },
-  {
-    id: 'pre-12',
-    caseId: '3',
-    title: 'Retaliation Occurred',
-    description: 'Client faced retaliation after filing HR complaint',
-    date: new Date('2024-04-15'),
-    type: 'client-event',
-    category: 'Retaliation'
-  },
-  {
-    id: 'pre-13',
-    caseId: '3',
-    title: 'Wrongful Termination',
-    description: 'Client was terminated in apparent retaliation for discrimination complaint',
-    date: new Date('2024-08-30'),
-    type: 'client-event',
-    category: 'Termination'
   }
 ];
 
+// Mock Documents
 export const mockDocuments: Document[] = [
   {
     id: '1',
     caseId: '1',
-    name: 'Initial Complaint.pdf',
+    name: 'Patent Application Documents',
     type: 'application/pdf',
-    size: 245760,
-    uploadedBy: mockUsers[1],
-    uploadedAt: new Date('2024-08-15'),
-    url: '#',
-    category: 'pleading',
-    isClientVisible: false
+    size: 2045678,
+    uploadedBy: findUserById(mockUsers, '2'), // Robert Johnson
+    uploadedAt: new Date('2024-10-16'),
+    url: '/documents/patent-app-miller.pdf',
+    category: 'evidence',
+    isClientVisible: true
   },
   {
     id: '2',
     caseId: '1',
-    name: 'Patent Documentation.pdf',
+    name: 'Prior Art Search Results',
     type: 'application/pdf',
-    size: 512000,
-    uploadedBy: mockUsers[1],
-    uploadedAt: new Date('2024-09-01'),
-    url: '#',
-    category: 'evidence',
+    size: 1523456,
+    uploadedBy: findUserById(mockUsers, '6'), // David Martinez
+    uploadedAt: new Date('2024-11-02'),
+    url: '/documents/prior-art-search.pdf',
+    category: 'research',
     isClientVisible: false
   },
   {
     id: '3',
     caseId: '2',
-    name: 'Medical Records.pdf',
+    name: 'Medical Records',
     type: 'application/pdf',
-    size: 1024000,
-    uploadedBy: mockUsers[1],
-    uploadedAt: new Date('2024-09-05'),
-    url: '#',
+    size: 3067890,
+    uploadedBy: findUserById(mockUsers, '3'), // Sarah Wilson
+    uploadedAt: new Date('2024-10-16'),
+    url: '/documents/medical-records-anderson.pdf',
     category: 'evidence',
     isClientVisible: true
   },
   {
     id: '4',
-    caseId: '3',
-    name: 'Employment Contract.pdf',
+    caseId: '2',
+    name: 'Insurance Correspondence',
     type: 'application/pdf',
-    size: 156000,
-    uploadedBy: mockUsers[2],
-    uploadedAt: new Date('2024-10-05'),
-    url: '#',
-    category: 'evidence',
+    size: 845123,
+    uploadedBy: findUserById(mockUsers, '3'), // Sarah Wilson
+    uploadedAt: new Date('2024-11-05'),
+    url: '/documents/insurance-correspondence.pdf',
+    category: 'correspondence',
     isClientVisible: false
   },
   {
     id: '5',
-    caseId: '2',
-    name: 'Accident Report.pdf',
+    caseId: '3',
+    name: 'Employment Contract',
     type: 'application/pdf',
-    size: 324000,
-    uploadedBy: mockUsers[1],
-    uploadedAt: new Date('2024-09-10'),
-    url: '#',
+    size: 1234567,
+    uploadedBy: findUserById(mockUsers, '5'), // Emily Davis
+    uploadedAt: new Date('2024-12-02'),
+    url: '/documents/employment-contract-taylor.pdf',
     category: 'evidence',
-    isClientVisible: true
-  },
-  {
-    id: '6',
-    caseId: '2',
-    name: 'Insurance Correspondence.pdf',
-    type: 'application/pdf',
-    size: 128000,
-    uploadedBy: mockUsers[1],
-    uploadedAt: new Date('2024-10-15'),
-    url: '#',
-    category: 'correspondence',
     isClientVisible: true
   }
 ];
 
+// Mock Notes
 export const mockNotes: Note[] = [
   {
     id: '1',
     caseId: '1',
-    content: 'Client confirmed they have additional patent documentation that could strengthen our position. Need to schedule meeting to review.',
-    author: mockUsers[1],
-    createdAt: new Date('2025-01-08'),
-    updatedAt: new Date('2025-01-08'),
+    content: 'Client provided additional technical specifications that strengthen patent claims. Need to review with technical expert.',
+    author: findUserById(mockUsers, '2'), // Robert Johnson
+    createdAt: new Date('2024-11-15'),
+    updatedAt: new Date('2024-11-15'),
     isPrivate: false
   },
   {
     id: '2',
-    caseId: '1',
-    content: 'Research indicates strong precedent in favor of our client based on Thompson v. InnovateTech (2019).',
-    author: mockUsers[1],
-    createdAt: new Date('2025-01-06'),
-    updatedAt: new Date('2025-01-06'),
-    isPrivate: false
-  },
-  {
-    id: '3',
     caseId: '2',
-    content: 'Medical expert confirms long-term impact of injuries. This strengthens our damages claim significantly.',
-    author: mockUsers[1],
-    createdAt: new Date('2025-01-07'),
-    updatedAt: new Date('2025-01-07'),
+    content: 'Insurance company showing willingness to negotiate. Client medical condition stable. Consider settlement range of $150K-$200K.',
+    author: findUserById(mockUsers, '3'), // Sarah Wilson
+    createdAt: new Date('2024-12-01'),
+    updatedAt: new Date('2024-12-01'),
     isPrivate: true
   },
   {
-    id: '4',
+    id: '3',
     caseId: '3',
-    content: 'Client provided additional witnesses who can testify to discriminatory behavior. Need to interview them.',
-    author: mockUsers[1],
-    createdAt: new Date('2025-01-09'),
-    updatedAt: new Date('2025-01-09'),
+    content: 'Client documented several instances of discriminatory behavior. Strong case for constructive discharge claim.',
+    author: findUserById(mockUsers, '5'), // Emily Davis
+    createdAt: new Date('2024-12-05'),
+    updatedAt: new Date('2024-12-05'),
     isPrivate: false
   }
 ];
 
-// Client invoices (simplified view for clients)
-export const mockClientInvoices: ClientInvoice[] = [
-  {
-    id: 'inv-client-1',
-    caseId: '2',
-    date: new Date('2024-09-30'),
-    description: 'Legal services for personal injury case - September 2024',
-    totalAmount: 4900,
-    dueDate: new Date('2024-10-30'),
-    status: 'paid',
-    invoiceNumber: 'INV-2024-005',
-    paidDate: new Date('2024-10-25')
-  },
-  {
-    id: 'inv-client-2',
-    caseId: '2',
-    date: new Date('2024-10-31'),
-    description: 'Legal services for personal injury case - October 2024',
-    totalAmount: 7200,
-    dueDate: new Date('2024-11-30'),
-    status: 'paid',
-    invoiceNumber: 'INV-2024-006',
-    paidDate: new Date('2024-11-28')
-  },
-  {
-    id: 'inv-client-3',
-    caseId: '2',
-    date: new Date('2024-11-30'),
-    description: 'Legal services for personal injury case - November 2024',
-    totalAmount: 5750,
-    dueDate: new Date('2024-12-30'),
-    status: 'overdue',
-    invoiceNumber: 'INV-2024-007'
-  },
-  {
-    id: 'inv-client-4',
-    caseId: '2',
-    date: new Date('2024-12-31'),
-    description: 'Legal services for personal injury case - December 2024',
-    totalAmount: 6550,
-    dueDate: new Date('2025-01-30'),
-    status: 'sent',
-    invoiceNumber: 'INV-2025-002'
-  }
-];
-
-// Meeting requests
-export const mockMeetingRequests: MeetingRequest[] = [
-  {
-    id: 'meet-1',
-    caseId: '2',
-    clientId: '2',
-    lawyerId: '1',
-    requestedDate: new Date('2025-01-25'),
-    preferredTime: '2:00 PM',
-    purpose: 'Discuss settlement offer from insurance company and next steps',
-    status: 'approved',
-    actualDate: new Date('2025-01-25'),
-    notes: 'Meeting confirmed for 2:00 PM in our office. Please bring all recent medical reports.',
-    createdAt: new Date('2025-01-15')
-  },
-  {
-    id: 'meet-2',
-    caseId: '2',
-    clientId: '2',
-    lawyerId: '1',
-    requestedDate: new Date('2025-02-05'),
-    preferredTime: '10:00 AM',
-    purpose: 'Review medical expert report and prepare for mediation',
-    status: 'pending',
-    createdAt: new Date('2025-01-20')
-  },
-  {
-    id: 'meet-3',
-    caseId: '2',
-    clientId: '2',
-    lawyerId: '1',
-    requestedDate: new Date('2024-12-15'),
-    preferredTime: '3:00 PM',
-    purpose: 'Initial case strategy discussion and document review',
-    status: 'completed',
-    actualDate: new Date('2024-12-15'),
-    notes: 'Productive meeting. Client provided additional documentation and we outlined case strategy.',
-    createdAt: new Date('2024-12-10')
-  }
-];
-
-// Comprehensive billing entries - majority for Sarah Johnson's cases
+// Mock Billing Entries
 export const mockBillingEntries: BillingEntry[] = [
-  // Sarah Johnson's TechCorp Patent Case (Case 1) - Multiple billing entries
   {
-    id: 'bill-1',
+    id: '1',
     caseId: '1',
-    date: new Date('2024-08-30'),
-    description: 'Initial case analysis, client consultation, and complaint drafting',
-    lawyerHours: 12,
+    date: new Date('2024-11-01'),
+    description: 'Patent research and discovery document preparation - Miller Industries case',
+    lawyerHours: 8.5,
     lawyerRate: 500,
     internEntries: [
       {
-        intern: mockUsers[1], // Michael Chen
-        hoursWorked: 8,
-        hoursBilled: 8,
-        rate: 150
-      }
-    ],
-    totalHours: 20,
-    totalAmount: 7200,
-    dueDate: new Date('2024-09-29'),
-    status: 'paid',
-    invoiceNumber: 'INV-2024-001',
-    paidDate: new Date('2024-09-25'),
-    notes: 'Initial retainer payment received'
-  },
-  {
-    id: 'bill-2',
-    caseId: '1',
-    date: new Date('2024-09-30'),
-    description: 'Discovery planning, document review, and expert witness consultation',
-    lawyerHours: 15,
-    lawyerRate: 500,
-    internEntries: [
-      {
-        intern: mockUsers[1], // Michael Chen
+        intern: findUserById(mockUsers, '6'), // David Martinez
         hoursWorked: 12,
         hoursBilled: 10,
         rate: 150
       }
     ],
-    totalHours: 25,
-    totalAmount: 9000,
-    dueDate: new Date('2024-10-30'),
-    status: 'paid',
-    invoiceNumber: 'INV-2024-002',
-    paidDate: new Date('2024-10-28'),
-    notes: 'Patent research completed ahead of schedule'
-  },
-  {
-    id: 'bill-3',
-    caseId: '1',
-    date: new Date('2024-10-31'),
-    description: 'Deposition preparation, witness interviews, and motion drafting',
-    lawyerHours: 18,
-    lawyerRate: 500,
-    internEntries: [
-      {
-        intern: mockUsers[1], // Michael Chen
-        hoursWorked: 15,
-        hoursBilled: 15,
-        rate: 150
-      }
-    ],
-    totalHours: 33,
-    totalAmount: 11250,
-    dueDate: new Date('2024-11-30'),
-    status: 'paid',
-    invoiceNumber: 'INV-2024-003',
-    paidDate: new Date('2024-11-20'),
-    notes: 'Complex technical analysis required additional time'
-  },
-  {
-    id: 'bill-4',
-    caseId: '1',
-    date: new Date('2024-11-30'),
-    description: 'Court appearances, settlement negotiations, and case strategy revision',
-    lawyerHours: 14,
-    lawyerRate: 500,
-    internEntries: [
-      {
-        intern: mockUsers[1], // Michael Chen
-        hoursWorked: 6,
-        hoursBilled: 6,
-        rate: 150
-      }
-    ],
-    totalHours: 20,
-    totalAmount: 7900,
-    dueDate: new Date('2024-12-30'),
-    status: 'sent',
-    invoiceNumber: 'INV-2024-004',
-    notes: 'Settlement discussions ongoing'
-  },
-  {
-    id: 'bill-5',
-    caseId: '1',
-    date: new Date('2024-12-31'),
-    description: 'Year-end case review, discovery responses, and trial preparation',
-    lawyerHours: 16,
-    lawyerRate: 500,
-    internEntries: [
-      {
-        intern: mockUsers[1], // Michael Chen
-        hoursWorked: 10,
-        hoursBilled: 10,
-        rate: 150
-      }
-    ],
-    totalHours: 26,
-    totalAmount: 9500,
-    dueDate: new Date('2025-01-30'),
-    status: 'pending',
-    invoiceNumber: 'INV-2025-001',
-    notes: 'Preparing for summary judgment motion'
-  },
-
-  // Sarah Johnson's Personal Injury Case (Case 2) - Multiple billing entries
-  {
-    id: 'bill-6',
-    caseId: '2',
-    date: new Date('2024-09-15'),
-    description: 'Initial client consultation, medical records review, and case evaluation',
-    lawyerHours: 8,
-    lawyerRate: 500,
-    internEntries: [
-      {
-        intern: mockUsers[2], // Emily Rodriguez
-        hoursWorked: 6,
-        hoursBilled: 6,
-        rate: 150
-      }
-    ],
-    totalHours: 14,
-    totalAmount: 4900,
-    dueDate: new Date('2024-10-15'),
-    status: 'paid',
-    invoiceNumber: 'INV-2024-005',
-    paidDate: new Date('2024-10-10'),
-    notes: 'Contingency fee arrangement - 33% of settlement'
-  },
-  {
-    id: 'bill-7',
-    caseId: '2',
-    date: new Date('2024-10-31'),
-    description: 'Insurance negotiations, expert medical consultation, and damage assessment',
-    lawyerHours: 12,
-    lawyerRate: 500,
-    internEntries: [
-      {
-        intern: mockUsers[2], // Emily Rodriguez
-        hoursWorked: 8,
-        hoursBilled: 8,
-        rate: 150
-      }
-    ],
-    totalHours: 20,
-    totalAmount: 7200,
-    dueDate: new Date('2024-11-30'),
-    status: 'paid',
-    invoiceNumber: 'INV-2024-006',
-    paidDate: new Date('2024-11-25'),
-    notes: 'Medical expert confirms long-term disability'
-  },
-  {
-    id: 'bill-8',
-    caseId: '2',
-    date: new Date('2024-11-30'),
-    description: 'Litigation preparation, witness statements, and settlement discussions',
-    lawyerHours: 10,
-    lawyerRate: 500,
-    internEntries: [
-      {
-        intern: mockUsers[2], // Emily Rodriguez
-        hoursWorked: 5,
-        hoursBilled: 5,
-        rate: 150
-      }
-    ],
-    totalHours: 15,
+    totalHours: 18.5,
     totalAmount: 5750,
-    dueDate: new Date('2024-12-30'),
-    status: 'overdue',
-    invoiceNumber: 'INV-2024-007',
-    notes: 'Payment delayed due to insurance dispute'
-  },
-  {
-    id: 'bill-9',
-    caseId: '2',
-    date: new Date('2024-12-31'),
-    description: 'Pre-trial motions, discovery completion, and mediation preparation',
-    lawyerHours: 11,
-    lawyerRate: 500,
-    internEntries: [
-      {
-        intern: mockUsers[2], // Emily Rodriguez
-        hoursWorked: 7,
-        hoursBilled: 7,
-        rate: 150
-      }
-    ],
-    totalHours: 18,
-    totalAmount: 6550,
-    dueDate: new Date('2025-01-30'),
-    status: 'sent',
-    invoiceNumber: 'INV-2025-002',
-    notes: 'Mediation scheduled for next month'
-  },
-
-  // Sarah Johnson's Employment Discrimination Case (Case 3) - Multiple billing entries
-  {
-    id: 'bill-10',
-    caseId: '3',
-    date: new Date('2024-10-15'),
-    description: 'EEOC complaint filing, client interviews, and evidence gathering',
-    lawyerHours: 9,
-    lawyerRate: 500,
-    internEntries: [
-      {
-        intern: mockUsers[1], // Michael Chen
-        hoursWorked: 4,
-        hoursBilled: 4,
-        rate: 150
-      },
-      {
-        intern: mockUsers[2], // Emily Rodriguez
-        hoursWorked: 5,
-        hoursBilled: 5,
-        rate: 150
-      }
-    ],
-    totalHours: 18,
-    totalAmount: 5850,
-    dueDate: new Date('2024-11-15'),
+    dueDate: new Date('2024-12-01'),
     status: 'paid',
-    invoiceNumber: 'INV-2024-008',
-    paidDate: new Date('2024-11-12'),
-    notes: 'Strong discrimination case with multiple witnesses'
+    invoiceNumber: 'INV-2024-001',
+    paidDate: new Date('2024-11-28')
   },
   {
-    id: 'bill-11',
-    caseId: '3',
-    date: new Date('2024-11-30'),
-    description: 'Witness depositions, employment law research, and strategy development',
-    lawyerHours: 13,
-    lawyerRate: 500,
+    id: '2',
+    caseId: '2',
+    date: new Date('2024-11-15'),
+    description: 'Personal injury case preparation and client meetings - Anderson case',
+    lawyerHours: 6.0,
+    lawyerRate: 450,
     internEntries: [
       {
-        intern: mockUsers[1], // Michael Chen
+        intern: findUserById(mockUsers, '6'), // David Martinez
         hoursWorked: 8,
-        hoursBilled: 8,
-        rate: 150
-      },
-      {
-        intern: mockUsers[2], // Emily Rodriguez
-        hoursWorked: 6,
         hoursBilled: 6,
         rate: 150
       }
     ],
-    totalHours: 27,
-    totalAmount: 8600,
-    dueDate: new Date('2024-12-30'),
-    status: 'paid',
-    invoiceNumber: 'INV-2024-009',
-    paidDate: new Date('2024-12-28'),
-    notes: 'Depositions revealed additional evidence of retaliation'
+    totalHours: 12.0,
+    totalAmount: 3600,
+    dueDate: new Date('2024-12-15'),
+    status: 'sent',
+    invoiceNumber: 'INV-2024-002'
   },
   {
-    id: 'bill-12',
+    id: '3',
     caseId: '3',
-    date: new Date('2024-12-31'),
-    description: 'Mediation preparation, settlement analysis, and client counseling',
-    lawyerHours: 8,
-    lawyerRate: 500,
+    date: new Date('2024-12-01'),
+    description: 'Employment discrimination case initial preparation - Taylor Tech case',
+    lawyerHours: 5.5,
+    lawyerRate: 475,
     internEntries: [
       {
-        intern: mockUsers[1], // Michael Chen
-        hoursWorked: 3,
-        hoursBilled: 3,
-        rate: 150
-      },
-      {
-        intern: mockUsers[2], // Emily Rodriguez
-        hoursWorked: 4,
-        hoursBilled: 4,
+        intern: findUserById(mockUsers, '8'), // Alex Thompson
+        hoursWorked: 6,
+        hoursBilled: 5,
         rate: 150
       }
     ],
-    totalHours: 15,
-    totalAmount: 5050,
-    dueDate: new Date('2025-01-30'),
+    totalHours: 10.5,
+    totalAmount: 3362.50,
+    dueDate: new Date('2025-01-01'),
     status: 'pending',
-    invoiceNumber: 'INV-2025-003',
-    notes: 'Preparing for court-ordered mediation'
-  },
-
-  // Sarah Johnson's Closed Cases - Billing History
-  {
-    id: 'bill-13',
-    caseId: '8', // Anderson Contract Dispute (Closed)
-    date: new Date('2024-06-30'),
-    description: 'Contract dispute resolution and settlement negotiations',
-    lawyerHours: 15,
-    lawyerRate: 500,
-    internEntries: [
-      {
-        intern: mockUsers[1], // Michael Chen
-        hoursWorked: 8,
-        hoursBilled: 8,
-        rate: 150
-      }
-    ],
-    totalHours: 23,
-    totalAmount: 8700,
-    dueDate: new Date('2024-07-30'),
-    status: 'paid',
-    invoiceNumber: 'INV-2024-010',
-    paidDate: new Date('2024-07-25'),
-    notes: 'Case settled favorably for client'
+    invoiceNumber: 'INV-2024-003'
   }
 ];
 
-// Generate comprehensive lawyer performance data
+// Mock Client Invoices
+export const mockClientInvoices: ClientInvoice[] = [
+  {
+    id: '1',
+    caseId: '1',
+    date: new Date('2024-11-01'),
+    description: 'Legal services for Patent Dispute - November 2024',
+    totalAmount: 5750,
+    dueDate: new Date('2024-12-01'),
+    status: 'paid',
+    invoiceNumber: 'INV-2024-001',
+    paidDate: new Date('2024-11-28')
+  },
+  {
+    id: '2',
+    caseId: '2',
+    date: new Date('2024-11-15'),
+    description: 'Legal services for Personal Injury Case - November 2024',
+    totalAmount: 3600,
+    dueDate: new Date('2024-12-15'),
+    status: 'sent',
+    invoiceNumber: 'INV-2024-002'
+  },
+  {
+    id: '3',
+    caseId: '3',
+    date: new Date('2024-12-01'),
+    description: 'Legal services for Employment Discrimination - December 2024',
+    totalAmount: 3362.50,
+    dueDate: new Date('2025-01-01'),
+    status: 'pending',
+    invoiceNumber: 'INV-2024-003'
+  }
+];
+
+// Mock Meeting Requests
+export const mockMeetingRequests: MeetingRequest[] = [
+  {
+    id: '1',
+    caseId: '1',
+    clientId: '1',
+    lawyerId: '2', // Robert Johnson
+    requestedDate: new Date('2025-01-20'),
+    preferredTime: '2:00 PM',
+    purpose: 'Discuss patent hearing strategy and review discovery findings',
+    status: 'approved',
+    actualDate: new Date('2025-01-20'),
+    createdAt: new Date('2025-01-10')
+  },
+  {
+    id: '2',
+    caseId: '2',
+    clientId: '2',
+    lawyerId: '3', // Sarah Wilson
+    requestedDate: new Date('2025-01-18'),
+    preferredTime: '10:00 AM',
+    purpose: 'Review settlement offer from insurance company',
+    status: 'approved',
+    actualDate: new Date('2025-01-18'),
+    createdAt: new Date('2025-01-12')
+  },
+  {
+    id: '3',
+    caseId: '3',
+    clientId: '3',
+    lawyerId: '5', // Emily Davis
+    requestedDate: new Date('2025-01-25'),
+    preferredTime: '3:00 PM',
+    purpose: 'Prepare for employment discrimination hearing',
+    status: 'pending',
+    createdAt: new Date('2025-01-14')
+  }
+];
+
+// Mock Law Firm (for single firm view)
+export const mockLawFirm: LawFirm = mockLawFirms[0];
+
+// Mock Lawyer Performance Data
 export const mockLawyerPerformance: LawyerPerformance[] = [
   {
-    lawyerId: '1',
-    lawyer: mockUsers[1], // Sarah Johnson
-    totalCases: 4,
-    activeCases: 3,
-    closedCases: 1,
-    wonCases: 1,
-    lostCases: 0,
-    settledCases: 0,
-    totalRevenue: 189000, // Active cases: 150,000 + Closed: 39,000
-    billableHours: 379, // Active: 301 + Closed: 78
+    lawyerId: '2',
+    lawyer: findUserById(mockUsers, '2'), // Robert Johnson
+    totalCases: 15,
+    activeCases: 2,
+    closedCases: 13,
+    wonCases: 8,
+    lostCases: 2,
+    settledCases: 3,
+    totalRevenue: 687500,
+    billableHours: 1375,
     averageHourlyRate: 500,
-    winRate: 100 // 2 favorable outcomes out of 2 decided cases
+    winRate: 85
+  },
+  {
+    lawyerId: '3',
+    lawyer: findUserById(mockUsers, '3'), // Sarah Wilson
+    totalCases: 12,
+    activeCases: 1,
+    closedCases: 11,
+    wonCases: 7,
+    lostCases: 1,
+    settledCases: 3,
+    totalRevenue: 495000,
+    billableHours: 1100,
+    averageHourlyRate: 450,
+    winRate: 91
   },
   {
     lawyerId: '5',
-    lawyer: mockUsers[4], // David Martinez
-    totalCases: 4,
-    activeCases: 2,
-    closedCases: 1,
-    wonCases: 2,
-    lostCases: 0,
-    settledCases: 0,
-    totalRevenue: 151000, // Active: 95,000 + Closed: 
-    billableHours: 299,
+    lawyer: findUserById(mockUsers, '5'), // Emily Davis
+    totalCases: 8,
+    activeCases: 1,
+    closedCases: 7,
+    wonCases: 5,
+    lostCases: 1,
+    settledCases: 1,
+    totalRevenue: 342500,
+    billableHours: 725,
+    averageHourlyRate: 475,
+    winRate: 86
+  },
+  {
+    lawyerId: '4',
+    lawyer: findUserById(mockUsers, '4'), // Michael Brown
+    totalCases: 10,
+    activeCases: 1,
+    closedCases: 9,
+    wonCases: 6,
+    lostCases: 2,
+    settledCases: 1,
+    totalRevenue: 425000,
+    billableHours: 850,
     averageHourlyRate: 500,
-    winRate: 100
+    winRate: 78
   }
 ];
