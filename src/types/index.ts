@@ -2,7 +2,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'system-admin' | 'lawyer' | 'firm-admin' | 'intern' | 'client';
+  roles: ('system-admin' | 'lawyer' | 'firm-admin' | 'intern' | 'client')[];
   firmId?: string;
   avatar?: string;
   phone?: string;
@@ -12,6 +12,66 @@ export interface User {
   createdAt?: Date;
   lastLoginAt?: Date;
 }
+
+// Helper functions for role management
+export const hasRole = (user: User, role: string): boolean => {
+  return user.roles.includes(role as any);
+};
+
+export const hasAnyRole = (user: User, roles: string[]): boolean => {
+  return roles.some(role => user.roles.includes(role as any));
+};
+
+export const getPrimaryRole = (user: User): string => {
+  // Define role hierarchy - higher priority roles come first
+  const roleHierarchy = ['system-admin', 'firm-admin', 'lawyer', 'intern', 'client'];
+  
+  for (const role of roleHierarchy) {
+    if (user.roles.includes(role as any)) {
+      return role;
+    }
+  }
+  
+  return user.roles[0] || 'client';
+};
+
+export const getRoleDisplayName = (roles: string[]): string => {
+  if (roles.length === 1) {
+    const role = roles[0];
+    switch (role) {
+      case 'system-admin':
+        return 'System Admin';
+      case 'firm-admin':
+        return 'Firm Admin';
+      case 'lawyer':
+        return 'Lawyer';
+      case 'intern':
+        return 'Intern';
+      case 'client':
+        return 'Client';
+      default:
+        return role;
+    }
+  }
+  
+  // For multiple roles, show them joined
+  return roles.map(role => {
+    switch (role) {
+      case 'system-admin':
+        return 'System Admin';
+      case 'firm-admin':
+        return 'Firm Admin';
+      case 'lawyer':
+        return 'Lawyer';
+      case 'intern':
+        return 'Intern';
+      case 'client':
+        return 'Client';
+      default:
+        return role;
+    }
+  }).join(', ');
+};
 
 export interface Client {
   id: string;
