@@ -229,13 +229,13 @@ const FirmDashboard: React.FC<FirmDashboardProps> = ({
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Average Cases per Lawyer</span>
                       <span className="text-sm font-medium text-gray-900">
-                        {firmCases.length > 0 ? Math.round((closedCases / firmCases.length) * 100) : 0}%
+                        {firmLawyers.length > 0 ? Math.round(firmCases.length / firmLawyers.length) : 0}
                       </span>
                     </div>
                   </div>
-                </div>
+                      <span className="text-sm text-gray-600">Average Hours per Case</span>
               </div>
-
+                        {firmCases.length > 0 ? Math.round(totalBillableHours / firmCases.length) : 0}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                 <div className="p-4 sm:p-6 border-b border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-900 flex items-center">
