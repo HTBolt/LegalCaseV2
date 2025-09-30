@@ -388,7 +388,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   currentUser={currentUser}
                 />
               </div>
-              {(!hasRole(currentUser, 'intern') || currentUser.roles.length > 1) && (
+              {!hasRole(currentUser, 'intern') && (
                 <div id="team-tasks-section">
                   <TaskList 
                     tasks={otherTasks.slice(0, 10)}
