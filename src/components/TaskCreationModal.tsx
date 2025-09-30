@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { 
   X, Calendar, Clock, User, FileText, AlertTriangle, 
-  Scale, CheckSquare, Upload, Link, Plus, Trash2
+  Scale, CheckSquare, Plus
 } from 'lucide-react';
 import { User as UserType, Case, Task } from '../types';
+import FileUploadComponent, { FileUploadData } from './FileUploadComponent';
 import '../styles/common.css';
 
 interface TaskCreationModalProps {
@@ -14,15 +15,6 @@ interface TaskCreationModalProps {
   cases: Case[];
   users: UserType[];
   editingTask?: Task | null;
-}
-
-interface FileAttachment {
-  id: string;
-  name: string;
-  type: 'file' | 'link';
-  file?: File;
-  url?: string;
-  size?: number;
 }
 
 type PriorityLevel = 'on-hold' | 'low' | 'medium' | 'high' | 'urgent';
@@ -57,7 +49,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     status: editingTask?.status || 'pending' as 'pending' | 'completed'
   });
 
-  const [attachments, setAttachments] = useState<FileAttachment[]>([]);
+  const [attachments, setAttachments] = useState<FileUploadData[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -85,7 +77,20 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
       
       // Set attachments if they exist
       if ((editingTask as any).attachments) {
-        setAttachments((editingTask as any).attachments);
+        const taskAttachments = (editingTask as any).attachments;
+        // Convert old format to new format if needed
+        const convertedAttachments = taskAttachments.map((att: any) => ({
+          id: att.id || Date.now().toString(),
+          name: att.name,
+          type: att.file ? att.file.type : 'application/external-link',
+          size: att.size || null,
+          category: 'other',
+          date: new Date(),
+          uploadMode: att.type === 'file' ? 'file' : 'link',
+          file: att.file,
+          url: att.url
+        }));
+        setAttachments(convertedAttachments);
       }
     } else {
       // Reset form for new task
@@ -326,50 +331,12 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     console.log('=== MODAL: onClose() called ===');
   }, [onClose, isOpen]);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    
-    files.forEach(file => {
-      const newAttachment: FileAttachment = {
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        name: file.name,
-        type: 'file',
-        file,
-        size: file.size
-      };
-      setAttachments(prev => [...prev, newAttachment]);
-    });
-    
-    // Reset input
-    e.target.value = '';
+  const handleFileSelect = (fileData: FileUploadData) => {
+    setAttachments(prev => [...prev, fileData]);
   };
 
-  const addLinkAttachment = () => {
-    const newAttachment: FileAttachment = {
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      name: '',
-      type: 'link',
-      url: ''
-    };
-    setAttachments(prev => [...prev, newAttachment]);
-  };
-
-  const updateAttachment = (id: string, updates: Partial<FileAttachment>) => {
-    setAttachments(prev => prev.map(att => 
-      att.id === id ? { ...att, ...updates } : att
-    ));
-  };
-
-  const removeAttachment = (id: string) => {
+  const handleFileRemove = (id: string) => {
     setAttachments(prev => prev.filter(att => att.id !== id));
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   if (!isOpen) return null;
@@ -660,100 +627,20 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
 
             {/* File Attachments */}
             <div className="form-group">
-              <label className="form-label">File Attachments</label>
-              
-              {/* Upload Controls */}
-              <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                <label className="btn-primary cursor-pointer">
-                  <Upload className="h-4 w-4 mr-2 inline" />
-                  Upload PDF
-                  <input
-                    type="file"
-                    accept=".pdf"
-                    multiple
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </label>
-                <button
-                  type="button"
-                  onClick={addLinkAttachment}
-                  className="btn-success"
-                >
-                  <Link className="h-4 w-4 mr-2 inline" />
-                  Add Link
-                </button>
-              </div>
-
-              {/* Attachments List */}
-              {attachments.length > 0 && (
-                <div className="space-y-3">
-                  {attachments.map((attachment, index) => (
-                    <div key={attachment.id} className="attachment-item">
-                      {attachment.type === 'file' ? (
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <FileText className="h-5 w-5 text-blue-600" />
-                            <div>
-                              <p className="text-sm font-medium text-gray-900">{attachment.name}</p>
-                              {attachment.size && (
-                                <p className="text-xs text-gray-500">{formatFileSize(attachment.size)}</p>
-                              )}
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => removeAttachment(attachment.id)}
-                            className="p-1 text-red-600 hover:bg-red-50 rounded"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-2">
-                              <Link className="h-5 w-5 text-green-600" />
-                              <span className="text-sm font-medium text-gray-900">Link Attachment</span>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => removeAttachment(attachment.id)}
-                              className="p-1 text-red-600 hover:bg-red-50 rounded"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            <input
-                              type="text"
-                              placeholder="Link name"
-                              value={attachment.name}
-                              onChange={(e) => updateAttachment(attachment.id, { name: e.target.value })}
-                              className="form-input text-sm"
-                            />
-                            <input
-                              type="url"
-                              placeholder="https://..."
-                              value={attachment.url || ''}
-                              onChange={(e) => updateAttachment(attachment.id, { url: e.target.value })}
-                              className="form-input text-sm"
-                            />
-                          </div>
-                        </div>
-                      )}
-                      {errors[`attachment_${index}`] && (
-                        <p className="form-error mt-1">{errors[`attachment_${index}`]}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              <p className="form-help mt-2">
-                Upload PDF files (max 10MB) or add links to files stored on Google Drive or other cloud storage.
-              </p>
+              <label className="form-label">Task Attachments</label>
+              <FileUploadComponent
+                onFileSelect={handleFileSelect}
+                onRemove={handleFileRemove}
+                currentUser={currentUser}
+                allowMultiple={true}
+                showCategory={false}
+                showClientVisibility={false}
+                showDate={false}
+                acceptedFileTypes={['.pdf', '.doc', '.docx', '.txt']}
+                maxFileSize={10 * 1024 * 1024}
+                placeholder="Click to upload or drag and drop task files"
+                selectedFiles={attachments}
+              />
             </div>
           </div>
 
