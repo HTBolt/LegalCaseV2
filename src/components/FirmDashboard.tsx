@@ -287,127 +287,129 @@ const FirmDashboard: React.FC<FirmDashboardProps> = ({
         )}
 
         {activeTab === 'cases' && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="p-4 sm:p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">Completed Cases</h3>
-                <span className="text-sm text-gray-500">{filteredClosedCases.length} cases</span>
+          <>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div className="p-4 sm:p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Completed Cases</h3>
+                  <span className="text-sm text-gray-500">{filteredClosedCases.length} cases</span>
+                </div>
+                
+                {/* Filters - Mobile optimized */}
+                <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 sm:gap-4">
+                  <select
+                    value={caseFilters.lawyer}
+                    onChange={(e) => setCaseFilters({...caseFilters, lawyer: e.target.value})}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                  >
+                    <option value="">All Lawyers</option>
+                    {lawyers.map(lawyer => (
+                      <option key={lawyer.id} value={lawyer.id}>{lawyer.name}</option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={caseFilters.caseType}
+                    onChange={(e) => setCaseFilters({...caseFilters, caseType: e.target.value})}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                  >
+                    <option value="">All Case Types</option>
+                    {uniqueCaseTypes.map(type => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={caseFilters.courtLevel}
+                    onChange={(e) => setCaseFilters({...caseFilters, courtLevel: e.target.value})}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                  >
+                    <option value="">All Court Levels</option>
+                    {uniqueCourtLevels.map(level => (
+                      <option key={level} value={level}>{level}</option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={caseFilters.judge}
+                    onChange={(e) => setCaseFilters({...caseFilters, judge: e.target.value})}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                  >
+                    <option value="">All Judges</option>
+                    {uniqueJudges.map(judge => (
+                      <option key={judge} value={judge}>{judge}</option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={caseFilters.outcome}
+                    onChange={(e) => setCaseFilters({...caseFilters, outcome: e.target.value})}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                  >
+                    <option value="">All Outcomes</option>
+                    <option value="won">Won</option>
+                    <option value="lost">Lost</option>
+                    <option value="settled">Settled</option>
+                    <option value="dismissed">Dismissed</option>
+                  </select>
+
+                  <button
+                    onClick={() => setCaseFilters({
+                      lawyer: '', caseType: '', court: '', courtLevel: '', judge: '', outcome: '', status: 'closed'
+                    })}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm"
+                  >
+                    Clear Filters
+                  </button>
+                </div>
               </div>
-              
-              {/* Filters - Mobile optimized */}
-              <div className="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 sm:gap-4">
-                <select
-                  value={caseFilters.lawyer}
-                  onChange={(e) => setCaseFilters({...caseFilters, lawyer: e.target.value})}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                >
-                  <option value="">All Lawyers</option>
-                  {lawyers.map(lawyer => (
-                    <option key={lawyer.id} value={lawyer.id}>{lawyer.name}</option>
-                  ))}
-                </select>
 
-                <select
-                  value={caseFilters.caseType}
-                  onChange={(e) => setCaseFilters({...caseFilters, caseType: e.target.value})}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                >
-                  <option value="">All Case Types</option>
-                  {uniqueCaseTypes.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-
-                <select
-                  value={caseFilters.courtLevel}
-                  onChange={(e) => setCaseFilters({...caseFilters, courtLevel: e.target.value})}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                >
-                  <option value="">All Court Levels</option>
-                  {uniqueCourtLevels.map(level => (
-                    <option key={level} value={level}>{level}</option>
-                  ))}
-                </select>
-
-                <select
-                  value={caseFilters.judge}
-                  onChange={(e) => setCaseFilters({...caseFilters, judge: e.target.value})}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                >
-                  <option value="">All Judges</option>
-                  {uniqueJudges.map(judge => (
-                    <option key={judge} value={judge}>{judge}</option>
-                  ))}
-                </select>
-
-                <select
-                  value={caseFilters.outcome}
-                  onChange={(e) => setCaseFilters({...caseFilters, outcome: e.target.value})}
-                  className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
-                >
-                  <option value="">All Outcomes</option>
-                  <option value="won">Won</option>
-                  <option value="lost">Lost</option>
-                  <option value="settled">Settled</option>
-                  <option value="dismissed">Dismissed</option>
-                </select>
-
-                <button
-                  onClick={() => setCaseFilters({
-                    lawyer: '', caseType: '', court: '', courtLevel: '', judge: '', outcome: '', status: 'closed'
-                  })}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm"
-                >
-                  Clear Filters
-                </button>
-              </div>
-            </div>
-
-            <div className="divide-y divide-gray-200">
-              {filteredClosedCases.map((caseItem) => (
-                <div key={caseItem.id} className="p-4 sm:p-6 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-2">
-                        <h4 className="text-sm font-medium text-gray-900">{caseItem.title}</h4>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border self-start ${getOutcomeColor(caseItem.outcome)}`}>
-                          <span className="mr-1">{getOutcomeIcon(caseItem.outcome)}</span>
-                          {caseItem.outcome || 'Unknown'}
-                        </span>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-sm text-gray-600">
-                        <div>
-                          <span className="font-medium">Client:</span> <span className="truncate">{caseItem.client.name}</span>
+              <div className="divide-y divide-gray-200">
+                {filteredClosedCases.map((caseItem) => (
+                  <div key={caseItem.id} className="p-4 sm:p-6 hover:bg-gray-50 transition-colors">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 mb-2">
+                          <h4 className="text-sm font-medium text-gray-900">{caseItem.title}</h4>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border self-start ${getOutcomeColor(caseItem.outcome)}`}>
+                            <span className="mr-1">{getOutcomeIcon(caseItem.outcome)}</span>
+                            {caseItem.outcome || 'Unknown'}
+                          </span>
                         </div>
-                        <div>
-                          <span className="font-medium">Lawyer:</span> {caseItem.assignedLawyer.name}
-                        </div>
-                        <div>
-                          <span className="font-medium">Case Type:</span> {caseItem.caseType}
-                        </div>
-                        <div>
-                          <span className="font-medium">Court Level:</span> {caseItem.courtLevel || 'N/A'}
-                        </div>
-                        <div>
-                          <span className="font-medium">Judge:</span> {caseItem.judge || 'N/A'}
-                        </div>
-                        <div>
-                          <span className="font-medium">Closed:</span> {caseItem.closedAt?.toLocaleDateString() || 'N/A'}
-                        </div>
-                        <div>
-                          <span className="font-medium">Revenue:</span> {formatCurrency(caseItem.totalRevenue || 0)}
-                        </div>
-                        <div>
-                          <span className="font-medium">Hours:</span> {caseItem.billableHours || 0}
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 text-sm text-gray-600">
+                          <div>
+                            <span className="font-medium">Client:</span> <span className="truncate">{caseItem.client.name}</span>
+                          </div>
+                          <div>
+                            <span className="font-medium">Lawyer:</span> {caseItem.assignedLawyer.name}
+                          </div>
+                          <div>
+                            <span className="font-medium">Case Type:</span> {caseItem.caseType}
+                          </div>
+                          <div>
+                            <span className="font-medium">Court Level:</span> {caseItem.courtLevel || 'N/A'}
+                          </div>
+                          <div>
+                            <span className="font-medium">Judge:</span> {caseItem.judge || 'N/A'}
+                          </div>
+                          <div>
+                            <span className="font-medium">Closed:</span> {caseItem.closedAt?.toLocaleDateString() || 'N/A'}
+                          </div>
+                          <div>
+                            <span className="font-medium">Revenue:</span> {formatCurrency(caseItem.totalRevenue || 0)}
+                          </div>
+                          <div>
+                            <span className="font-medium">Hours:</span> {caseItem.billableHours || 0}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          </>
         )}
 
         {activeTab === 'performance' && (
