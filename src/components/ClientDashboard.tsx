@@ -18,13 +18,13 @@ interface ClientDashboardProps {
 }
 
 const ClientDashboard: React.FC<ClientDashboardProps> = ({ 
-  clientCases, 
-  clientTasks,
-  milestones,
-  invoices,
-  meetingRequests,
+  clientCases = [], 
+  clientTasks = [],
+  milestones = [],
+  invoices = [],
+  meetingRequests = [],
   currentUser,
-  firms,
+  firms = [],
   onCaseSelect
 }) => {
   const [searchTerm, setSearchTerm] = useState('');

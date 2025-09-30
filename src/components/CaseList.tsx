@@ -12,7 +12,7 @@ interface CaseListProps {
 }
 
 const CaseList: React.FC<CaseListProps> = ({ 
-  cases, 
+  cases = [], 
   onCaseSelect, 
   title = "Cases", 
   compact = false,

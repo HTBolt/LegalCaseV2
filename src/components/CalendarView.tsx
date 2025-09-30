@@ -39,7 +39,7 @@ interface CalendarEvent {
 }
 
 const CalendarView: React.FC<CalendarViewProps> = ({ 
-  milestones, 
+  milestones = [], 
   tasks = [], 
   compact = false, 
   onEventClick,

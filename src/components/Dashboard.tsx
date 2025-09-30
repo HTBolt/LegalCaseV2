@@ -46,9 +46,9 @@ interface DashboardProps {
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ 
-  cases, 
-  tasks = [], 
-  milestones, 
+  cases = [], 
+  tasks = [],
+  milestones = [],
   currentUser, 
   onCaseSelect,
   onTaskCreate,
@@ -66,7 +66,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   allTasks = [],
   allUsers = [],
   lawyerPerformance = [],
-  firmInfo,
+  firmInfo = null,
   onApproveUser,
   onRejectUser,
   onUpdateUserRole,

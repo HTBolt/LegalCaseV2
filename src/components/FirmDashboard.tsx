@@ -17,11 +17,11 @@ interface FirmDashboardProps {
 }
 
 const FirmDashboard: React.FC<FirmDashboardProps> = ({ 
-  cases, 
-  tasks, 
-  users, 
-  lawyerPerformance,
-  firmInfo,
+  cases = [], 
+  tasks = [], 
+  users = [], 
+  lawyerPerformance = [],
+  firmInfo = {} as LawFirm,
   currentUser 
 }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'cases' | 'performance' | 'analytics'>('overview');

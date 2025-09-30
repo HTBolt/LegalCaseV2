@@ -229,7 +229,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
 };
 
 const TaskList: React.FC<TaskListProps> = ({ 
-  tasks, 
+  tasks = [], 
   title, 
   showAssignee = false, 
   onAddTask,
