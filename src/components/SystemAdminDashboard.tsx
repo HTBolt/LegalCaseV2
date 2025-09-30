@@ -701,36 +701,39 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
                       default:
                         return true;
                     }
-                  }).map((user) => {</parameter>
-                      <div className="flex items-center space-x-3">
-                        <AlertCircle className="h-5 w-5 text-yellow-600" />
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            {user.name} requested {user.role} access
-                          </p>
-                          <p className="text-xs text-gray-600">
-                            {user.firmId ? `to ${firms.find(f => f.id === user.firmId)?.name}` : 'New firm creation'}
-                          </p>
+                  }).map((user) => {
+                    return (
+                      <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <AlertCircle className="h-5 w-5 text-yellow-600" />
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              {user.name} requested {user.role} access
+                            </p>
+                            <p className="text-xs text-gray-600">
+                              {user.firmId ? `to ${firms.find(f => f.id === user.firmId)?.name}` : 'New firm creation'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={() => onApproveUser(user.id)}
+                            className="p-1 text-green-600 hover:bg-green-100 rounded"
+                            title="Approve"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => onRejectUser(user.id)}
+                            className="p-1 text-red-600 hover:bg-red-100 rounded"
+                            title="Reject"
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </button>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => onApproveUser(user.id)}
-                          className="p-1 text-green-600 hover:bg-green-100 rounded"
-                          title="Approve"
-                        >
-                          <CheckCircle className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => onRejectUser(user.id)}
-                          className="p-1 text-red-600 hover:bg-red-100 rounded"
-                          title="Reject"
-                        >
-                          <XCircle className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   {pendingUsers.length === 0 && (
                     <p className="text-center text-gray-500 py-8">No pending approvals</p>
                   )}
