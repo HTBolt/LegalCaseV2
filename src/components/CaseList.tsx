@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Users, AlertTriangle, Clock, FileText, ChevronRight, Edit } from 'lucide-react';
+import { Calendar, Users, AlertTriangle, Clock, FileText, ChevronRight, CreditCard as Edit } from 'lucide-react';
 import { Case, User } from '../types';
 
 interface CaseListProps {

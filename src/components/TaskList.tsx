@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Clock, User, AlertTriangle, CheckCircle, FileText, Search, Calendar, MapPin, Plus, Eye, Edit, RotateCcw, X } from 'lucide-react';
+import { Clock, User, AlertTriangle, CheckCircle, FileText, Search, Calendar, MapPin, Plus, Eye, CreditCard as Edit, RotateCcw, X } from 'lucide-react';
 import { Task, User as UserType } from '../types';
 
 interface TaskListProps {
