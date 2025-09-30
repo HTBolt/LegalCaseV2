@@ -63,7 +63,13 @@ export const mockUsers: User[] = [
     firmId: '1',
     approvalStatus: 'approved',
     createdAt: new Date('2020-01-15'),
-    lastLoginAt: new Date('2025-01-14')
+    lastLoginAt: new Date('2025-01-14'),
+    subscriptionActive: true,
+    subscriptionCategory: 'Premium',
+    subscriptionStartDate: new Date('2024-01-01'),
+    subscriptionExpiryDate: new Date('2025-12-31'),
+    subscriptionAmountPaid: 2400,
+    cumulativeStorageAllocated: 50000
   },
   // Lawyers
   {
@@ -74,7 +80,13 @@ export const mockUsers: User[] = [
     firmId: '1',
     approvalStatus: 'approved',
     createdAt: new Date('2021-03-10'),
-    lastLoginAt: new Date('2025-01-14')
+    lastLoginAt: new Date('2025-01-14'),
+    subscriptionActive: true,
+    subscriptionCategory: 'Basic',
+    subscriptionStartDate: new Date('2024-03-01'),
+    subscriptionExpiryDate: new Date('2025-02-28'),
+    subscriptionAmountPaid: 600,
+    cumulativeStorageAllocated: 15000
   },
   {
     id: '4',
@@ -84,7 +96,13 @@ export const mockUsers: User[] = [
     firmId: '2',
     approvalStatus: 'approved',
     createdAt: new Date('2021-06-15'),
-    lastLoginAt: new Date('2025-01-13')
+    lastLoginAt: new Date('2025-01-13'),
+    subscriptionActive: true,
+    subscriptionCategory: 'Power',
+    subscriptionStartDate: new Date('2024-06-01'),
+    subscriptionExpiryDate: new Date('2025-05-31'),
+    subscriptionAmountPaid: 4800,
+    cumulativeStorageAllocated: 100000
   },
   {
     id: '5',
@@ -94,7 +112,13 @@ export const mockUsers: User[] = [
     firmId: '1',
     approvalStatus: 'approved',
     createdAt: new Date('2022-01-20'),
-    lastLoginAt: new Date('2025-01-14')
+    lastLoginAt: new Date('2025-01-14'),
+    subscriptionActive: true,
+    subscriptionCategory: 'Premium',
+    subscriptionStartDate: new Date('2024-01-20'),
+    subscriptionExpiryDate: new Date('2025-01-19'),
+    subscriptionAmountPaid: 2400,
+    cumulativeStorageAllocated: 35000
   },
   // Interns
   {
@@ -105,7 +129,13 @@ export const mockUsers: User[] = [
     firmId: '1',
     approvalStatus: 'approved',
     createdAt: new Date('2024-09-01'),
-    lastLoginAt: new Date('2025-01-14')
+    lastLoginAt: new Date('2025-01-14'),
+    subscriptionActive: true,
+    subscriptionCategory: 'Free',
+    subscriptionStartDate: new Date('2024-09-01'),
+    subscriptionExpiryDate: new Date('2025-08-31'),
+    subscriptionAmountPaid: 0,
+    cumulativeStorageAllocated: 5000
   },
   {
     id: '7',
@@ -115,7 +145,13 @@ export const mockUsers: User[] = [
     firmId: '2',
     approvalStatus: 'approved',
     createdAt: new Date('2024-09-01'),
-    lastLoginAt: new Date('2025-01-13')
+    lastLoginAt: new Date('2025-01-13'),
+    subscriptionActive: true,
+    subscriptionCategory: 'Basic',
+    subscriptionStartDate: new Date('2024-09-01'),
+    subscriptionExpiryDate: new Date('2025-08-31'),
+    subscriptionAmountPaid: 300,
+    cumulativeStorageAllocated: 10000
   },
   {
     id: '8',
@@ -125,7 +161,13 @@ export const mockUsers: User[] = [
     firmId: '1',
     approvalStatus: 'approved',
     createdAt: new Date('2024-08-15'),
-    lastLoginAt: new Date('2025-01-14')
+    lastLoginAt: new Date('2025-01-14'),
+    subscriptionActive: false,
+    subscriptionCategory: 'Free',
+    subscriptionStartDate: new Date('2024-08-15'),
+    subscriptionExpiryDate: new Date('2024-11-15'),
+    subscriptionAmountPaid: 0,
+    cumulativeStorageAllocated: 2000
   },
   // Clients
   {

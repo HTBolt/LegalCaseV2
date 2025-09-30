@@ -11,6 +11,13 @@ export interface User {
   invitedBy?: string; // ID of lawyer who invited the client
   createdAt?: Date;
   lastLoginAt?: Date;
+  // Subscription fields (only for firm-admin, lawyer, intern)
+  subscriptionActive?: boolean;
+  subscriptionCategory?: 'Free' | 'Basic' | 'Premium' | 'Power';
+  subscriptionStartDate?: Date;
+  subscriptionExpiryDate?: Date;
+  subscriptionAmountPaid?: number;
+  cumulativeStorageAllocated?: number; // in MB
 }
 
 export interface Client {

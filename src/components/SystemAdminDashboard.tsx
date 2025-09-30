@@ -29,7 +29,13 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    isDisabled: false
+    isDisabled: false,
+    subscriptionActive: false,
+    subscriptionCategory: 'Free' as 'Free' | 'Basic' | 'Premium' | 'Power',
+    subscriptionStartDate: '',
+    subscriptionExpiryDate: '',
+    subscriptionAmountPaid: 0,
+    cumulativeStorageAllocated: 0
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -38,7 +44,15 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
       setFormData({
         name: user.name,
         phone: (user as any).phone || '',
-        isDisabled: user.approvalStatus === 'disabled'
+        isDisabled: user.approvalStatus === 'disabled',
+        subscriptionActive: user.subscriptionActive || false,
+        subscriptionCategory: user.subscriptionCategory || 'Free',
+        subscriptionStartDate: user.subscriptionStartDate ? 
+          user.subscriptionStartDate.toISOString().split('T')[0] : '',
+        subscriptionExpiryDate: user.subscriptionExpiryDate ? 
+          user.subscriptionExpiryDate.toISOString().split('T')[0] : '',
+        subscriptionAmountPaid: user.subscriptionAmountPaid || 0,
+        cumulativeStorageAllocated: user.cumulativeStorageAllocated || 0
       });
     }
   }, [user]);
@@ -53,7 +67,16 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
       const updates: Partial<User> = {
         name: formData.name.trim(),
         ...(formData.phone && { phone: formData.phone.trim() }),
-        approvalStatus: formData.isDisabled ? 'disabled' : user.approvalStatus === 'disabled' ? 'approved' : user.approvalStatus
+        approvalStatus: formData.isDisabled ? 'disabled' : user.approvalStatus === 'disabled' ? 'approved' : user.approvalStatus,
+        // Only add subscription fields for legal professionals
+        ...(user.role !== 'client' && user.role !== 'system-admin' && {
+          subscriptionActive: formData.subscriptionActive,
+          subscriptionCategory: formData.subscriptionCategory,
+          subscriptionStartDate: formData.subscriptionStartDate ? new Date(formData.subscriptionStartDate) : undefined,
+          subscriptionExpiryDate: formData.subscriptionExpiryDate ? new Date(formData.subscriptionExpiryDate) : undefined,
+          subscriptionAmountPaid: formData.subscriptionAmountPaid,
+          cumulativeStorageAllocated: formData.cumulativeStorageAllocated
+        })
       };
 
       onUpdateUser(user.id, updates);
@@ -70,11 +93,28 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
     alert('Password reset email sent to user');
   };
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const formatStorage = (sizeInMB: number) => {
+    if (sizeInMB >= 1024) {
+      return `${(sizeInMB / 1024).toFixed(1)} GB`;
+    }
+    return `${sizeInMB} MB`;
+  };
+
+  const hasSubscriptionFields = user.role !== 'client' && user.role !== 'system-admin';
   const userFirm = user.firmId ? firms.find(f => f.id === user.firmId) : null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -92,7 +132,7 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
           </div>
         </div>
         
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[calc(90vh-140px)] overflow-y-auto">
           {/* User Info */}
           <div className="bg-gray-50 p-4 rounded-lg space-y-2">
             <div className="flex items-center space-x-2 text-sm">
@@ -115,46 +155,181 @@ const EditUserModal: React.FC<EditUserModalProps> = ({
           </div>
 
           {/* Editable Fields */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Full Name
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
-              />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">
+                Basic Information
+              </h4>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="+1 (555) 123-4567"
+                />
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  id="disabled"
+                  checked={formData.isDisabled}
+                  onChange={(e) => setFormData({ ...formData, isDisabled: e.target.checked })}
+                  className="rounded border-gray-300 text-red-600 focus:ring-red-500"
+                />
+                <label htmlFor="disabled" className="text-sm font-medium text-gray-700">
+                  Disable user access
+                </label>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="+1 (555) 123-4567"
-              />
-            </div>
+            {/* Subscription Fields */}
+            {hasSubscriptionFields && (
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-2">
+                  Subscription Management
+                </h4>
+                
+                <div className="flex items-center space-x-3">
+                  <input
+                    type="checkbox"
+                    id="subscriptionActive"
+                    checked={formData.subscriptionActive}
+                    onChange={(e) => setFormData({ ...formData, subscriptionActive: e.target.checked })}
+                    className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                  />
+                  <label htmlFor="subscriptionActive" className="text-sm font-medium text-gray-700">
+                    Subscription Active
+                  </label>
+                </div>
 
-            <div className="flex items-center space-x-3">
-              <input
-                type="checkbox"
-                id="disabled"
-                checked={formData.isDisabled}
-                onChange={(e) => setFormData({ ...formData, isDisabled: e.target.checked })}
-                className="rounded border-gray-300 text-red-600 focus:ring-red-500"
-              />
-              <label htmlFor="disabled" className="text-sm font-medium text-gray-700">
-                Disable user access
-              </label>
-            </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Subscription Category
+                  </label>
+                  <select
+                    value={formData.subscriptionCategory}
+                    onChange={(e) => setFormData({ ...formData, subscriptionCategory: e.target.value as any })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="Free">Free</option>
+                    <option value="Basic">Basic</option>
+                    <option value="Premium">Premium</option>
+                    <option value="Power">Power</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Start Date
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.subscriptionStartDate}
+                      onChange={(e) => setFormData({ ...formData, subscriptionStartDate: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Expiry Date
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.subscriptionExpiryDate}
+                      onChange={(e) => setFormData({ ...formData, subscriptionExpiryDate: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Amount Paid
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 text-sm">$</span>
+                    </div>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.subscriptionAmountPaid}
+                      onChange={(e) => setFormData({ ...formData, subscriptionAmountPaid: parseFloat(e.target.value) || 0 })}
+                      className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Storage Allocated (MB)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.cumulativeStorageAllocated}
+                    onChange={(e) => setFormData({ ...formData, cumulativeStorageAllocated: parseInt(e.target.value) || 0 })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="0"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Current: {formatStorage(formData.cumulativeStorageAllocated)}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Subscription Summary */}
+          {hasSubscriptionFields && (
+            <div>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-blue-800 mb-2">Subscription Summary</h4>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-blue-700">Status:</span>
+                    <span className={`ml-2 font-medium ${formData.subscriptionActive ? 'text-green-700' : 'text-red-700'}`}>
+                      {formData.subscriptionActive ? 'Active' : 'Inactive'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-blue-700">Plan:</span>
+                    <span className="ml-2 font-medium text-blue-900">{formData.subscriptionCategory}</span>
+                  </div>
+                  <div>
+                    <span className="text-blue-700">Total Paid:</span>
+                    <span className="ml-2 font-medium text-blue-900">{formatCurrency(formData.subscriptionAmountPaid)}</span>
+                  </div>
+                  <div>
+                    <span className="text-blue-700">Storage:</span>
+                    <span className="ml-2 font-medium text-blue-900">{formatStorage(formData.cumulativeStorageAllocated)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Password Reset */}
           <div className="border-t border-gray-200 pt-4">
@@ -455,12 +630,12 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
 
               <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200">
                 <div className="flex items-center">
-                  <div className="bg-green-500 p-2 sm:p-3 rounded-lg">
-                    <UserCheck className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                  <div className="bg-purple-500 p-2 sm:p-3 rounded-lg">
+                    <DollarSign className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
                   </div>
                   <div className="ml-3 sm:ml-4 min-w-0 flex-1">
-                    <p className="text-xs sm:text-sm font-medium text-gray-600">Lawyers</p>
-                    <p className="text-lg sm:text-2xl font-bold text-gray-900">{lawyers.length}</p>
+                    <p className="text-xs sm:text-sm font-medium text-gray-600">Paid Subscribers</p>
+                    <p className="text-lg sm:text-2xl font-bold text-gray-900">{paidSubscribers.length}</p>
                   </div>
                 </div>
               </div>
