@@ -630,7 +630,7 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
                     <UserCheck className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
                   </div>
                   <div className="ml-3 sm:ml-4 min-w-0 flex-1">
-                    <p className="text-xs sm:text-sm font-medium text-gray-600">Lawyers</p>
+                    <p className="text-xs sm:text-sm font-medium text-gray-600">Subscribers</p>
                     <p className="text-lg sm:text-2xl font-bold text-gray-900">{lawyers.length}</p>
                   </div>
                 </div>
