@@ -35,22 +35,30 @@ const FirmDashboard: React.FC<FirmDashboardProps> = ({
     status: 'closed'
   });
 
+  // Filter data to only show current firm's information
+  const firmUsers = users.filter(u => u.firmId === firmInfo.id);
+  const firmLawyers = firmUsers.filter(u => u.role === 'lawyer' || u.role === 'firm-admin');
+  const firmInterns = firmUsers.filter(u => u.role === 'intern');
+  const firmCases = cases.filter(c => firmLawyers.some(lawyer => lawyer.id === c.assignedLawyer.id));
+  const firmTasks = tasks.filter(t => firmUsers.some(user => user.id === t.assignedTo.id || user.id === t.assignedBy.id));
+  const firmLawyerPerformance = lawyerPerformance.filter(p => firmLawyers.some(lawyer => lawyer.id === p.lawyerId));
+
   // Calculate firm-wide metrics
-  const totalRevenue = cases.reduce((sum, c) => sum + (c.totalRevenue || 0), 0);
-  const totalBillableHours = cases.reduce((sum, c) => sum + (c.billableHours || 0), 0);
-  const activeCases = cases.filter(c => c.status === 'active').length;
-  const closedCases = cases.filter(c => c.status === 'closed').length;
-  const wonCases = cases.filter(c => c.outcome === 'won').length;
-  const lostCases = cases.filter(c => c.outcome === 'lost').length;
-  const settledCases = cases.filter(c => c.outcome === 'settled').length;
+  const totalRevenue = firmCases.reduce((sum, c) => sum + (c.totalRevenue || 0), 0);
+  const totalBillableHours = firmCases.reduce((sum, c) => sum + (c.billableHours || 0), 0);
+  const activeCases = firmCases.filter(c => c.status === 'active').length;
+  const closedCases = firmCases.filter(c => c.status === 'closed').length;
+  const wonCases = firmCases.filter(c => c.outcome === 'won').length;
+  const lostCases = firmCases.filter(c => c.outcome === 'lost').length;
+  const settledCases = firmCases.filter(c => c.outcome === 'settled').length;
   const winRate = closedCases > 0 ? Math.round(((wonCases + settledCases) / closedCases) * 100) : 0;
   
-  const lawyers = users.filter(u => u.role === 'lawyer');
-  const interns = users.filter(u => u.role === 'intern');
-  const internTasks = tasks.filter(t => interns.some(i => i.id === t.assignedTo.id));
+  const lawyers = firmLawyers;
+  const interns = firmInterns;
+  const internTasks = firmTasks.filter(t => interns.some(i => i.id === t.assignedTo.id));
 
   // Filter closed cases based on criteria
-  const filteredClosedCases = cases.filter(c => {
+  const filteredClosedCases = firmCases.filter(c => {
     if (c.status !== 'closed') return false;
     if (caseFilters.lawyer && c.assignedLawyer.id !== caseFilters.lawyer) return false;
     if (caseFilters.caseType && c.caseType !== caseFilters.caseType) return false;
@@ -61,9 +69,9 @@ const FirmDashboard: React.FC<FirmDashboardProps> = ({
   });
 
   // Get unique values for filters
-  const uniqueCaseTypes = [...new Set(cases.map(c => c.caseType))];
-  const uniqueCourtLevels = [...new Set(cases.map(c => c.courtLevel).filter(Boolean))];
-  const uniqueJudges = [...new Set(cases.map(c => c.judge).filter(Boolean))];
+  const uniqueCaseTypes = [...new Set(firmCases.map(c => c.caseType))];
+  const uniqueCourtLevels = [...new Set(firmCases.map(c => c.courtLevel).filter(Boolean))];
+  const uniqueJudges = [...new Set(firmCases.map(c => c.judge).filter(Boolean))];
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -215,13 +223,13 @@ const FirmDashboard: React.FC<FirmDashboardProps> = ({
                       <span className="text-sm font-medium text-gray-900">{interns.length}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Tasks Assigned to Interns</span>
+                        {firmCases.length > 0 ? Math.round(totalBillableHours / firmCases.length) : 0}
                       <span className="text-sm font-medium text-gray-900">{internTasks.length}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Average Cases per Lawyer</span>
                       <span className="text-sm font-medium text-gray-900">
-                        {lawyers.length > 0 ? Math.round(cases.length / lawyers.length) : 0}
+                        {firmCases.length > 0 ? Math.round((closedCases / firmCases.length) * 100) : 0}%
                       </span>
                     </div>
                   </div>
@@ -398,7 +406,7 @@ const FirmDashboard: React.FC<FirmDashboardProps> = ({
 
         {activeTab === 'performance' && (
           <div className="space-y-6 sm:space-y-8">
-            {lawyerPerformance.map((performance) => (
+            {firmLawyerPerformance.map((performance) => (
               <div key={performance.lawyerId} className="bg-white rounded-lg shadow-sm border border-gray-200">
                 <div className="p-4 sm:p-6 border-b border-gray-200">
                   <div className="flex items-center space-x-3">
@@ -463,8 +471,8 @@ const FirmDashboard: React.FC<FirmDashboardProps> = ({
               </div>
               <div className="p-4 sm:p-6">
                 <div className="space-y-4">
-                  {uniqueCaseTypes.map(type => {
-                    const typeRevenue = cases
+                  {uniqueCaseTypes.filter(type => type).map(type => {
+                    const typeRevenue = firmCases
                       .filter(c => c.caseType === type)
                       .reduce((sum, c) => sum + (c.totalRevenue || 0), 0);
                     const percentage = totalRevenue > 0 ? Math.round((typeRevenue / totalRevenue) * 100) : 0;

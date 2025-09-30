@@ -20,6 +20,7 @@ export interface Client {
   phone: string;
   address: string;
   company?: string;
+  associatedLawyerIds?: string[]; // Array of lawyer IDs associated with this client
 }
 
 export interface LawFirm {

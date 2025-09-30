@@ -80,7 +80,7 @@ export const mockUsers: User[] = [
     id: '4',
     name: 'Michael Brown',
     email: 'michael.brown@smithlaw.com',
-    role: 'lawyer',
+    role: 'firm-admin',
     firmId: '2',
     approvalStatus: 'approved',
     createdAt: new Date('2021-06-15'),
@@ -216,14 +216,16 @@ export const mockClients: Client[] = [
     email: 'james.miller@email.com',
     phone: '+1 (555) 111-2222',
     address: '789 Client St, Residential, NY 10003',
-    company: 'Miller Industries'
+    company: 'Miller Industries',
+    associatedLawyerIds: ['2'] // Robert Johnson
   },
   {
     id: '2',
     name: 'Linda Anderson',
     email: 'linda.anderson@email.com',
     phone: '+1 (555) 333-4444',
-    address: '321 Anderson Ave, Suburb, NY 10004'
+    address: '321 Anderson Ave, Suburb, NY 10004',
+    associatedLawyerIds: ['3'] // Sarah Wilson
   },
   {
     id: '3',
@@ -231,14 +233,16 @@ export const mockClients: Client[] = [
     email: 'chris.taylor@email.com',
     phone: '+1 (555) 555-6666',
     address: '654 Taylor Rd, Uptown, NY 10005',
-    company: 'Taylor Tech Solutions'
+    company: 'Taylor Tech Solutions',
+    associatedLawyerIds: ['5'] // Emily Davis
   },
   {
     id: '4',
     name: 'Patricia Wilson',
     email: 'patricia.wilson@email.com',
     phone: '+1 (555) 777-8888',
-    address: '987 Wilson Way, Downtown, NY 10006'
+    address: '987 Wilson Way, Downtown, NY 10006',
+    associatedLawyerIds: ['4'] // Michael Brown
   },
   {
     id: '5',
@@ -246,7 +250,8 @@ export const mockClients: Client[] = [
     email: 'daniel.moore@email.com',
     phone: '+1 (555) 999-0000',
     address: '147 Moore Manor, Estate, NY 10007',
-    company: 'Moore Enterprises'
+    company: 'Moore Enterprises',
+    associatedLawyerIds: ['2'] // Robert Johnson
   }
 ];
 
