@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  Users, Building, UserCheck, Shield, CheckCircle, XCircle, 
-  AlertTriangle, Crown, Edit, Trash2, Plus, Filter, Star,
-  Calendar, DollarSign, HardDrive
-} from 'lucide-react';
+import { Users, Building, UserCheck, Shield, CheckCircle, XCircle, AlertTriangle, Crown, CreditCard as Edit, Trash2, Plus, Filter, Star, Calendar, DollarSign, HardDrive } from 'lucide-react';
 import { User, LawFirm } from '../types';
 
 interface SystemAdminDashboardProps {
