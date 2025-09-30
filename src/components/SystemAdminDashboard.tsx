@@ -425,6 +425,7 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
   const [firmFilter, setFirmFilter] = useState<string>('all');
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [subscriptionFilter, setSubscriptionFilter] = useState<string>('all');
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [newUserForm, setNewUserForm] = useState({
     name: '',
@@ -643,12 +644,64 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
             {/* Recent Activity */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               <div className="p-4 sm:p-6 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">Recent Activity</h3>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">User Management</h3>
+                  
+                  {/* Subscription Filter */}
+                  <div className="flex items-center space-x-2">
+                    <label htmlFor="subscription-filter" className="text-sm font-medium text-gray-700">
+                      Filter by subscription:
+                    </label>
+                    <select
+                      id="subscription-filter"
+                      value={subscriptionFilter}
+                      onChange={(e) => setSubscriptionFilter(e.target.value)}
+                      className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="all">All Users</option>
+                      <option value="free">Free</option>
+                      <option value="basic">Basic</option>
+                      <option value="premium">Premium</option>
+                      <option value="power">Power</option>
+                      <option value="active">Active Subscriptions</option>
+                      <option value="inactive">Inactive Subscriptions</option>
+                      <option value="no-subscription">No Subscription (Clients/System Admin)</option>
+                    </select>
+                  </div>
+                </div>
               </div>
               <div className="p-4 sm:p-6">
                 <div className="space-y-4">
-                  {pendingUsers.slice(0, 5).map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                  {users.filter((user) => {
+                    // Apply subscription filter
+                    if (subscriptionFilter === 'all') return true;
+                    
+                    // Users without subscription fields (clients, system-admin)
+                    const hasSubscription = user.role === 'firm-admin' || user.role === 'lawyer' || user.role === 'intern';
+                    
+                    if (subscriptionFilter === 'no-subscription') {
+                      return !hasSubscription;
+                    }
+                    
+                    if (!hasSubscription) return false;
+                    
+                    switch (subscriptionFilter) {
+                      case 'free':
+                        return user.subscriptionCategory === 'Free';
+                      case 'basic':
+                        return user.subscriptionCategory === 'Basic';
+                      case 'premium':
+                        return user.subscriptionCategory === 'Premium';
+                      case 'power':
+                        return user.subscriptionCategory === 'Power';
+                      case 'active':
+                        return user.subscriptionActive === true;
+                      case 'inactive':
+                        return user.subscriptionActive === false;
+                      default:
+                        return true;
+                    }
+                  }).map((user) => {</parameter>
                       <div className="flex items-center space-x-3">
                         <AlertCircle className="h-5 w-5 text-yellow-600" />
                         <div>
