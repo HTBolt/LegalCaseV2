@@ -759,6 +759,39 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-3 mb-2">
                         <h4 className="text-sm font-medium text-gray-900">{user.name}</h4>
+                        {/* Subscription indicators for legal professionals */}
+                        {(user.role === 'firm-admin' || user.role === 'lawyer' || user.role === 'intern') && (
+                          <div className="flex items-center space-x-1">
+                            {/* Subscription Type Icon */}
+                            {user.subscriptionCategory === 'Free' && (
+                              <div className="w-4 h-4 bg-gray-200 rounded-full flex items-center justify-center" title="Free Plan">
+                                <span className="text-xs font-bold text-gray-600">F</span>
+                              </div>
+                            )}
+                            {user.subscriptionCategory === 'Basic' && (
+                              <div className="w-4 h-4 bg-blue-200 rounded-full flex items-center justify-center" title="Basic Plan">
+                                <span className="text-xs font-bold text-blue-700">B</span>
+                              </div>
+                            )}
+                            {user.subscriptionCategory === 'Premium' && (
+                              <div className="w-4 h-4 bg-purple-200 rounded-full flex items-center justify-center" title="Premium Plan">
+                                <span className="text-xs font-bold text-purple-700">P</span>
+                              </div>
+                            )}
+                            {user.subscriptionCategory === 'Power' && (
+                              <div className="w-4 h-4 bg-yellow-200 rounded-full flex items-center justify-center" title="Power Plan">
+                                <span className="text-xs font-bold text-yellow-700">★</span>
+                              </div>
+                            )}
+                            
+                            {/* Active/Inactive Status Icon */}
+                            {user.subscriptionActive ? (
+                              <div className="w-3 h-3 bg-green-500 rounded-full" title="Active Subscription"></div>
+                            ) : (
+                              <div className="w-3 h-3 bg-red-500 rounded-full" title="Inactive Subscription"></div>
+                            )}
+                          </div>
+                        )}
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getRoleColor(user.role)}`}>
                           {user.role}
                         </span>
