@@ -472,10 +472,22 @@ function App() {
   const getFilteredData = () => {
     if (!currentUser) return { cases: [], tasks: [], milestones: [] };
 
+    // Get current user's firm for firm-based filtering
+    const currentUserFirm = currentUser.firmId ? firms.find(f => f.id === currentUser.firmId) : null;
+    
+    // Helper function to check if a case belongs to current user's firm
+    const isCaseFromCurrentFirm = (case_: Case) => {
+      if (!currentUserFirm) return false;
+      return case_.assignedLawyer.firmId === currentUserFirm.id;
+    };
     switch (currentUser.role) {
       case 'lawyer':
-        // Lawyers see all cases they're assigned to
-        const lawyerCases = cases.filter(c => c.assignedLawyer && c.assignedLawyer.id === currentUser.id);
+        // Lawyers see only cases they're personally assigned to (and belong to their firm)
+        const lawyerCases = cases.filter(c => 
+          c.assignedLawyer && 
+          c.assignedLawyer.id === currentUser.id &&
+          isCaseFromCurrentFirm(c)
+        );
         const lawyerTasks = tasks.filter(t => 
           t.assignedTo.id === currentUser.id || 
           t.assignedBy.id === currentUser.id ||
@@ -487,9 +499,10 @@ function App() {
         return { cases: lawyerCases, tasks: lawyerTasks, milestones: lawyerMilestones };
 
       case 'intern':
-        // Interns see cases they're supporting and their assigned tasks
+        // Interns see only cases they're supporting (and belong to their firm)
         const internCases = cases.filter(c => 
-          c.supportingInterns.some(intern => intern.id === currentUser.id)
+          c.supportingInterns.some(intern => intern.id === currentUser.id) &&
+          isCaseFromCurrentFirm(c)
         );
         const internTasks = tasks.filter(t => 
           t.assignedTo.id === currentUser.id ||
@@ -511,9 +524,21 @@ function App() {
         );
         return { cases: clientCases, tasks: clientTasks, milestones: clientMilestones };
 
-      case 'admin':
       case 'firm-admin':
-        // Admins and firm admins see everything
+        // Firm admins see all cases from their firm only
+        const firmAdminCases = cases.filter(c => isCaseFromCurrentFirm(c));
+        const firmAdminTasks = tasks.filter(t => 
+          firmAdminCases.some(c => c.id === t.caseId) ||
+          (currentUserFirm && currentUserFirm.members.includes(t.assignedTo.id)) ||
+          (currentUserFirm && currentUserFirm.members.includes(t.assignedBy.id))
+        );
+        const firmAdminMilestones = mockMilestones.filter(m => 
+          firmAdminCases.some(c => c.id === m.caseId)
+        );
+        return { cases: firmAdminCases, tasks: firmAdminTasks, milestones: firmAdminMilestones };
+
+      case 'system-admin':
+        // System admins see everything across all firms
         return { cases: cases, tasks: tasks, milestones: mockMilestones };
 
       default:
