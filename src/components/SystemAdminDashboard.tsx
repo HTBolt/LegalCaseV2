@@ -439,6 +439,9 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
 
   const pendingUsers = users.filter(u => u.approvalStatus === 'pending');
   const lawyers = users.filter(u => u.role === 'lawyer' || u.role === 'firm-admin');
+  const paidSubscribers = users.filter(u => 
+    ['Basic', 'Premium', 'Power'].includes(u.subscriptionCategory || '')
+  ).length;
   const rejectedUsers = users.filter(u => u.approvalStatus === 'rejected');
 
   const filteredUsers = users.filter(user => {
@@ -631,7 +634,7 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
                   </div>
                   <div className="ml-3 sm:ml-4 min-w-0 flex-1">
                     <p className="text-xs sm:text-sm font-medium text-gray-600">Subscribers</p>
-                    <p className="text-lg sm:text-2xl font-bold text-gray-900">{lawyers.length}</p>
+                    <p className="text-lg sm:text-2xl font-bold text-gray-900">{paidSubscribers}</p>
                   </div>
                 </div>
               </div>
