@@ -1,9 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  Settings, Users, Building, CheckCircle, XCircle, Clock, 
-  Plus, Edit, Trash2, Search, Filter, UserCheck, Shield,
-  AlertCircle, Eye, Mail, Phone, Lock
-} from 'lucide-react';
+import { Settings, Users, Building, CheckCircle, XCircle, Clock, Plus, CreditCard as Edit, Trash2, Search, Filter, UserCheck, Shield, AlertCircle, Eye, Mail, Phone, Lock } from 'lucide-react';
 import { User, LawFirm } from '../types';
 import { systemConfig } from '../data/mockData';
 
@@ -630,12 +626,12 @@ const SystemAdminDashboard: React.FC<SystemAdminDashboardProps> = ({
 
               <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 border border-gray-200">
                 <div className="flex items-center">
-                  <div className="bg-purple-500 p-2 sm:p-3 rounded-lg">
-                    <DollarSign className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
+                  <div className="bg-green-500 p-2 sm:p-3 rounded-lg">
+                    <UserCheck className="h-4 w-4 sm:h-6 sm:w-6 text-white" />
                   </div>
                   <div className="ml-3 sm:ml-4 min-w-0 flex-1">
-                    <p className="text-xs sm:text-sm font-medium text-gray-600">Paid Subscribers</p>
-                    <p className="text-lg sm:text-2xl font-bold text-gray-900">{paidSubscribers.length}</p>
+                    <p className="text-xs sm:text-sm font-medium text-gray-600">Lawyers</p>
+                    <p className="text-lg sm:text-2xl font-bold text-gray-900">{lawyers.length}</p>
                   </div>
                 </div>
               </div>
